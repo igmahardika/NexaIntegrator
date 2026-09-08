@@ -65,7 +65,18 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
             </svg>
-            <span>Method 2: Enterprise AAA RADIUS Integration (RFC 2865 / CoA)</span>
+            <span>Method 2: Enterprise AAA RADIUS (Zero Flash Storage)</span>
+        </button>
+
+        <button 
+            @click="activeTab = 'loginhtml'" 
+            :class="activeTab === 'loginhtml' ? 'bg-brand text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'"
+            class="px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            <span>Method 3: Minimalist login.html (&lt; 1 KB)</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold" :class="activeTab === 'loginhtml' ? 'bg-white/20 text-white' : 'bg-blue-100 text-brand'">Zero Burden</span>
         </button>
     </div>
 
@@ -373,6 +384,71 @@
         </div>
     </div>
 
+    <!-- ================================================================= -->
+    <!-- TAB 3: MINIMALIST LOGIN.HTML (< 1 KB) — ZERO FLASH STORAGE -->
+    <!-- ================================================================= -->
+    <div x-show="activeTab === 'loginhtml'" class="space-y-6" x-transition x-cloak>
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                        <span>Minimalist login.html Redirector (&lt; 1 KB)</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        File ringan tanpa gambar, font, atau script berat. Mencegah router MikroTik kehabisan storage flash (16MB).
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button @click="downloadLoginHtml()" class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Download login.html</span>
+                    </button>
+                    <button @click="copyLoginHtml()" class="px-3.5 py-2 text-xs font-bold text-white bg-brand hover:bg-brand-hover rounded-xl shadow-sm transition flex items-center gap-1.5">
+                        <template x-if="!copiedLoginHtml">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <span>Copy Code</span>
+                            </span>
+                        </template>
+                        <template x-if="copiedLoginHtml">
+                            <span>✓ Tersalin!</span>
+                        </template>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-7">
+                    <div class="rounded-xl bg-slate-900 p-4 font-mono text-xs text-emerald-400 overflow-x-auto shadow-inner border border-slate-800">
+                        <pre id="loginHtmlBox" class="select-all leading-relaxed">{{ $minimalLoginHtml }}</pre>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 space-y-3">
+                    <div class="p-4 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900">
+                        <strong class="font-bold block mb-1">💡 Mengapa Ini Penting?</strong>
+                        Router MikroTik (seperti RB750Gr3 hEX atau hAP) hanya memiliki memori flash 16MB. Menyimpan template portal HTML yang berat di flash router membuat router lambat, sering freeze, dan merusak chip flash. File di samping hanya berukuran <strong>750 bytes</strong> dan langsung mengarahkan tamu ke Cloud Portal WiFiPads dengan mulus!
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
+                        <strong class="font-bold block text-slate-900">Cara Memasang di MikroTik:</strong>
+                        <ol class="list-decimal pl-4 space-y-1 text-slate-600">
+                            <li>Buka <strong>WinBox</strong> dan hubungkan ke router.</li>
+                            <li>Buka menu <strong>Files</strong> di sidebar WinBox.</li>
+                            <li>Buka folder <strong>hotspot</strong>.</li>
+                            <li>Seret (drag & drop) file <code>login.html</code> ke dalam folder <strong>hotspot</strong> untuk menimpa file lama.</li>
+                            <li>Selesai! Captive portal langsung aktif dengan aman.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @endsection
@@ -386,6 +462,7 @@ function routerIntegrationManager() {
         testing: false,
         copiedNoTunnel: false,
         copiedRadius: false,
+        copiedLoginHtml: false,
         coaResult: null,
         loadingStatus: false,
         syncUrl: '{{ $syncUrl }}',
@@ -397,6 +474,23 @@ function routerIntegrationManager() {
 
         init() {
             this.refreshSyncStatus();
+        },
+
+        copyLoginHtml() {
+            const code = document.getElementById('loginHtmlBox').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                this.copiedLoginHtml = true;
+                setTimeout(() => this.copiedLoginHtml = false, 3000);
+            });
+        },
+
+        downloadLoginHtml() {
+            const code = document.getElementById('loginHtmlBox').innerText;
+            const blob = new Blob([code], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'login.html';
+            a.click();
         },
 
         refreshSyncStatus() {

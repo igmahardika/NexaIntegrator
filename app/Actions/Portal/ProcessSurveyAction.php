@@ -59,9 +59,24 @@ class ProcessSurveyAction
             'created_at'  => now(),
         ]);
 
-        // 4. Generate guest credentials
+        // 4. Generate guest credentials and record in tenant database
+        \App\Services\TenantManager::switchConnection($location);
         $username = 'sv-' . strtolower(Str::random(8));
         $password = Str::random(12);
+
+        $hotspotUser = \App\Models\Tenant\HotspotUser::create([
+            'identifier'     => $username,
+            'secret'         => $password,
+            'auth_method'    => \App\Models\Tenant\HotspotUser::AUTH_SURVEY,
+            'status'         => \App\Models\Tenant\HotspotUser::STATUS_ACTIVE,
+            'uptime_limit'   => 7200,
+            'guest_metadata' => [
+                'campaign_title' => $campaign->title,
+                'answers'        => $answers,
+            ],
+        ]);
+        $hotspotUser->recordLogin($mac, $ip, $userAgent);
+
         $comment  = 'survey|' . $campaignId;
         $profile  = $location->template_config['survey_profile'] ?? config('mikrotik.survey_profile', 'survey-user');
 

@@ -68,7 +68,9 @@ add name="wifipads-auto-sync" interval=5s on-event="wifipads-sync" start-time=st
 :log info "WiFiPads No-Tunnel Auto Sync berhasil diaktifkan pada {$site->name}!"
 RSC;
 
-        return view('admin.sites.radius', compact('site', 'mikrotikScript', 'noTunnelScript', 'serverHost', 'syncUrl'));
+        $minimalLoginHtml = $radiusService->generateMinimalLoginHtml($baseUrl . '/portal');
+
+        return view('admin.sites.radius', compact('site', 'mikrotikScript', 'noTunnelScript', 'minimalLoginHtml', 'serverHost', 'syncUrl'));
     }
 
     /**

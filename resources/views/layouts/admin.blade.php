@@ -357,109 +357,86 @@
             </button>
         </div>
 
-        <!-- Navigation Menu Items (Professional English Enterprise Terminology) -->
+        <!-- Navigation Menu Items: The Cohesive 6-Stage Site Captive Portal Flow -->
         <nav class="flex-1 px-3.5 py-4 space-y-1 overflow-y-auto">
-            <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider px-3 mb-1.5 mt-1">MAIN MENU</div>
+            @php
+                $activeSite = $currentTenantSite ?? ($availableTenantSites->first() ?? null);
+            @endphp
 
+            <div class="px-3 mb-2">
+                <span class="text-2xs font-extrabold text-slate-400 uppercase tracking-wider block">ALUR SIKLUS SITE</span>
+                @if($activeSite)
+                <span class="text-2xs font-bold text-brand truncate block mt-0.5">📍 {{ $activeSite->name }}</span>
+                @endif
+            </div>
+
+            <!-- Stage 1: Site Overview & Gateway Status -->
             <a href="{{ route('admin.dashboard') }}" class="sidebar-item {{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-                Dashboard
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold {{ request()->routeIs('admin.dashboard*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">1</div>
+                <span class="flex-1">Overview & Status</span>
+                <span class="w-2 h-2 rounded-full {{ $activeSite?->is_active ? 'bg-emerald-500' : 'bg-slate-300' }}"></span>
             </a>
 
-            <a href="{{ route('admin.sites.index') }}" class="sidebar-item {{ request()->routeIs('admin.sites*') ? 'active' : '' }}">
+            <!-- Stage 2: Captive Portal Studio -->
+            @if($activeSite)
+            <a href="{{ route('admin.sites.template.customizer', $activeSite) }}" class="sidebar-item {{ request()->routeIs('admin.sites.template*') || request()->routeIs('admin.templates*') ? 'active' : '' }}">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold {{ request()->routeIs('admin.sites.template*') || request()->routeIs('admin.templates*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">2</div>
+                <span class="flex-1">Captive Portal Studio</span>
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            </a>
+            @else
+            <a href="{{ route('admin.templates.index') }}" class="sidebar-item {{ request()->routeIs('admin.templates*') ? 'active' : '' }}">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold bg-slate-100 text-slate-600">2</div>
+                <span class="flex-1">Captive Portal Studio</span>
+            </a>
+            @endif
+
+            <!-- Stage 3: Bandwidth & QoS Profiles -->
+            <a href="{{ route('admin.profiles.index') }}" class="sidebar-item {{ request()->routeIs('admin.profiles*') || request()->routeIs('admin.policy.bindings*') ? 'active' : '' }}">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold {{ request()->routeIs('admin.profiles*') || request()->routeIs('admin.policy.bindings*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">3</div>
+                <span class="flex-1">Profil QoS & Bandwidth</span>
+            </a>
+
+            <!-- Stage 4: Hotspot Users (Unified) -->
+            <a href="{{ route('admin.hotspot-users.index') }}" class="sidebar-item {{ request()->routeIs('admin.hotspot-users*') ? 'active' : '' }}">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold {{ request()->routeIs('admin.hotspot-users*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">4</div>
+                <span class="flex-1">Hotspot Users</span>
+                <span class="px-1.5 py-0.2 rounded text-3xs font-black uppercase {{ request()->routeIs('admin.hotspot-users*') ? 'bg-white text-brand' : 'bg-brand/10 text-brand' }}">Voucher & Tamu</span>
+            </a>
+
+            <!-- Stage 5: Edge Gateway / MikroTik Integration -->
+            @if($activeSite)
+            <a href="{{ route('admin.sites.radius.show', $activeSite) }}" class="sidebar-item {{ request()->routeIs('admin.sites.radius*') ? 'active' : '' }}">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold {{ request()->routeIs('admin.sites.radius*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">5</div>
+                <span class="flex-1">Edge Gateway (MikroTik)</span>
+                <span class="text-3xs px-1 py-0.5 rounded font-mono font-bold {{ $activeSite->router_ip ? 'text-emerald-700 bg-emerald-50' : 'text-amber-700 bg-amber-50' }}">
+                    {{ $activeSite->router_ip ? 'Sync' : 'Setup' }}
+                </span>
+            </a>
+            @endif
+
+            <!-- Stage 6: Live Sessions & Insights -->
+            <a href="{{ route('admin.devices.index') }}" class="sidebar-item {{ request()->routeIs('admin.devices*') ? 'active' : '' }}">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold {{ request()->routeIs('admin.devices*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">6</div>
+                <span class="flex-1">Live Sessions & Monitoring</span>
+            </a>
+
+            <!-- ================= GLOBAL MANAGEMENT ================= -->
+            <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-1.5 mt-5">DIREKTORI MULTI-SITE</div>
+
+            @if(auth()->user()?->isSuperadmin())
+            <a href="{{ route('admin.sites.index') }}" class="sidebar-item {{ request()->routeIs('admin.sites.index*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
-                Sites & Locations
+                Kelola Seluruh Site
             </a>
-
-            <a href="{{ route('admin.devices.index') }}" class="sidebar-item {{ request()->routeIs('admin.devices.index') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
-                Connected Devices
-            </a>
-
-            <a href="{{ route('admin.devices.monitoring') }}" class="sidebar-item {{ request()->routeIs('admin.devices.monitoring*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
-                Traffic & Monitoring
-            </a>
-
-            <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider px-3 mb-1.5 mt-4">NETWORK OPERATIONS</div>
-
-            <a href="{{ route('admin.policy.bindings') }}" class="sidebar-item {{ request()->routeIs('admin.policy.bindings*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                </svg>
-                Layer-2 MAC Policies
-            </a>
-
-            <a href="{{ route('admin.profiles.index') }}" class="sidebar-item {{ request()->routeIs('admin.profiles*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-                Bandwidth Profiles (QoS)
-            </a>
-
-            <a href="{{ route('admin.ap.index') }}" class="sidebar-item {{ request()->routeIs('admin.ap*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
-                </svg>
-                AP Watchdog
-            </a>
-
-            <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider px-3 mb-1.5 mt-4">MARKETING & ENGAGEMENT</div>
-
-            <a href="{{ route('admin.campaigns.index') }}" class="sidebar-item {{ request()->routeIs('admin.campaigns*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.82V15.18a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                </svg>
-                Campaigns & Surveys
-            </a>
-
-            <a href="{{ route('admin.vouchers.index') }}" class="sidebar-item {{ request()->routeIs('admin.vouchers*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-                </svg>
-                Voucher Management
-            </a>
-
-            <a href="{{ route('admin.members.index') }}" class="sidebar-item {{ request()->routeIs('admin.members*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-                Member & Staff Accounts
-            </a>
-
-            <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider px-3 mb-1.5 mt-4">SYSTEM & ANALYTICS</div>
 
             <a href="{{ route('admin.analytics.index') }}" class="sidebar-item {{ request()->routeIs('admin.analytics*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                Analytics & Reports
-            </a>
-
-            @if(auth()->user()?->isSuperadmin())
-            <a href="{{ route('admin.locations.index') }}" class="sidebar-item {{ request()->routeIs('admin.locations*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
-                </svg>
-                Edge Gateways & Hardware
-            </a>
-
-            <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider px-3 mb-1.5 mt-4">PORTAL & TEMPLATES</div>
-
-            <a href="{{ route('admin.templates.index') }}" class="sidebar-item {{ request()->routeIs('admin.templates*') || request()->routeIs('admin.sites.template*') ? 'active' : '' }}">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z"/>
-                </svg>
-                Template Studio
-                <span class="ml-auto px-1.5 py-0.5 text-2xs font-extrabold bg-brand/10 text-brand rounded-md">6 Methods</span>
+                Analitik Global
             </a>
 
             <a href="{{ route('portal') }}?preview=1" target="_blank" class="sidebar-item">
@@ -468,17 +445,14 @@
                 </svg>
                 Live Portal (Preview)
             </a>
-            @endif
-
-            <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider px-3 mb-1.5 mt-4">DEVELOPER & INTEGRATIONS</div>
 
             <a href="{{ route('admin.docs.index') }}" class="sidebar-item {{ request()->routeIs('admin.docs*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
-                Integration Docs & API
-                <span class="ml-auto px-1.5 py-0.5 text-2xs font-extrabold bg-emerald-500/10 text-emerald-700 rounded-md">PDF</span>
+                Dokumentasi & API
             </a>
+            @endif
         </nav>
 
         <!-- User Profile Card in Sidebar Footer -->

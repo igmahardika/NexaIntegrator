@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\DocumentationController;
 use App\Http\Controllers\Admin\HotspotProfileController;
+use App\Http\Controllers\Admin\HotspotUserController;
 use App\Http\Controllers\Admin\IpBindingController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\MemberController;
@@ -110,7 +111,17 @@ Route::prefix('admin')
             Route::delete('/devices/blacklist/{blacklistedDevice}', [DeviceController::class, 'unblock'])->name('devices.unblock');
             Route::get('/monitoring', [DeviceController::class, 'monitoring'])->name('devices.monitoring');
 
-            // Vouchers
+            // Unified Hotspot Users (Vouchers, Members, Leads)
+            Route::get('/hotspot-users', [HotspotUserController::class, 'index'])->name('hotspot-users.index');
+            Route::post('/hotspot-users/generate', [HotspotUserController::class, 'generateVouchers'])->name('hotspot-users.generate');
+            Route::post('/hotspot-users/member', [HotspotUserController::class, 'storeMember'])->name('hotspot-users.member');
+            Route::post('/hotspot-users/{user}/toggle', [HotspotUserController::class, 'toggleStatus'])->name('hotspot-users.toggle');
+            Route::delete('/hotspot-users/{user}', [HotspotUserController::class, 'destroy'])->name('hotspot-users.destroy');
+            Route::delete('/hotspot-users/batch/destroy', [HotspotUserController::class, 'destroyBatch'])->name('hotspot-users.destroyBatch');
+            Route::get('/hotspot-users/print/{batchName}', [HotspotUserController::class, 'printBatch'])->name('hotspot-users.print');
+            Route::post('/hotspot-users/kick/{sessionId}', [HotspotUserController::class, 'kickSession'])->name('hotspot-users.kick');
+
+            // Vouchers (legacy compatibility)
             Route::get('/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
             Route::post('/vouchers/generate', [VoucherController::class, 'generate'])->name('vouchers.generate');
             Route::get('/vouchers/print/{batchName}', [VoucherController::class, 'printBatch'])->name('vouchers.print');

@@ -15,7 +15,9 @@ use App\Models\PortalVoucher;
 use App\Models\RouterUserQueue;
 use App\Models\SurveyCampaign;
 use App\Models\SurveyResponse;
+use App\Models\Tenant\HotspotUser;
 use App\Services\MikrotikService;
+use App\Services\TenantManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -95,6 +97,41 @@ class PortalAuthController extends Controller
             ], 403);
         }
 
+        $location = Location::find($request->location_id);
+        if (!$location) {
+            return response()->json(['success' => false, 'message' => 'Lokasi tidak ditemukan.'], 404);
+        }
+
+        // Switch to tenant isolated database
+        TenantManager::switchConnection($location);
+
+        // 1. Check Unified HotspotUser in Tenant Database
+        $hotspotUser = HotspotUser::where('identifier', $request->username)
+            ->where('auth_method', HotspotUser::AUTH_MEMBER)
+            ->first();
+
+        if ($hotspotUser) {
+            if (!$hotspotUser->verifySecret($request->password)) {
+                return response()->json(['success' => false, 'message' => 'Password salah.'], 401);
+            }
+
+            if (!$hotspotUser->isUsable()) {
+                return response()->json(['success' => false, 'message' => 'Akun dinonaktifkan atau kedaluwarsa.'], 403);
+            }
+
+            $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
+            PortalSession::logLogin($location->id, $mac, $request->ip, 'member', $hotspotUser->identifier, $request->userAgent());
+
+            return response()->json([
+                'success'  => true,
+                'username' => $hotspotUser->identifier,
+                'password' => $request->password,
+                'role'     => 'member',
+                'offline'  => false,
+            ]);
+        }
+
+        // 2. Fallback to legacy PortalMember
         $member = PortalMember::where('username', $request->username)
             ->where('is_active', true)
             ->first();
@@ -103,26 +140,9 @@ class PortalAuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Username atau password salah.'], 401);
         }
 
-        $location = Location::find($request->location_id);
-        if (!$location) {
-            return response()->json(['success' => false, 'message' => 'Lokasi tidak ditemukan.'], 404);
-        }
-
         $member->touchLogin();
-
         $profile = config('mikrotik.member_profile', 'member-user');
         $comment = 'member|' . $member->id . '|' . $member->role;
-
-        // Enqueue user creation for MikroTik Reverse Polling (No VPN / CGNAT ready)
-        RouterUserQueue::enqueueUser(
-            locationId: $location->id,
-            username: $member->username,
-            password: $request->password,
-            profile: $profile,
-            mac: $mac,
-            comment: $comment,
-            limitUptime: null
-        );
 
         $routerResult = $this->authorize(
             $location,
@@ -174,15 +194,21 @@ class PortalAuthController extends Controller
         $comment    = 'wa|' . $request->name . '|' . $cleanPhone;
         $profile    = $location->template_config['survey_profile'] ?? config('mikrotik.survey_profile', 'survey-user');
 
-        RouterUserQueue::enqueueUser(
-            locationId: $location->id,
-            username: $username,
-            password: $password,
-            profile: $profile,
-            mac: $mac,
-            comment: $comment,
-            limitUptime: '02:00:00'
+        // Record in Tenant Isolated Database as HotspotUser
+        TenantManager::switchConnection($location);
+        $hotspotUser = HotspotUser::firstOrCreate(
+            ['identifier' => $cleanPhone],
+            [
+                'auth_method'    => HotspotUser::AUTH_WHATSAPP,
+                'status'         => HotspotUser::STATUS_ACTIVE,
+                'uptime_limit'   => 7200,
+                'guest_metadata' => [
+                    'full_name' => $request->name,
+                    'phone'     => $cleanPhone,
+                ],
+            ]
         );
+        $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
 
         $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'whatsapp', $cleanPhone, $request->userAgent());
@@ -223,15 +249,18 @@ class PortalAuthController extends Controller
         $comment  = '1click|free-access';
         $profile  = $location->template_config['survey_profile'] ?? config('mikrotik.survey_profile', 'survey-user');
 
-        RouterUserQueue::enqueueUser(
-            locationId: $location->id,
-            username: $username,
-            password: $password,
-            profile: $profile,
-            mac: $mac,
-            comment: $comment,
-            limitUptime: '02:00:00'
-        );
+        // Record in Tenant Isolated Database
+        TenantManager::switchConnection($location);
+        $hotspotUser = HotspotUser::create([
+            'identifier'   => $username,
+            'auth_method'  => HotspotUser::AUTH_QUICK,
+            'status'       => HotspotUser::STATUS_ACTIVE,
+            'uptime_limit' => 7200,
+            'guest_metadata' => [
+                'type' => 'free_one_click',
+            ],
+        ]);
+        $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
 
         $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'quick_click', 'free-button', $request->userAgent());
@@ -273,15 +302,21 @@ class PortalAuthController extends Controller
         $comment  = 'email|' . $request->name . '|' . $request->email;
         $profile  = $location->template_config['survey_profile'] ?? config('mikrotik.survey_profile', 'survey-user');
 
-        RouterUserQueue::enqueueUser(
-            locationId: $location->id,
-            username: $username,
-            password: $password,
-            profile: $profile,
-            mac: $mac,
-            comment: $comment,
-            limitUptime: '02:00:00'
+        // Record in Tenant Isolated Database
+        TenantManager::switchConnection($location);
+        $hotspotUser = HotspotUser::firstOrCreate(
+            ['identifier' => $request->email],
+            [
+                'auth_method'    => 'email',
+                'status'         => HotspotUser::STATUS_ACTIVE,
+                'uptime_limit'   => 7200,
+                'guest_metadata' => [
+                    'full_name' => $request->name,
+                    'email'     => $request->email,
+                ],
+            ]
         );
+        $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
 
         $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'email', $request->email, $request->userAgent());

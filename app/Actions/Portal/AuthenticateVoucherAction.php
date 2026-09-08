@@ -38,12 +38,43 @@ class AuthenticateVoucherAction
             ];
         }
 
-        // 2. Pessimistic lock on voucher to prevent concurrent double-spending (TOCTOU)
+        // 2. Switch tenant database connection to the site's isolated database
+        \App\Services\TenantManager::switchConnection($location);
+
+        // 3. Check Unified HotspotUser in Tenant Database
+        $hotspotUser = \App\Models\Tenant\HotspotUser::where('identifier', $code)
+            ->where('auth_method', \App\Models\Tenant\HotspotUser::AUTH_VOUCHER)
+            ->first();
+
+        if ($hotspotUser) {
+            if (!$hotspotUser->isUsable()) {
+                return [
+                    'success'    => false,
+                    'statusCode' => 410,
+                    'message'    => 'Voucher sudah digunakan atau kedaluwarsa.',
+                ];
+            }
+
+            // Record login session in tenant database
+            $session = $hotspotUser->recordLogin($mac, $ip, $userAgent);
+
+            $profileName = $hotspotUser->profile?->rate_limit ?? ($location->template_config['voucher_profile'] ?? '5M/10M');
+
+            return [
+                'success'   => true,
+                'username'  => $hotspotUser->identifier,
+                'password'  => $hotspotUser->secret ?: $hotspotUser->identifier,
+                'duration'  => $hotspotUser->uptime_limit ? round($hotspotUser->uptime_limit / 60) : 120,
+                'offline'   => false,
+            ];
+        }
+
+        // Fallback: Legacy PortalVoucher check with pessimistic lock
         $lockResult = DB::transaction(function () use ($code, $locationId, $mac) {
             $voucher = PortalVoucher::where('code', $code)
                 ->where(function ($q) use ($locationId) {
                     $q->where('location_id', $locationId)
-                      ->orWhereNull('location_id'); // Allow global batches if location_id is null
+                      ->orWhereNull('location_id');
                 })
                 ->lockForUpdate()
                 ->first();
@@ -60,7 +91,6 @@ class AuthenticateVoucherAction
                 return ['error' => 'expired'];
             }
 
-            // Mark voucher as used inside the lock
             $voucher->markUsed($mac);
 
             return ['voucher' => $voucher];
