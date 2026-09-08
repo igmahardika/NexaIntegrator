@@ -15,7 +15,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Sites</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Total Sites</div>
                 <div class="text-2xl font-black text-slate-900">{{ $sites->count() }}</div>
             </div>
         </div>
@@ -27,7 +27,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Sites</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Active Sites</div>
                 <div class="text-2xl font-black text-emerald-600">{{ $sites->where('is_active', true)->count() }}</div>
             </div>
         </div>
@@ -39,7 +39,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Connected Clients</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Connected Clients</div>
                 <div class="text-2xl font-black text-cyan-600">{{ $sites->sum('active_sessions_count') }}</div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Login Methods</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Login Methods</div>
                 <div class="text-2xl font-black text-purple-600">{{ count($templates) }} Methods</div>
             </div>
         </div>
@@ -100,7 +100,7 @@
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <h3 class="font-bold text-slate-900 text-base leading-tight">{{ $site->name }}</h3>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold {{ $site->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold {{ $site->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
                                 {{ $site->is_active ? 'Active' : 'Disabled' }}
                             </span>
                         </div>
@@ -111,7 +111,7 @@
                     </div>
 
                     <!-- Business Type Badge -->
-                    <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700">
+                    <span class="text-2xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700">
                         {{ $site->business_type }}
                     </span>
                 </div>
@@ -130,14 +130,14 @@
                 <!-- Template & Network Highlights -->
                 <div class="grid grid-cols-2 gap-2 text-xs mb-4">
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60">
-                        <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5 font-bold">Active Template</div>
+                        <div class="text-2xs text-slate-500 uppercase tracking-wider mb-0.5 font-bold">Active Template</div>
                         <div class="font-bold text-slate-900 capitalize flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-brand"></span>
                             {{ str_replace('-', ' ', $site->active_template ?? 'username-password') }}
                         </div>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60">
-                        <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5 font-bold">Router Gateway</div>
+                        <div class="text-2xs text-slate-500 uppercase tracking-wider mb-0.5 font-bold">Router Gateway</div>
                         <div class="font-bold text-slate-900 truncate font-mono">
                             {{ $site->router_ip ?: ($site->radius_server_ip ?: 'Not configured') }}
                         </div>
@@ -147,15 +147,15 @@
                 <!-- Quick Stats -->
                 <div class="grid grid-cols-3 gap-2 py-3 border-t border-b border-slate-100 text-center text-xs mb-4 bg-slate-50/60 rounded-xl">
                     <div>
-                        <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Online</div>
+                        <div class="text-slate-500 text-2xs font-bold uppercase tracking-wider">Online</div>
                         <div class="font-black text-brand text-sm mt-0.5">{{ $site->active_sessions_count }}</div>
                     </div>
                     <div>
-                        <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Vouchers</div>
+                        <div class="text-slate-500 text-2xs font-bold uppercase tracking-wider">Vouchers</div>
                         <div class="font-black text-slate-900 text-sm mt-0.5">{{ $site->vouchers_count }}</div>
                     </div>
                     <div>
-                        <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Total Sessions</div>
+                        <div class="text-slate-500 text-2xs font-bold uppercase tracking-wider">Total Sessions</div>
                         <div class="font-black text-slate-900 text-sm mt-0.5">{{ $site->sessions_count }}</div>
                     </div>
                 </div>
@@ -165,19 +165,19 @@
             <div class="space-y-2 pt-2">
                 <!-- Management Hub Links -->
                 <div class="grid grid-cols-3 gap-2">
-                    <a href="{{ route('admin.sites.template.gallery', $site) }}" class="btn-secondary text-[11px] py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-brand/40 hover:text-brand font-semibold">
+                    <a href="{{ route('admin.sites.template.gallery', $site) }}" class="btn-secondary text-2xs py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-brand/40 hover:text-brand font-semibold">
                         <svg class="w-3.5 h-3.5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                         </svg>
                         <span>Template</span>
                     </a>
-                    <a href="{{ route('admin.sites.radius.show', $site) }}" class="btn-secondary text-[11px] py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-purple-300 hover:text-purple-700 font-semibold">
+                    <a href="{{ route('admin.sites.radius.show', $site) }}" class="btn-secondary text-2xs py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-purple-300 hover:text-purple-700 font-semibold">
                         <svg class="w-3.5 h-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
                         <span>RADIUS</span>
                     </a>
-                    <a href="{{ route('admin.devices.index', ['location_id' => $site->id]) }}" class="btn-secondary text-[11px] py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-cyan-300 hover:text-cyan-700 font-semibold">
+                    <a href="{{ route('admin.devices.index', ['location_id' => $site->id]) }}" class="btn-secondary text-2xs py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-cyan-300 hover:text-cyan-700 font-semibold">
                         <svg class="w-3.5 h-3.5 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                         </svg>
@@ -230,6 +230,9 @@
     <div
         x-show="modalOpen"
         x-cloak
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="site-modal-title"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
         @keydown.escape.window="modalOpen = false"
     >
@@ -238,8 +241,8 @@
             class="card max-w-2xl w-full p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl max-h-[90vh] overflow-y-auto"
         >
             <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
-                <h3 class="text-base font-bold text-slate-900" x-text="isEdit ? 'Edit Site & Customer Profile' : 'Add New Site / Customer'"></h3>
-                <button @click="modalOpen = false" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">&times;</button>
+                <h3 id="site-modal-title" class="text-base font-bold text-slate-900" x-text="isEdit ? 'Edit Site & Customer Profile' : 'Add New Site / Customer'"></h3>
+                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors text-xl font-bold leading-none">&times;</button>
             </div>
 
             <form :action="isEdit ? `/admin/sites/${currentSite.id}` : '{{ route('admin.sites.store') }}'" method="POST" class="space-y-4">

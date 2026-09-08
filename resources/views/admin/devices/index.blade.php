@@ -15,19 +15,19 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Online Sessions</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Active Online Sessions</div>
                 <div class="text-2xl font-black text-emerald-600">{{ $totalActive }}</div>
             </div>
         </div>
 
         <div class="card p-5 flex items-center gap-4 bg-white border border-slate-200/80 shadow-xs">
-            <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#22449E]">
+            <div class="w-12 h-12 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Visits Today</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Total Visits Today</div>
                 <div class="text-2xl font-black text-slate-900">{{ $totalToday }}</div>
             </div>
         </div>
@@ -115,15 +115,15 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr class="border-b border-slate-200/80 bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-bold">
-                        <th class="p-3.5">Device & Hardware</th>
-                        <th class="p-3.5">MAC & IP Address</th>
-                        <th class="p-3.5">Site Location</th>
-                        <th class="p-3.5">Auth Method</th>
-                        <th class="p-3.5">Connected Since</th>
-                        <th class="p-3.5">Throughput (Down / Up)</th>
-                        <th class="p-3.5">Status</th>
-                        <th class="p-3.5 text-right">Actions</th>
+                    <tr class="border-b border-slate-200/80 bg-slate-50">
+                        <th class="table-th">Device & Hardware</th>
+                        <th class="table-th">MAC & IP Address</th>
+                        <th class="table-th">Site Location</th>
+                        <th class="table-th">Auth Method</th>
+                        <th class="table-th">Connected Since</th>
+                        <th class="table-th">Throughput (Down / Up)</th>
+                        <th class="table-th">Status</th>
+                        <th class="table-th text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -203,10 +203,10 @@
 
                         <!-- Traffic In / Out -->
                         <td class="p-3.5">
-                            <div class="text-[#22449E] font-semibold font-mono">
+                            <div class="text-brand font-semibold font-mono">
                                 ⬇ {{ $session->formatted_out }}
                             </div>
-                            <div class="text-slate-500 font-mono text-[10px]">
+                            <div class="text-slate-500 font-mono text-2xs">
                                 ⬆ {{ $session->formatted_in }}
                             </div>
                         </td>

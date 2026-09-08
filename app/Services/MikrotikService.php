@@ -35,9 +35,9 @@ class MikrotikService
             'user'     => $this->location->router_user,
             'pass'     => $this->location->router_password,
             'port'     => (int) $this->location->router_port,
-            'timeout'  => config('mikrotik.timeout', 5),
-            'attempts' => config('mikrotik.attempts', 3),
-            'delay'    => config('mikrotik.delay', 1),
+            'timeout'  => (int) config('mikrotik.timeout', 5),
+            'attempts' => (int) config('mikrotik.attempts', 3),
+            'delay'    => (int) config('mikrotik.delay', 1),
         ]);
 
         return $this->client;
@@ -535,5 +535,197 @@ class MikrotikService
             'hdd_used'          => 0,
             'hdd_percent'       => 0,
         ];
+    }
+
+    // ============================================================
+    // Emergency Failsafe / Bypass Switches (Legacy Gmedia Flow)
+    // ============================================================
+
+    /**
+     * Check if the Emergency Walled Garden Bypass (0.0.0.0/0 pass-all) is currently active.
+     */
+    public function isEmergencyBypassActive(): bool
+    {
+        try {
+            $client = $this->connect();
+            $rules = $client->query(
+                (new Query('/ip/hotspot/walled-garden/ip/print'))
+                    ->where('comment', 'WiFiPads-Emergency-Bypass')
+            )->read();
+
+            return !empty($rules);
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Toggle emergency bypass via Walled Garden rule (0.0.0.0/0 pass-all).
+     * This immediately allows all traffic freely while preserving IP bindings & session memory.
+     */
+    public function toggleEmergencyBypass(bool $enable): array
+    {
+        try {
+            $client = $this->connect();
+
+            // Find existing emergency bypass rules
+            $existing = $client->query(
+                (new Query('/ip/hotspot/walled-garden/ip/print'))
+                    ->where('comment', 'WiFiPads-Emergency-Bypass')
+            )->read();
+
+            if ($enable) {
+                if (empty($existing)) {
+                    $query = new Query('/ip/hotspot/walled-garden/ip/add');
+                    $query->equal('dst-address', '0.0.0.0/0');
+                    $query->equal('action', 'accept');
+                    $query->equal('comment', 'WiFiPads-Emergency-Bypass');
+                    $client->query($query)->read();
+                }
+
+                return [
+                    'success'       => true,
+                    'bypass_active' => true,
+                    'message'       => 'Emergency Bypass DIAKTIFKAN. Seluruh perangkat di site ini dapat mengakses internet tanpa autentikasi captive portal.',
+                ];
+            } else {
+                foreach ($existing as $rule) {
+                    $query = new Query('/ip/hotspot/walled-garden/ip/remove');
+                    $query->equal('.id', $rule['.id']);
+                    $client->query($query)->read();
+                }
+
+                return [
+                    'success'       => true,
+                    'bypass_active' => false,
+                    'message'       => 'Emergency Bypass DINONAKTIFKAN. Autentikasi captive portal kembali ditegakkan.',
+                ];
+            }
+        } catch (Throwable $e) {
+            return [
+                'success' => false,
+                'error'   => 'Gagal mengubah status bypass darurat: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Toggle entire MikroTik Hotspot server service on or off.
+     */
+    public function toggleHotspotService(bool $enable): array
+    {
+        try {
+            $client = $this->connect();
+            $servers = $client->query(new Query('/ip/hotspot/print'))->read();
+
+            if (empty($servers)) {
+                return ['success' => false, 'error' => 'Tidak ada server hotspot yang terkonfigurasi di router ini.'];
+            }
+
+            foreach ($servers as $server) {
+                $query = new Query('/ip/hotspot/set');
+                $query->equal('.id', $server['.id']);
+                $query->equal('disabled', $enable ? 'no' : 'yes');
+                $client->query($query)->read();
+            }
+
+            return [
+                'success'         => true,
+                'hotspot_enabled' => $enable,
+                'message'         => $enable
+                    ? 'Layanan Hotspot MikroTik BERHASIL DI-ENABLE.'
+                    : 'Layanan Hotspot MikroTik BERHASIL DI-DISABLE (Firewall terbuka total).',
+            ];
+        } catch (Throwable $e) {
+            return [
+                'success' => false,
+                'error'   => 'Gagal mengubah status hotspot server: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    // ============================================================
+    // WAN Traffic Telemetry & Interface Monitor (MRTG Aggregate)
+    // ============================================================
+
+    /**
+     * Retrieve real-time WAN / Internet Interface throughput in bits per second.
+     */
+    public function getWanTraffic(string $interface = ''): array
+    {
+        try {
+            $client = $this->connect();
+
+            // Auto-detect interface if empty
+            if (empty($interface)) {
+                // Try finding default route interface
+                $routes = $client->query(
+                    (new Query('/ip/route/print'))
+                        ->where('dst-address', '0.0.0.0/0')
+                        ->where('active', 'true')
+                )->read();
+
+                if (!empty($routes[0]['gateway-status'])) {
+                    // E.g. "ether1 reachable"
+                    $parts = explode(' ', $routes[0]['gateway-status']);
+                    $interface = $parts[0] ?? 'ether1';
+                } elseif (!empty($routes[0]['interface'])) {
+                    $interface = $routes[0]['interface'];
+                } else {
+                    $interface = 'ether1';
+                }
+            }
+
+            $monitor = $client->query(
+                (new Query('/interface/monitor-traffic'))
+                    ->equal('interface', $interface)
+                    ->equal('once', '')
+            )->read();
+
+            if (!empty($monitor[0])) {
+                $raw = $monitor[0];
+                $rxBps = (int) ($raw['rx-bits-per-second'] ?? 0);
+                $txBps = (int) ($raw['tx-bits-per-second'] ?? 0);
+
+                return [
+                    'online'     => true,
+                    'interface'  => $interface,
+                    'rx_bps'     => $rxBps,
+                    'tx_bps'     => $txBps,
+                    'rx_human'   => $this->formatBitsPerSecond($rxBps),
+                    'tx_human'   => $this->formatBitsPerSecond($txBps),
+                    'timestamp'  => now()->format('H:i:s'),
+                ];
+            }
+        } catch (Throwable $e) {
+            // Unreachable
+        }
+
+        return [
+            'online'    => false,
+            'interface' => $interface ?: 'unknown',
+            'rx_bps'    => 0,
+            'tx_bps'    => 0,
+            'rx_human'  => '0 bps',
+            'tx_human'  => '0 bps',
+            'timestamp' => now()->format('H:i:s'),
+        ];
+    }
+
+    /**
+     * Format bits per second to human readable string (bps, Kbps, Mbps, Gbps).
+     */
+    protected function formatBitsPerSecond(int $bps): string
+    {
+        if ($bps >= 1000000000) {
+            return round($bps / 1000000000, 2) . ' Gbps';
+        }
+        if ($bps >= 1000000) {
+            return round($bps / 1000000, 2) . ' Mbps';
+        }
+        if ($bps >= 1000) {
+            return round($bps / 1000, 1) . ' Kbps';
+        }
+        return $bps . ' bps';
     }
 }

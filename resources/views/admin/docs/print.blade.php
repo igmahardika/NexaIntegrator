@@ -8,6 +8,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            DEFAULT: '#22449E',
+                            hover: '#1b3680',
+                        }
+                    },
+                    fontSize: {
+                        '2xs': ['0.625rem', { lineHeight: '0.875rem' }],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -39,7 +56,7 @@
 
     <!-- Floating Print Control Bar (Screen only) -->
     <div class="no-print fixed top-5 right-5 z-50 flex items-center gap-3 bg-white p-3 rounded-2xl shadow-xl border border-slate-200">
-        <button onclick="window.print()" class="px-4 py-2 text-xs font-bold text-white bg-[#22449E] hover:bg-blue-800 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+        <button onclick="window.print()" class="px-4 py-2 text-xs font-bold text-white bg-brand hover:bg-brand-hover rounded-xl transition flex items-center gap-1.5 shadow-sm">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
             </svg>
@@ -57,8 +74,8 @@
         <div class="border-b-2 border-slate-900 pb-6 flex items-start justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 mb-2">
-                    <span class="px-2.5 py-0.5 rounded bg-[#22449E] text-white text-[10px] font-black tracking-wider uppercase">WIFIPADS CONTROLLER</span>
-                    <span class="text-slate-400 text-xs font-mono">• Official Technical Documentation</span>
+                    <span class="px-2.5 py-0.5 rounded bg-brand text-white text-2xs font-black tracking-wider uppercase">WIFIPADS CONTROLLER</span>
+                    <span class="text-slate-500 text-xs font-mono">• Official Technical Documentation</span>
                 </div>
                 <h1 class="text-3xl font-black text-slate-900 tracking-tight">Enterprise Integration & API Manual</h1>
                 <p class="text-slate-500 text-xs mt-1">Multi-Tenant Network Access Control & Edge Gateway Controller</p>
@@ -73,15 +90,15 @@
         @if($topic === 'pms' || $topic === 'all')
         <section class="space-y-6 {{ $topic === 'all' ? '' : '' }}">
             <div class="border-b border-slate-200 pb-3">
-                <span class="text-xs font-bold text-[#22449E] uppercase tracking-wider">Module 1</span>
+                <span class="text-xs font-bold text-brand uppercase tracking-wider">Module 1</span>
                 <h2 class="text-xl font-extrabold text-slate-900">Hotel Property Management System (PMS) API</h2>
                 <p class="text-xs text-slate-600 mt-1">Compatible with Oracle Hospitality (Opera Cloud/V5), Infor HMS, Cloudbeds, VHP, and Mews.</p>
             </div>
 
             <!-- Workflow -->
             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2">
-                <div class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Workflow Summary:</div>
-                <div class="font-mono text-slate-700 leading-relaxed text-[11px]">
+                <div class="font-bold text-slate-900 uppercase tracking-wider text-2xs">Workflow Summary:</div>
+                <div class="font-mono text-slate-700 leading-relaxed text-2xs">
                     1. Guest connects Wi-Fi &rarr; Captive portal prompts Room # &amp; Last Name.<br>
                     2. WiFiPads executes POST /api/v1/pms/verify-guest against PMS.<br>
                     3. Upon confirmation, credentials are staged in RouterOS sync queue.<br>
@@ -105,7 +122,7 @@
                 </div>
 
                 <div>
-                    <div class="text-[11px] font-bold text-slate-600 mb-1">Response Payload (200 OK):</div>
+                    <div class="text-2xs font-bold text-slate-600 mb-1">Response Payload (200 OK):</div>
                     <div class="bg-slate-950 text-cyan-400 p-4 rounded-xl font-mono text-xs overflow-x-auto">
 <pre>{
   "status": "success",
@@ -139,7 +156,7 @@
 
             <!-- Architecture Comparison Table -->
             <table class="w-full text-xs text-left border border-slate-200 rounded-lg overflow-hidden">
-                <thead class="bg-slate-100 font-bold text-slate-800 uppercase text-[10px]">
+                <thead class="bg-slate-100 font-bold text-slate-800 uppercase text-2xs">
                     <tr>
                         <th class="p-3 border-b">Feature</th>
                         <th class="p-3 border-b text-emerald-800">Method 1: Zero-Tunnel (Reverse Polling)</th>
@@ -198,7 +215,7 @@ add dst-host=msftconnecttest.com comment="Windows CNA"</pre>
                 <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                     <div class="font-bold text-slate-900 text-sm">Step 2: Execute 1-Click Provisioning Script</div>
                     <p class="text-slate-600">Copy the provisioning script from the WiFiPads console and execute it in WinBox New Terminal:</p>
-                    <div class="bg-slate-900 text-emerald-400 p-3 rounded-lg font-mono text-[11px] overflow-x-auto">
+                    <div class="bg-slate-900 text-emerald-400 p-3 rounded-lg font-mono text-2xs overflow-x-auto">
 <pre>/system scheduler add name="wifipads-sync" interval=5s on-event={
     /tool fetch url="{{ $baseUrl }}/api/router/site-slug/sync.rsc" dst-path="wifipads-sync.rsc" keep-result=yes
     /import file-name="wifipads-sync.rsc"
@@ -209,7 +226,7 @@ add dst-host=msftconnecttest.com comment="Windows CNA"</pre>
                 <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                     <div class="font-bold text-slate-900 text-sm">Step 3: Point Redirection to Cloud Portal</div>
                     <p class="text-slate-600">Edit <code class="font-mono bg-white px-1.5 py-0.5 rounded border">hotspot/login.html</code> on the router flash to redirect clients to:</p>
-                    <div class="bg-slate-900 text-cyan-400 p-2.5 rounded-lg font-mono text-[11px]">
+                    <div class="bg-slate-900 text-cyan-400 p-2.5 rounded-lg font-mono text-2xs">
                         {{ $baseUrl }}/portal?loc={{ $currentLocation->slug ?? 'default-location' }}
                     </div>
                 </div>
@@ -223,7 +240,7 @@ add dst-host=msftconnecttest.com comment="Windows CNA"</pre>
         @endif
 
         <!-- Footer -->
-        <div class="pt-8 border-t border-slate-200 text-center text-xs text-slate-400 font-mono">
+        <div class="pt-8 border-t border-slate-200 text-center text-xs text-slate-500 font-mono">
             &copy; {{ date('Y') }} WiFiPads Network Access Control. All rights reserved.
         </div>
 

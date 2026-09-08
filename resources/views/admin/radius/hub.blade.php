@@ -40,7 +40,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Edge Router</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Total Edge Router</div>
                 <div class="text-2xl font-black text-slate-900">{{ $sites->count() }} Router</div>
             </div>
         </div>
@@ -52,7 +52,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Router Terkonfigurasi</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Router Terkonfigurasi</div>
                 <div class="text-2xl font-black text-emerald-600">{{ $sites->whereNotNull('router_ip')->where('router_ip', '!=', '')->count() }} Site</div>
             </div>
         </div>
@@ -64,7 +64,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">RADIUS AAA Aktif</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">RADIUS AAA Aktif</div>
                 <div class="text-2xl font-black text-purple-600">{{ $sites->where('radius_enabled', true)->count() }} Site</div>
             </div>
         </div>
@@ -76,7 +76,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Sesi Tamu (RAM)</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Total Sesi Tamu (RAM)</div>
                 <div class="text-2xl font-black text-cyan-600">{{ $sites->sum('active_sessions_count') }} Online</div>
             </div>
         </div>
@@ -101,14 +101,14 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr class="bg-slate-50/80 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider text-[11px]">
-                        <th class="py-3 px-4">Nama Site Cabang</th>
-                        <th class="py-3 px-4">Router Gateway IP & Port</th>
-                        <th class="py-3 px-4">Status RADIUS AAA</th>
-                        <th class="py-3 px-4">PoD / CoA Port</th>
-                        <th class="py-3 px-4">Sesi Aktif (RAM)</th>
-                        <th class="py-3 px-4">Live Test & Telemetri</th>
-                        <th class="py-3 px-4 text-right">Konfigurasi</th>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="table-th">Nama Site Cabang</th>
+                        <th class="table-th">Router Gateway IP & Port</th>
+                        <th class="table-th">Status RADIUS AAA</th>
+                        <th class="table-th">PoD / CoA Port</th>
+                        <th class="table-th">Sesi Aktif (RAM)</th>
+                        <th class="table-th">Live Test & Telemetri</th>
+                        <th class="table-th text-right">Konfigurasi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -116,12 +116,12 @@
                     <tr class="hover:bg-slate-50/60 transition">
                         <td class="py-3 px-4">
                             <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-lg bg-blue-50 text-brand flex items-center justify-center font-bold text-xs shrink-0 border border-blue-100">
+                                <div class="w-8 h-8 rounded-lg bg-brand-50 text-brand flex items-center justify-center font-bold text-xs shrink-0 border border-brand-100">
                                     {{ strtoupper(substr($site->name, 0, 2)) }}
                                 </div>
                                 <div>
                                     <div class="font-bold text-slate-900">{{ $site->name }}</div>
-                                    <div class="text-[10px] text-slate-400 font-mono">{{ $site->slug }}</div>
+                                    <div class="text-2xs text-slate-500 font-mono">{{ $site->slug }}</div>
                                 </div>
                             </div>
                         </td>
@@ -131,49 +131,49 @@
                             <div class="font-mono font-bold text-slate-800 flex items-center gap-1.5">
                                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                                 <span>{{ $site->router_ip }}</span>
-                                <span class="text-slate-400 font-normal">:{{ $site->router_port ?: 8728 }}</span>
+                                <span class="text-slate-500 font-normal">:{{ $site->router_port ?: 8728 }}</span>
                             </div>
-                            <div class="text-[10px] text-slate-400">DNS: {{ $site->dns_name ?: 'wifi.login' }}</div>
+                            <div class="text-2xs text-slate-500">DNS: {{ $site->dns_name ?: 'wifi.login' }}</div>
                             @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                                 192.168.88.1 (Default)
                             </span>
                             @endif
                         </td>
 
                         <td class="py-3 px-4">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold {{ $site->radius_enabled ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold {{ $site->radius_enabled ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
                                 <span class="w-1.5 h-1.5 rounded-full mr-1.5 {{ $site->radius_enabled ? 'bg-purple-500' : 'bg-slate-400' }}"></span>
                                 {{ $site->radius_enabled ? 'AAA Active' : 'Standby' }}
                             </span>
-                            <div class="text-[10px] text-slate-400 font-mono mt-0.5">
+                            <div class="text-2xs text-slate-500 font-mono mt-0.5">
                                 NAS: {{ $site->radius_nas_id ?: $site->slug }}
                             </div>
                         </td>
 
                         <td class="py-3 px-4">
-                            <span class="font-mono text-slate-700 font-semibold bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                            <span class="font-mono text-slate-700 font-semibold bg-slate-100 px-2 py-0.5 rounded text-2xs">
                                 UDP {{ $site->radius_coa_port ?: 3799 }}
                             </span>
                         </td>
 
                         <td class="py-3 px-4">
                             <span class="font-bold text-brand text-sm">{{ $site->active_sessions_count }}</span>
-                            <span class="text-slate-400 text-[10px]">klien</span>
+                            <span class="text-slate-500 text-2xs">klien</span>
                         </td>
 
                         <td class="py-3 px-4">
                             <!-- Telemetry Result Container -->
                             <div x-show="testResults['{{ $site->id }}']" class="mb-1.5">
                                 <template x-if="testResults['{{ $site->id }}']?.connected">
-                                    <div class="p-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-mono leading-tight">
+                                    <div class="p-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-2xs font-mono leading-tight">
                                         <div class="font-bold text-emerald-900">✓ Online (<span x-text="testResults['{{ $site->id }}'].latency_ms"></span>ms)</div>
                                         <div class="text-slate-600" x-text="testResults['{{ $site->id }}'].board_name + ' — ' + testResults['{{ $site->id }}'].version"></div>
                                         <div class="text-slate-500">CPU: <span x-text="testResults['{{ $site->id }}'].cpu_load"></span> | RAM: <span x-text="testResults['{{ $site->id }}'].free_memory"></span></div>
                                     </div>
                                 </template>
                                 <template x-if="testResults['{{ $site->id }}'] && !testResults['{{ $site->id }}']?.connected">
-                                    <div class="p-1.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 text-[10px] font-mono leading-tight">
+                                    <div class="p-1.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 text-2xs font-mono leading-tight">
                                         <div class="font-bold text-rose-900">✕ Router Offline</div>
                                         <div class="text-rose-600 truncate" x-text="testResults['{{ $site->id }}'].error"></div>
                                     </div>
@@ -183,7 +183,7 @@
                             <button 
                                 @click="runApiTest('{{ $site->id }}')" 
                                 :disabled="testing['{{ $site->id }}']"
-                                class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1"
+                                class="px-2.5 py-1 rounded-lg text-2xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-brand"
                             >
                                 <span x-show="!testing['{{ $site->id }}']">⚡ Test RouterOS API</span>
                                 <span x-show="testing['{{ $site->id }}']" x-cloak>Testing...</span>
@@ -191,13 +191,28 @@
                         </td>
 
                         <td class="py-3 px-4 text-right">
-                            <a 
-                                href="{{ route('admin.radius.index', ['site_id' => $site->id]) }}" 
-                                class="btn-primary text-xs py-1 px-3 shadow-xs inline-flex items-center gap-1.5"
-                            >
-                                <span>Konfigurasi RADIUS</span>
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </a>
+                            <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                                <!-- Emergency Failsafe Bypass (Pass-All 0.0.0.0/0) -->
+                                <button 
+                                    type="button"
+                                    @click="toggleFailsafe('{{ $site->id }}', '{{ addslashes($site->name) }}')"
+                                    :disabled="busy['{{ $site->id }}']"
+                                    class="px-2.5 py-1 rounded-lg text-2xs font-bold border transition inline-flex items-center gap-1 shadow-2xs"
+                                    :class="bypassState['{{ $site->id }}'] ? 'bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300'"
+                                    :title="bypassState['{{ $site->id }}'] ? 'Emergency Bypass Aktif - Klik untuk Matikan' : 'Buka Akses Darurat (Semua User Bebas Internet)'"
+                                >
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="bypassState['{{ $site->id }}'] ? 'bg-amber-500 animate-ping' : 'bg-slate-400'"></span>
+                                    <span x-text="bypassState['{{ $site->id }}'] ? 'Bypass ON (Darurat)' : 'Failsafe Bypass'"></span>
+                                </button>
+
+                                <a 
+                                    href="{{ route('admin.radius.index', ['site_id' => $site->id]) }}" 
+                                    class="btn-primary text-xs py-1 px-3 shadow-xs inline-flex items-center gap-1.5"
+                                >
+                                    <span>Konfigurasi RADIUS</span>
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     @empty
@@ -220,6 +235,9 @@ function fleetGatewayManager() {
     return {
         testing: {},
         testResults: {},
+        busy: {},
+        bypassState: {},
+
         runApiTest(siteId) {
             this.testing[siteId] = true;
             fetch('/admin/radius/test-api/' + siteId, {
@@ -238,6 +256,43 @@ function fleetGatewayManager() {
             .catch(err => {
                 this.testResults[siteId] = { connected: false, error: 'Network communication error' };
                 this.testing[siteId] = false;
+            });
+        },
+
+        toggleFailsafe(siteId, siteName) {
+            const isCurrentlyActive = !!this.bypassState[siteId];
+            const nextState = !isCurrentlyActive;
+            const promptMsg = nextState
+                ? `PERINGATAN DARURAT:\nApakah Anda yakin ingin MENGAKTIFKAN EMERGENCY BYPASS untuk site "${siteName}"?\n\nSemua perangkat di hotel/mall ini akan langsung terhubung ke internet tanpa perlu login captive portal.`
+                : `Apakah Anda ingin MENONAKTIFKAN Emergency Bypass untuk site "${siteName}" dan mengembalikan autentikasi captive portal?`;
+
+            if (!confirm(promptMsg)) {
+                return;
+            }
+
+            this.busy[siteId] = true;
+            fetch('/admin/radius/failsafe-bypass/' + siteId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ enable: nextState })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.busy[siteId] = false;
+                if (data.success) {
+                    this.bypassState[siteId] = data.bypass_active;
+                    alert(data.message);
+                } else {
+                    alert(data.error || 'Gagal mengubah status failsafe router.');
+                }
+            })
+            .catch(err => {
+                this.busy[siteId] = false;
+                alert('Terjadi kesalahan komunikasi jaringan dengan server controller.');
             });
         }
     };

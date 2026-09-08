@@ -107,7 +107,7 @@
             <!-- Site Context Selector -->
             @if($locations->count() > 1)
             <form method="GET" action="{{ route('admin.ap.index') }}" class="flex items-center gap-2">
-                <select name="location_id" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:border-[#22449E]">
+                <select name="location_id" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand">
                     @foreach($locations as $loc)
                     <option value="{{ $loc->id }}" {{ $currentLocation && $currentLocation->id === $loc->id ? 'selected' : '' }}>
                         📍 {{ $loc->name }}
@@ -197,15 +197,15 @@
             </div>
         </div>
 
-        <div class="card p-4 border border-blue-200/80 bg-white flex items-center justify-between shadow-xs">
+        <div class="card p-4 border border-brand-200/80 bg-white flex items-center justify-between shadow-xs">
             <div>
-                <div class="text-[#22449E] text-[10px] font-bold uppercase tracking-wider">Average Latency</div>
+                <div class="text-brand text-2xs font-bold uppercase tracking-wider">Average Latency</div>
                 <div class="text-2xl font-black text-slate-900 mt-0.5 font-mono">
                     {{ $avgLatency ? number_format($avgLatency, 1) . ' ms' : '—' }}
                 </div>
-                <div class="text-[11px] text-slate-500 mt-0.5">ICMP Response Time</div>
+                <div class="text-2xs text-slate-500 mt-0.5">ICMP Response Time</div>
             </div>
-            <div class="p-2.5 bg-blue-50 rounded-xl text-[#22449E] border border-blue-100">
+            <div class="p-2.5 bg-brand-50 rounded-xl text-brand border border-brand-100">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
@@ -218,7 +218,7 @@
         <div class="p-4 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <span>Access Point (AP) Nodes</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">{{ $accessPoints->count() }} nodes</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-slate-100 text-slate-700">{{ $accessPoints->count() }} nodes</span>
             </h3>
             <span class="text-xs text-slate-500">Real-time probe via TCP & ICMP</span>
         </div>
@@ -226,13 +226,13 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead>
-                    <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-100 uppercase tracking-wider text-[10px]">
-                        <th class="py-3.5 px-4">AP Node & Location</th>
-                        <th class="py-3.5 px-4">IP Address / MAC</th>
-                        <th class="py-3.5 px-4 text-center">Watchdog Status</th>
-                        <th class="py-3.5 px-4 text-center">Latency (ms)</th>
-                        <th class="py-3.5 px-4">Last Heartbeat</th>
-                        <th class="py-3.5 px-4 text-right">Actions</th>
+                    <tr class="bg-slate-50 border-b border-slate-100">
+                        <th class="table-th">AP Node & Location</th>
+                        <th class="table-th">IP Address / MAC</th>
+                        <th class="table-th text-center">Watchdog Status</th>
+                        <th class="table-th text-center">Latency (ms)</th>
+                        <th class="table-th">Last Heartbeat</th>
+                        <th class="table-th text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -240,7 +240,7 @@
                     <tr class="hover:bg-slate-50/70 transition-colors">
                         <td class="py-3 px-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-[#22449E]">
+                                <div class="w-8 h-8 rounded-lg bg-brand-50 border border-brand-100 flex items-center justify-center text-brand">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
                                     </svg>
@@ -295,16 +295,16 @@
                             @endif
                         </td>
 
-                        <td class="py-3 px-4 text-right">
+                        <td class="py-3 px-4">
                             <div class="flex items-center justify-end gap-1.5">
-                                <button type="button" @click="pingSingle('{{ $ap->id }}', $el)" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#22449E] border border-blue-200 text-[11px] font-bold flex items-center gap-1 transition-all" title="Probe this AP node now">
+                                <button type="button" @click="pingSingle('{{ $ap->id }}', $el)" class="px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand border border-brand-200 text-2xs font-bold flex items-center gap-1 transition-all" title="Probe this AP node now" aria-label="Probe AP {{ $ap->name }} now">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                     </svg>
                                     Ping
                                 </button>
 
-                                <button type="button" @click="openEdit({{ json_encode($ap) }})" class="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200" title="Edit AP">
+                                <button type="button" @click="openEdit({{ json_encode($ap) }})" class="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 focus-visible:ring-2 focus-visible:ring-brand" title="Edit AP" aria-label="Edit AP {{ $ap->name }}">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                                     </svg>
@@ -313,7 +313,7 @@
                                 <form method="POST" action="{{ route('admin.ap.destroy', $ap) }}" onsubmit="return confirm('Delete AP node \'{{ $ap->name }}\'?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200" title="Delete AP">
+                                    <button type="submit" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 focus-visible:ring-2 focus-visible:ring-rose-500" title="Delete AP" aria-label="Delete AP {{ $ap->name }}">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
@@ -339,7 +339,8 @@
     </div>
 
     <!-- Modal Tambah AP -->
-    <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+         role="dialog" aria-modal="true" aria-labelledby="add-ap-modal-title" @keydown.escape.window="showAddModal = false">
         <div class="card w-full max-w-lg p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl relative" @click.outside="showAddModal = false">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                 <div class="flex items-center gap-2.5">
@@ -349,11 +350,11 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-extrabold text-slate-900">Add Access Point Node</h3>
+                        <h3 id="add-ap-modal-title" class="text-base font-extrabold text-slate-900">Add Access Point Node</h3>
                         <p class="text-slate-500 text-xs">Automated connectivity verification via ICMP/TCP probe</p>
                     </div>
                 </div>
-                <button @click="showAddModal = false" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
+                <button @click="showAddModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 text-lg font-bold transition focus-visible:ring-2 focus-visible:ring-brand" aria-label="Tutup modal tambah AP">&times;</button>
             </div>
 
             <form method="POST" action="{{ route('admin.ap.store') }}" class="space-y-4">
@@ -395,21 +396,22 @@
     </div>
 
     <!-- Modal Edit AP -->
-    <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+         role="dialog" aria-modal="true" aria-labelledby="edit-ap-modal-title" @keydown.escape.window="showEditModal = false">
         <div class="card w-full max-w-lg p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl relative" @click.outside="showEditModal = false">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                 <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-blue-50 text-[#22449E] rounded-lg">
+                    <div class="p-2 bg-brand-50 text-brand rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-extrabold text-slate-900">Edit Access Point Node</h3>
+                        <h3 id="edit-ap-modal-title" class="text-base font-extrabold text-slate-900">Edit Access Point Node</h3>
                         <p class="text-slate-500 text-xs" x-text="editData.name"></p>
                     </div>
                 </div>
-                <button @click="showEditModal = false" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
+                <button @click="showEditModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 text-lg font-bold transition focus-visible:ring-2 focus-visible:ring-brand" aria-label="Tutup modal edit AP">&times;</button>
             </div>
 
             <form :action="'{{ url('/admin/ap') }}/' + editData.id" method="POST" class="space-y-4">

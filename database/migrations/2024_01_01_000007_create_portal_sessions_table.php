@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignUuid('location_id')->constrained('locations')->cascadeOnDelete();
             $table->string('client_mac', 17)->nullable();
             $table->string('client_ip', 45)->nullable();
-            $table->enum('method', ['survey', 'voucher', 'member'])->default('survey');
+            $table->string('method', 50)->default('survey');
             $table->string('identifier', 100)->nullable()
                   ->comment('voucher code, username, or campaign_id depending on method');
             $table->timestamp('login_time')->nullable();

@@ -55,7 +55,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
             <span>Method 1: Local MikroTik User Provisioning (Zero-Tunnel / CGNAT)</span>
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold" :class="activeTab === 'notunnel' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'">Recommended</span>
+            <span class="px-1.5 py-0.5 rounded text-2xs font-bold" :class="activeTab === 'notunnel' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'">Recommended</span>
         </button>
 
         <button 
@@ -76,7 +76,18 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
             <span>Method 3: Minimalist login.html (&lt; 1 KB)</span>
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold" :class="activeTab === 'loginhtml' ? 'bg-white/20 text-white' : 'bg-blue-100 text-brand'">Zero Burden</span>
+            <span class="px-1.5 py-0.5 rounded text-2xs font-bold" :class="activeTab === 'loginhtml' ? 'bg-white/20 text-white' : 'bg-blue-100 text-brand'">Zero Burden</span>
+        </button>
+
+        <button 
+            @click="activeTab = 'traffic'; startTrafficMonitoring()" 
+            :class="activeTab === 'traffic' ? 'bg-brand text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'"
+            class="px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Method 4: WAN Traffic & MRTG</span>
+            <span class="px-1.5 py-0.5 rounded text-2xs font-bold" :class="activeTab === 'traffic' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-700'">Real-time</span>
         </button>
     </div>
 
@@ -98,7 +109,7 @@
                     </span>
                 </div>
                 <div class="text-2xl font-black text-slate-900" x-text="syncData.pending_users">...</div>
-                <p class="text-[11px] text-slate-500 mt-1">Pending user authorizations awaiting RouterOS fetch</p>
+                <p class="text-2xs text-slate-500 mt-1">Pending user authorizations awaiting RouterOS fetch</p>
             </div>
 
             <!-- Metric 2: Synced Users -->
@@ -110,7 +121,7 @@
                     </span>
                 </div>
                 <div class="text-2xl font-black text-slate-900" x-text="syncData.synced_users">...</div>
-                <p class="text-[11px] text-slate-500 mt-1">Active in <code class="text-emerald-700 bg-emerald-50 px-1 rounded font-mono">/ip hotspot user</code></p>
+                <p class="text-2xs text-slate-500 mt-1">Active in <code class="text-emerald-700 bg-emerald-50 px-1 rounded font-mono">/ip hotspot user</code></p>
             </div>
 
             <!-- Metric 3: Sync Status / Trigger -->
@@ -213,19 +224,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-3">
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                     <div class="text-xs font-bold text-slate-900 mb-1">1. Launch WinBox</div>
-                    <div class="text-[11px] text-slate-500">Connect to this site's MikroTik edge router using WinBox.</div>
+                    <div class="text-2xs text-slate-500">Connect to this site's MikroTik edge router using WinBox.</div>
                 </div>
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                     <div class="text-xs font-bold text-slate-900 mb-1">2. Open Terminal</div>
-                    <div class="text-[11px] text-slate-500">Click <strong>New Terminal</strong> from the navigation sidebar.</div>
+                    <div class="text-2xs text-slate-500">Click <strong>New Terminal</strong> from the navigation sidebar.</div>
                 </div>
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                     <div class="text-xs font-bold text-slate-900 mb-1">3. Paste Commands</div>
-                    <div class="text-[11px] text-slate-500">Right-click to paste the generated provisioning script.</div>
+                    <div class="text-2xs text-slate-500">Right-click to paste the generated provisioning script.</div>
                 </div>
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                     <div class="text-xs font-bold text-emerald-700 mb-1">4. Press Enter</div>
-                    <div class="text-[11px] text-slate-500">Walled garden, profiles, and background scheduler activate automatically!</div>
+                    <div class="text-2xs text-slate-500">Walled garden, profiles, and background scheduler activate automatically!</div>
                 </div>
             </div>
         </div>
@@ -287,7 +298,7 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Shared Secret Key <span class="text-rose-500">*</span></label>
                             <input type="text" name="radius_secret" value="{{ old('radius_secret', $site->radius_secret ?: 'wifipads_secret_123') }}" required class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand/20 focus:border-brand">
-                            <p class="text-[11px] text-slate-500 mt-1">Must match the secret entered in MikroTik RouterOS /radius settings.</p>
+                            <p class="text-2xs text-slate-500 mt-1">Must match the secret entered in MikroTik RouterOS /radius settings.</p>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -357,20 +368,20 @@
                                 <button 
                                     @click="rosVersion = 'v7'" 
                                     :class="rosVersion === 'v7' ? 'bg-white text-brand shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'"
-                                    class="px-2.5 py-1 text-[11px] rounded-lg transition"
+                                    class="px-2.5 py-1 text-2xs rounded-lg transition"
                                 >
                                     ROS v7 (Modern)
                                 </button>
                                 <button 
                                     @click="rosVersion = 'v6'" 
                                     :class="rosVersion === 'v6' ? 'bg-white text-brand shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'"
-                                    class="px-2.5 py-1 text-[11px] rounded-lg transition"
+                                    class="px-2.5 py-1 text-2xs rounded-lg transition"
                                 >
                                     ROS v6 (Legacy)
                                 </button>
                             </div>
 
-                            <button @click="copyRadiusScript()" class="px-3 py-1.5 text-xs font-bold text-brand bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition flex items-center gap-1.5">
+                            <button type="button" @click="copyRadiusScript()" :disabled="copiedRadius" aria-live="polite" class="px-3 py-1.5 text-xs font-bold text-brand bg-blue-50 hover:bg-blue-100 disabled:bg-emerald-50 disabled:text-emerald-700 border border-blue-200 rounded-xl transition flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">
                                 <template x-if="!copiedRadius">
                                     <span class="flex items-center gap-1">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -421,11 +432,11 @@
                         <div class="p-3.5 rounded-xl text-xs font-mono border" :class="apiResult.connected ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-rose-50 text-rose-900 border-rose-200'">
                             <div class="font-bold flex items-center gap-1.5 mb-1.5">
                                 <span x-text="apiResult.connected ? '✓ Router Terhubung & Aktif' : '✕ Koneksi Router Gagal'"></span>
-                                <span class="text-[10px] font-normal" x-text="apiResult.latency_ms ? '(' + apiResult.latency_ms + ' ms)' : ''"></span>
+                                <span class="text-2xs font-normal" x-text="apiResult.latency_ms ? '(' + apiResult.latency_ms + ' ms)' : ''"></span>
                             </div>
 
                             <template x-if="apiResult.connected">
-                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-emerald-200/60 text-[11px]">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-emerald-200/60 text-2xs">
                                     <div><strong>Board:</strong> <span x-text="apiResult.board_name"></span></div>
                                     <div><strong>Version:</strong> <span x-text="apiResult.version"></span></div>
                                     <div><strong>CPU:</strong> <span x-text="apiResult.cpu_load"></span></div>
@@ -434,7 +445,7 @@
                             </template>
 
                             <template x-if="!apiResult.connected">
-                                <div class="text-[11px] text-rose-700" x-text="apiResult.error"></div>
+                                <div class="text-2xs text-rose-700" x-text="apiResult.error"></div>
                             </template>
                         </div>
                     </template>
@@ -509,6 +520,76 @@
         </div>
     </div>
 
+    <!-- ================================================================= -->
+    <!-- TAB 4: LIVE WAN TRAFFIC & MRTG MONITOR -->
+    <!-- ================================================================= -->
+    <div x-show="activeTab === 'traffic'" class="space-y-6" x-transition x-cloak>
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                        <span>Live Internet WAN Throughput & Telemetri Hardware</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Memantau utilisasi bandwidth agregat router edge di lokasi cabang untuk perencanaan kapasitas (*capacity planning*).
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button 
+                        @click="toggleTrafficPolling()" 
+                        class="px-3.5 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                        :class="trafficPolling ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'"
+                    >
+                        <span class="w-2 h-2 rounded-full" :class="trafficPolling ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'"></span>
+                        <span x-text="trafficPolling ? 'Pause Stream' : 'Start Stream (2s)'"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current Rate Metric Badges -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+                <div class="p-4 rounded-xl bg-blue-50/60 border border-blue-100 flex items-center justify-between">
+                    <div>
+                        <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Interface WAN Aktif</div>
+                        <div class="text-xl font-black text-slate-900 font-mono" x-text="trafficData.interface || 'ether1'">ether1</div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded text-2xs font-bold bg-blue-100 text-blue-800">Gateway WAN</span>
+                </div>
+
+                <div class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-100 flex items-center justify-between">
+                    <div>
+                        <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Download (RX Rate)</div>
+                        <div class="text-2xl font-black text-emerald-700 font-mono" x-text="trafficData.rx_human || '0 bps'">0 bps</div>
+                    </div>
+                    <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">↓</span>
+                </div>
+
+                <div class="p-4 rounded-xl bg-purple-50/60 border border-purple-100 flex items-center justify-between">
+                    <div>
+                        <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Upload (TX Rate)</div>
+                        <div class="text-2xl font-black text-purple-700 font-mono" x-text="trafficData.tx_human || '0 bps'">0 bps</div>
+                    </div>
+                    <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">↑</span>
+                </div>
+            </div>
+
+            <!-- Chart Canvas Container -->
+            <div class="rounded-xl border border-slate-200 p-4 bg-slate-50/40">
+                <div class="text-xs font-bold text-slate-700 mb-3 flex items-center justify-between">
+                    <span>Grafik Throughput Real-Time (Kbps/Mbps)</span>
+                    <span class="text-2xs text-slate-400 font-mono">Interval Sampling: 2 Detik</span>
+                </div>
+                <div class="h-64 relative">
+                    <canvas id="wanTrafficChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @endsection
@@ -533,6 +614,16 @@ function routerIntegrationManager() {
             pending_users: '...',
             synced_users: '...',
             last_synced: null
+        },
+        trafficPolling: false,
+        trafficTimer: null,
+        trafficChart: null,
+        trafficData: {
+            interface: 'ether1',
+            rx_bps: 0,
+            tx_bps: 0,
+            rx_human: '0 bps',
+            tx_human: '0 bps'
         },
 
         init() {
@@ -640,6 +731,116 @@ function routerIntegrationManager() {
             .catch(err => {
                 this.coaResult = { success: false, error: err.message };
                 this.testing = false;
+            });
+        },
+
+        startTrafficMonitoring() {
+            if (!this.trafficChart) {
+                this.$nextTick(() => {
+                    this.initTrafficChart();
+                });
+            }
+            if (!this.trafficPolling) {
+                this.toggleTrafficPolling();
+            }
+        },
+
+        toggleTrafficPolling() {
+            this.trafficPolling = !this.trafficPolling;
+            if (this.trafficPolling) {
+                this.fetchTrafficData();
+                this.trafficTimer = setInterval(() => {
+                    this.fetchTrafficData();
+                }, 2000);
+            } else {
+                if (this.trafficTimer) {
+                    clearInterval(this.trafficTimer);
+                    this.trafficTimer = null;
+                }
+            }
+        },
+
+        fetchTrafficData() {
+            fetch('{{ route('admin.radius.traffic', $site) }}', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.trafficData = data;
+                if (this.trafficChart && data.online) {
+                    const timeLabel = data.timestamp || new Date().toLocaleTimeString();
+                    const rxMbps = (data.rx_bps / 1000000).toFixed(2);
+                    const txMbps = (data.tx_bps / 1000000).toFixed(2);
+
+                    const chart = this.trafficChart;
+                    chart.data.labels.push(timeLabel);
+                    chart.data.datasets[0].data.push(rxMbps);
+                    chart.data.datasets[1].data.push(txMbps);
+
+                    if (chart.data.labels.length > 20) {
+                        chart.data.labels.shift();
+                        chart.data.datasets[0].data.shift();
+                        chart.data.datasets[1].data.shift();
+                    }
+                    chart.update('none');
+                }
+            })
+            .catch(() => {});
+        },
+
+        initTrafficChart() {
+            const ctx = document.getElementById('wanTrafficChart');
+            if (!ctx) return;
+
+            this.trafficChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Download (RX Mbps)',
+                            data: [],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.35,
+                            fill: true,
+                        },
+                        {
+                            label: 'Upload (TX Mbps)',
+                            data: [],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.35,
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Throughput (Mbps)', font: { size: 10 } },
+                            grid: { color: 'rgba(226, 232, 240, 0.6)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
             });
         }
     };

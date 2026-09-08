@@ -12,14 +12,14 @@
         <div class="card p-5 bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
             <div class="flex items-center justify-between gap-2 mb-2">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Bandwidth Volume</span>
-                <span class="p-1.5 rounded-lg bg-blue-50 text-[#22449E]">
+                <span class="p-1.5 rounded-lg bg-brand-50 text-brand">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </span>
             </div>
             <div class="text-2xl font-black text-slate-900 tracking-tight">{{ $formattedTotalBytes }}</div>
             <div class="text-xs text-slate-500 mt-2 flex items-center gap-3 pt-2 border-t border-slate-100 font-medium">
                 <span class="text-sky-600 font-semibold flex items-center gap-1">⬇ {{ $formattedDownload }}</span>
-                <span class="text-[#22449E] font-semibold flex items-center gap-1">⬆ {{ $formattedUpload }}</span>
+                <span class="text-brand font-semibold flex items-center gap-1">⬆ {{ $formattedUpload }}</span>
             </div>
         </div>
 
@@ -98,8 +98,8 @@
                 <span class="flex items-center gap-1.5 text-sky-600">
                     <span class="w-3 h-3 rounded-full bg-sky-500 shadow-xs"></span> Download (MB)
                 </span>
-                <span class="flex items-center gap-1.5 text-[#22449E]">
-                    <span class="w-3 h-3 rounded-full bg-[#22449E] shadow-xs"></span> Upload (MB)
+                <span class="flex items-center gap-1.5 text-brand">
+                    <span class="w-3 h-3 rounded-full bg-brand shadow-xs"></span> Upload (MB)
                 </span>
             </div>
         </div>
@@ -117,7 +117,7 @@
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Device Brand Market Share</h3>
-                    <span class="badge bg-blue-50 text-[#22449E] border border-blue-100 text-[10px]">Vendor Telemetry</span>
+                    <span class="badge bg-brand-50 text-brand border border-brand-100 text-2xs">Vendor Telemetry</span>
                 </div>
                 <p class="text-xs text-slate-500 mb-4">Manufacturer distribution among connected visitor hardware</p>
 
@@ -131,7 +131,7 @@
                 @foreach($brandStats as $b)
                 <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200/60">
                     <span class="text-slate-800 font-semibold truncate">{{ $b->device_brand }}</span>
-                    <span class="text-[#22449E] font-bold ml-2 font-mono">{{ $b->count }}</span>
+                    <span class="text-brand font-bold ml-2 font-mono">{{ $b->count }}</span>
                 </div>
                 @endforeach
             </div>
@@ -173,16 +173,16 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+            <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-slate-100 bg-slate-50 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
-                        <th class="p-3.5">Rank</th>
-                        <th class="p-3.5">MAC Address & Device</th>
-                        <th class="p-3.5">Brand / Model</th>
-                        <th class="p-3.5">Total Visits</th>
-                        <th class="p-3.5">Download (⬇)</th>
-                        <th class="p-3.5">Upload (⬆)</th>
-                        <th class="p-3.5">Total Data Usage</th>
+                    <tr class="border-b border-slate-100 bg-slate-50">
+                        <th class="table-th">Rank</th>
+                        <th class="table-th">MAC Address & Device</th>
+                        <th class="table-th">Brand / Model</th>
+                        <th class="table-th">Total Visits</th>
+                        <th class="table-th">Download (⬇)</th>
+                        <th class="table-th">Upload (⬆)</th>
+                        <th class="table-th">Total Data Usage</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -190,22 +190,24 @@
                     <tr class="hover:bg-slate-50/80 transition-colors">
                         <td class="p-3.5 font-bold">
                             @if($idx === 0)
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">🥇 #1</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-50 text-amber-700 border border-amber-200">🥇 #1</span>
                             @elseif($idx === 1)
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">🥈 #2</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold bg-slate-100 text-slate-700 border border-slate-200">🥈 #2</span>
                             @elseif($idx === 2)
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">🥉 #3</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 text-amber-800 border border-amber-300">🥉 #3</span>
                             @else
-                            <span class="text-slate-500 font-mono font-medium">#{{ $idx + 1 }}</span>
+                            <span class="text-slate-500 font-mono text-xs">#{{ $idx + 1 }}</span>
                             @endif
                         </td>
                         <td class="p-3.5">
-                            <div class="font-mono text-slate-900 font-bold">{{ $dev->client_mac }}</div>
-                            <div class="text-[11px] text-slate-500">{{ $dev->device_os }}</div>
+                            <div class="font-mono font-bold text-slate-900">{{ $dev->client_mac }}</div>
+                            <div class="text-2xs text-slate-500">
+                                First seen: {{ \Carbon\Carbon::parse($dev->first_seen)->format('d M Y') }}
+                            </div>
                         </td>
                         <td class="p-3.5">
                             <div class="font-semibold text-slate-800">{{ $dev->device_brand }}</div>
-                            <div class="text-[11px] text-slate-500">{{ $dev->device_model }}</div>
+                            <div class="text-2xs text-slate-500">{{ $dev->device_model }}</div>
                         </td>
                         <td class="p-3.5 font-bold text-slate-900">
                             {{ number_format($dev->total_visits) }}x
@@ -213,7 +215,7 @@
                         <td class="p-3.5 font-mono font-semibold text-sky-600">
                             {{ \App\Models\PortalSession::formatBytes($dev->total_out) }}
                         </td>
-                        <td class="p-3.5 font-mono font-semibold text-[#22449E]">
+                        <td class="p-3.5 font-mono font-semibold text-brand">
                             {{ \App\Models\PortalSession::formatBytes($dev->total_in) }}
                         </td>
                         <td class="p-3.5 font-mono font-black text-emerald-600">

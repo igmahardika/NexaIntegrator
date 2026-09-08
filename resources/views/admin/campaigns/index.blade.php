@@ -16,15 +16,15 @@
 <div class="card overflow-hidden bg-white border border-slate-200/80 shadow-xs">
     <div class="overflow-x-auto">
         <table class="w-full text-xs">
-            <thead class="border-b border-slate-200/80 bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+            <thead class="border-b border-slate-200/80 bg-slate-50">
                 <tr>
-                    <th class="text-left py-3.5 px-4">Campaign & Media</th>
-                    <th class="text-left py-3.5 px-4 hidden md:table-cell">Sponsor Brand</th>
-                    <th class="text-left py-3.5 px-4 hidden lg:table-cell">Flight Schedule</th>
-                    <th class="text-left py-3.5 px-4 hidden lg:table-cell">Survey Items</th>
-                    <th class="text-left py-3.5 px-4">Responses</th>
-                    <th class="text-left py-3.5 px-4">Status</th>
-                    <th class="py-3.5 px-4 text-right">Actions</th>
+                    <th class="table-th">Campaign & Media</th>
+                    <th class="table-th hidden md:table-cell">Sponsor Brand</th>
+                    <th class="table-th hidden lg:table-cell">Flight Schedule</th>
+                    <th class="table-th hidden lg:table-cell">Survey Items</th>
+                    <th class="table-th">Responses</th>
+                    <th class="table-th">Status</th>
+                    <th class="table-th text-right">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -34,7 +34,7 @@
                         <div class="font-bold text-slate-900 text-sm">{{ Str::limit($campaign->title, 40) }}</div>
                         <div class="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
                             @if($campaign->hasVideo())
-                                <svg class="w-3.5 h-3.5 text-[#22449E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <svg class="w-3.5 h-3.5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.82V15.18a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                 </svg>
                                 <span>Video Ad ({{ $campaign->min_watch_duration }}s)</span>
@@ -52,7 +52,7 @@
                         — {{ $campaign->end_date?->format('d M Y') ?? 'Permanent' }}
                     </td>
                     <td class="py-3 px-4 hidden lg:table-cell">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                             {{ $campaign->questions_count }} questions
                         </span>
                     </td>
@@ -61,11 +61,11 @@
                     </td>
                     <td class="py-3 px-4">
                         @if($campaign->is_active && !$campaign->isExpired())
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
                         @elseif($campaign->isExpired())
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">Expired</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Expired</span>
                         @else
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">Draft</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">Draft</span>
                         @endif
                     </td>
                     <td class="py-3 px-4 text-right">
@@ -73,7 +73,7 @@
                             <a href="{{ route('admin.campaigns.edit', $campaign) }}" class="btn-secondary text-xs py-1.5 px-3 font-semibold">Edit</a>
                             <form method="POST" action="{{ route('admin.campaigns.destroy', $campaign) }}" onsubmit="return confirm('Delete this campaign permanently?')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn-danger text-xs py-1.5 px-2.5">✕</button>
+                                <button type="submit" class="btn-danger text-xs py-1.5 px-2.5" aria-label="Delete campaign {{ $campaign->title }}">✕</button>
                             </form>
                         </div>
                     </td>

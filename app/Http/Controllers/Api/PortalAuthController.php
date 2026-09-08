@@ -331,6 +331,101 @@ class PortalAuthController extends Controller
     }
 
     // ============================================================
+    // HOTEL PMS LOGIN (Room Number & Guest Last Name)
+    // ============================================================
+
+    public function submitPms(Request $request): JsonResponse
+    {
+        $request->validate([
+            'mac'         => 'required|string|max:17',
+            'ip'          => 'required|string|max:45',
+            'location_id' => 'required|string|exists:locations,id',
+            'room_number' => 'required|string|max:20',
+            'last_name'   => 'required|string|max:100',
+        ]);
+
+        $mac = strtoupper($request->mac);
+
+        // Check if MAC is blacklisted
+        if (BlacklistedDevice::isBlocked($mac, $request->location_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perangkat Anda diblokir dari akses jaringan ini.',
+            ], 403);
+        }
+
+        $location = Location::find($request->location_id);
+        if (!$location) {
+            return response()->json(['success' => false, 'message' => 'Lokasi site tidak ditemukan.'], 404);
+        }
+
+        // Verify with Hotel PMS Integration Engine
+        $pmsService = new \App\Services\PmsIntegrationService();
+        $verifyResult = $pmsService->verifyGuest($location, $request->room_number, $request->last_name);
+
+        if (!$verifyResult['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => $verifyResult['message'] ?? 'Data kamar atau nama belakang tidak cocok dengan data reservasi hotel.',
+            ], 401);
+        }
+
+        $room = trim($request->room_number);
+        $lastName = trim($request->last_name);
+        $identifier = 'ROOM-' . strtoupper($room);
+        $username = 'pms-' . strtolower($room) . '-' . strtolower(Str::random(4));
+        $password = Str::random(10);
+        $comment  = 'pms|' . $room . '|' . $lastName;
+        $profile  = $location->template_config['pms_profile'] ?? config('mikrotik.member_profile', 'member-user');
+
+        // Record in Tenant Isolated Database
+        try {
+            TenantManager::switchConnection($location);
+            $hotspotUser = HotspotUser::updateOrCreate(
+                ['identifier' => $identifier],
+                [
+                    'auth_method'    => 'pms',
+                    'status'         => HotspotUser::STATUS_ACTIVE,
+                    'bound_mac'      => $mac,
+                    'uptime_limit'   => 86400, // 24 hours standard hotel session
+                    'guest_metadata' => [
+                        'room'       => $room,
+                        'last_name'  => $lastName,
+                        'verified'   => true,
+                        'pms_mode'   => $verifyResult['guest']['pms_mode'] ?? 'auto',
+                    ],
+                ]
+            );
+            $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
+        } catch (\Throwable $e) {
+            // Non-fatal if tenant DB is in fallback mode
+        }
+
+        // Authorize session on MikroTik / RADIUS
+        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
+
+        // Lawful Interception & Forensic Session Logging
+        PortalSession::logLogin(
+            $location->id,
+            $mac,
+            $request->ip,
+            'pms',
+            "Room {$room} - {$lastName}",
+            $request->userAgent()
+        );
+
+        return response()->json([
+            'success'     => true,
+            'username'    => $username,
+            'password'    => $password,
+            'room_number' => $room,
+            'guest_name'  => $verifyResult['guest']['name'] ?? $lastName,
+            'message'     => 'Selamat datang! Akses internet kamar berhasil diaktifkan.',
+            'offline'     => !$routerResult['success'],
+        ]);
+    }
+
+    // ============================================================
     // Internal: Authorize on Router
     // ============================================================
 

@@ -40,8 +40,8 @@
                 @if($currentLocation)
                 <form method="POST" action="{{ route('admin.policy.bindings.sync', $currentLocation) }}">
                     @csrf
-                    <button type="submit" class="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5 hover:border-[#22449E] hover:text-[#22449E] font-semibold">
-                        <svg class="w-3.5 h-3.5 text-[#22449E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button type="submit" class="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5 hover:border-brand hover:text-brand font-semibold">
+                        <svg class="w-3.5 h-3.5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                         <span>Sync to Router</span>
@@ -62,14 +62,14 @@
     <!-- Segmented Filter Tabs: Bypass vs Blocked -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-2">
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.policy.bindings', ['type' => 'bypassed', 'location_id' => $currentLocation?->id]) }}" class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 {{ $type === 'bypassed' ? 'bg-[#22449E] text-white shadow-sm' : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200' }}">
+            <a href="{{ route('admin.policy.bindings', ['type' => 'bypassed', 'location_id' => $currentLocation?->id]) }}" class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 {{ $type === 'bypassed' ? 'bg-brand text-white shadow-sm' : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200' }}">
                 <span>Bypassed Devices (Whitelist)</span>
-                <span class="px-1.5 py-0.5 rounded-full text-[10px] {{ $type === 'bypassed' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">{{ $totalBypassed }}</span>
+                <span class="px-1.5 py-0.5 rounded-full text-2xs {{ $type === 'bypassed' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">{{ $totalBypassed }}</span>
             </a>
 
             <a href="{{ route('admin.policy.bindings', ['type' => 'blocked', 'location_id' => $currentLocation?->id]) }}" class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 {{ $type === 'blocked' ? 'bg-rose-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200' }}">
                 <span>Blocked Devices (Blacklist)</span>
-                <span class="px-1.5 py-0.5 rounded-full text-[10px] {{ $type === 'blocked' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">{{ $totalBlocked }}</span>
+                <span class="px-1.5 py-0.5 rounded-full text-2xs {{ $type === 'blocked' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">{{ $totalBlocked }}</span>
             </a>
         </div>
 
@@ -84,11 +84,11 @@
     <!-- Policy Mechanism Explanation Alert Box -->
     @if($type === 'bypassed')
     <div class="p-4 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-950 flex items-start gap-3">
-        <svg class="w-5 h-5 text-[#22449E] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 text-brand flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
         <div>
-            <div class="font-extrabold text-[#22449E] mb-0.5">Captive Portal Whitelisting (Bypass Mode):</div>
+            <div class="font-extrabold text-brand mb-0.5">Captive Portal Whitelisting (Bypass Mode):</div>
             <p class="text-slate-600 leading-relaxed font-normal">
                 Devices registered here bypass captive portal authentication automatically without prompting a captive portal screen. Strongly recommended for non-browser headless hardware: <strong>Smart TVs, IP CCTV Cameras, Thermal Receipt Printers, POS / EDC Terminals</strong>, and IoT sensors.
             </p>
@@ -113,14 +113,14 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr class="border-b border-slate-200/80 bg-slate-50 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
-                        <th class="p-3.5">Category & Description</th>
-                        <th class="p-3.5">MAC Address</th>
-                        <th class="p-3.5">Fixed IP Assignment</th>
-                        <th class="p-3.5">Policy Action</th>
-                        <th class="p-3.5">RouterOS Sync</th>
-                        <th class="p-3.5">Created At</th>
-                        <th class="p-3.5 text-right">Actions</th>
+                    <tr class="border-b border-slate-200/80 bg-slate-50">
+                        <th class="table-th">Category & Description</th>
+                        <th class="table-th">MAC Address</th>
+                        <th class="table-th">Fixed IP Assignment</th>
+                        <th class="table-th">Policy Action</th>
+                        <th class="table-th">RouterOS Sync</th>
+                        <th class="table-th">Created At</th>
+                        <th class="table-th text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -129,7 +129,7 @@
                         <!-- Category & Comment -->
                         <td class="p-3.5">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs {{ $b->type === 'bypassed' ? 'bg-blue-50 text-[#22449E] border border-blue-200' : 'bg-rose-50 text-rose-600 border border-rose-200' }}">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs {{ $b->type === 'bypassed' ? 'bg-blue-50 text-brand border border-blue-200' : 'bg-rose-50 text-rose-600 border border-rose-200' }}">
                                     @if($b->device_category === 'smart_tv') TV
                                     @elseif($b->device_category === 'cctv') CAM
                                     @elseif($b->device_category === 'printer') PRN
@@ -218,15 +218,19 @@
     <div
         x-show="modalOpen"
         x-cloak
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mac-policy-modal-title"
+        @keydown.escape.window="modalOpen = false"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
     >
         <div @click.outside="modalOpen = false" class="card max-w-lg w-full p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <span class="text-[#22449E]">🛡️</span>
+                <h3 id="mac-policy-modal-title" class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <span class="text-brand">🛡️</span>
                     <span>Add Layer-2 MAC Policy</span>
                 </h3>
-                <button @click="modalOpen = false" class="text-slate-400 hover:text-slate-700 text-lg font-bold">&times;</button>
+                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors text-lg font-bold leading-none">&times;</button>
             </div>
 
             <form method="POST" action="{{ route('admin.policy.bindings.store') }}" class="space-y-4">

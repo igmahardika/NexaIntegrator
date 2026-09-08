@@ -32,38 +32,38 @@
         <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
             <button
                 @click="switchTab('pms')"
-                :class="activeTab === 'pms' ? 'bg-[#22449E] text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'"
+                :class="activeTab === 'pms' ? 'bg-brand text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'"
                 class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
                 <span>1. PMS API Integration</span>
-                <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold" :class="activeTab === 'pms' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'">REST</span>
+                <span class="px-1.5 py-0.5 rounded text-2xs font-mono font-bold" :class="activeTab === 'pms' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'">REST</span>
             </button>
 
             <button
                 @click="switchTab('mikrotik')"
-                :class="activeTab === 'mikrotik' ? 'bg-[#22449E] text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'"
+                :class="activeTab === 'mikrotik' ? 'bg-brand text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'"
                 class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <span>2. MikroTik Router Integration</span>
-                <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold" :class="activeTab === 'mikrotik' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'">RouterOS</span>
+                <span class="px-1.5 py-0.5 rounded text-2xs font-mono font-bold" :class="activeTab === 'mikrotik' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'">RouterOS</span>
             </button>
 
             <button
                 @click="switchTab('step-by-step')"
-                :class="activeTab === 'step-by-step' ? 'bg-[#22449E] text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'"
+                :class="activeTab === 'step-by-step' ? 'bg-brand text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'"
                 class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                 </svg>
                 <span>3. Step-by-Step Provisioning Guide</span>
-                <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold" :class="activeTab === 'step-by-step' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'">Tutorial</span>
+                <span class="px-1.5 py-0.5 rounded text-2xs font-mono font-bold" :class="activeTab === 'step-by-step' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'">Tutorial</span>
             </button>
         </div>
 
@@ -85,7 +85,7 @@
         <div x-show="activeTab === 'pms'" x-transition class="space-y-8">
             <!-- Header -->
             <div class="border-b border-slate-100 pb-6">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#22449E] text-xs font-semibold mb-3 border border-blue-200/60">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 text-brand text-xs font-semibold mb-3 border border-brand-200/60">
                     <span>HOTEL PROPERTY MANAGEMENT SYSTEM (PMS)</span>
                 </div>
                 <h2 class="text-2xl font-black text-slate-900 tracking-tight">Hotel PMS API Integration Specification</h2>
@@ -97,7 +97,7 @@
             <!-- Architecture Diagram Callout -->
             <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-3">
                 <div class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                    <svg class="w-4 h-4 text-[#22449E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span>System Workflow Overview</span>
@@ -245,10 +245,10 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                            <tr class="bg-slate-50 text-slate-600 font-bold uppercase text-2xs tracking-wider border-b border-slate-200">
                                 <th class="p-3">Feature Dimension</th>
                                 <th class="p-3 text-emerald-700">Method 1: Zero-Tunnel (Reverse Polling)</th>
-                                <th class="p-3 text-[#22449E]">Method 2: AAA RADIUS (RFC 2865 / CoA)</th>
+                                <th class="p-3 text-brand">Method 2: AAA RADIUS (RFC 2865 / CoA)</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -281,7 +281,7 @@
             <div class="space-y-3 pt-4 border-t border-slate-100">
                 <h3 class="text-base font-extrabold text-slate-900">2. Walled Garden Domain Allowlist</h3>
                 <p class="text-xs text-slate-600">
-                    To prevent Captive Network Assistant (CNA) browser popups from breaking and to allow guest asset downloads before login, configure the following entries in <code class="bg-slate-100 px-1.5 py-0.5 rounded text-[#22449E] font-mono">/ip hotspot walled-garden</code>:
+                    To prevent Captive Network Assistant (CNA) browser popups from breaking and to allow guest asset downloads before login, configure the following entries in <code class="bg-slate-100 px-1.5 py-0.5 rounded text-brand font-mono">/ip hotspot walled-garden</code>:
                 </p>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
@@ -290,7 +290,7 @@
                             <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                             <span>WiFiPads Cloud Services:</span>
                         </div>
-                        <ul class="space-y-1 font-mono text-slate-600 text-[11px]">
+                        <ul class="space-y-1 font-mono text-slate-600 text-2xs">
                             <li>• {{ $serverHost }}</li>
                             <li>• *.wifipads.com</li>
                             <li>• cdn.jsdelivr.net (Icons & Alpine JS)</li>
@@ -303,7 +303,7 @@
                             <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                             <span>Operating System CNA Probes:</span>
                         </div>
-                        <ul class="space-y-1 font-mono text-slate-600 text-[11px]">
+                        <ul class="space-y-1 font-mono text-slate-600 text-2xs">
                             <li>• captive.apple.com (Apple iOS / macOS)</li>
                             <li>• connectivitycheck.gstatic.com (Android)</li>
                             <li>• msftconnecttest.com (Windows 10/11)</li>
@@ -319,7 +319,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                            <tr class="bg-slate-50 text-slate-600 font-bold uppercase text-2xs tracking-wider border-b border-slate-200">
                                 <th class="p-3">Protocol</th>
                                 <th class="p-3">Port</th>
                                 <th class="p-3">Direction</th>
@@ -329,13 +329,13 @@
                         <tbody class="divide-y divide-slate-100 text-slate-700 font-mono">
                             <tr>
                                 <td class="p-3 font-sans font-bold text-slate-900">HTTPS</td>
-                                <td class="p-3 font-bold text-[#22449E]">443 / TCP</td>
+                                <td class="p-3 font-bold text-brand">443 / TCP</td>
                                 <td class="p-3 font-sans">Outbound (Router &rarr; Cloud)</td>
                                 <td class="p-3 font-sans">Reverse Polling /tool fetch API & Hotspot Portal</td>
                             </tr>
                             <tr>
                                 <td class="p-3 font-sans font-bold text-slate-900">RouterOS API</td>
-                                <td class="p-3 font-bold text-[#22449E]">8728 / 8729 TCP</td>
+                                <td class="p-3 font-bold text-brand">8728 / 8729 TCP</td>
                                 <td class="p-3 font-sans">Inbound (Cloud &rarr; Router)</td>
                                 <td class="p-3 font-sans">Telemetry collection, kick user, and live health check</td>
                             </tr>
@@ -377,7 +377,7 @@
 
                 <!-- STEP 1 -->
                 <div class="flex items-start gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div class="w-8 h-8 rounded-xl bg-[#22449E] text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                    <div class="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
                     <div class="space-y-2 flex-1">
                         <h4 class="font-extrabold text-slate-900 text-sm">Step 1: Verify Hardware & Hotspot Interface</h4>
                         <p class="text-xs text-slate-600 leading-relaxed">
@@ -391,14 +391,14 @@
 
                 <!-- STEP 2 -->
                 <div class="flex items-start gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div class="w-8 h-8 rounded-xl bg-[#22449E] text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                    <div class="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
                     <div class="space-y-2 flex-1">
                         <h4 class="font-extrabold text-slate-900 text-sm">Step 2: Generate 1-Click Provisioning Script</h4>
                         <p class="text-xs text-slate-600 leading-relaxed">
                             In the WiFiPads admin console, navigate to <strong>Sites &rarr; Edge Router Integration &rarr; Method 1</strong> and copy the pre-generated WinBox script specifically tailored for your site slug:
                         </p>
                         <div class="rounded-xl bg-slate-900 p-3.5 border border-slate-800 text-xs font-mono text-emerald-400 overflow-x-auto relative group">
-                            <button onclick="copyCode(this)" class="absolute top-3 right-3 text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:text-white border border-slate-700">Copy</button>
+                            <button onclick="copyCode(this)" class="absolute top-3 right-3 text-2xs px-2 py-1 rounded bg-slate-800 text-slate-300 hover:text-white border border-slate-700">Copy</button>
 <pre># ==============================================================
 # WiFiPads Provisioning Script for Site: {{ $currentLocation->slug ?? 'default-location' }}
 # ==============================================================
@@ -417,18 +417,18 @@ add name="wifipads-sync" interval=5s on-event={
 
                 <!-- STEP 3 -->
                 <div class="flex items-start gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div class="w-8 h-8 rounded-xl bg-[#22449E] text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
+                    <div class="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
                     <div class="space-y-2 flex-1">
                         <h4 class="font-extrabold text-slate-900 text-sm">Step 3: Paste into WinBox Terminal</h4>
                         <p class="text-xs text-slate-600 leading-relaxed">
-                            Open WinBox, click <strong>New Terminal</strong> on the left navigation, right-click inside the terminal window to paste the entire script, and press <kbd class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 font-mono text-[10px] font-bold">Enter</kbd>.
+                            Open WinBox, click <strong>New Terminal</strong> on the left navigation, right-click inside the terminal window to paste the entire script, and press <kbd class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 font-mono text-2xs font-bold">Enter</kbd>.
                         </p>
                     </div>
                 </div>
 
                 <!-- STEP 4 -->
                 <div class="flex items-start gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div class="w-8 h-8 rounded-xl bg-[#22449E] text-white flex items-center justify-center font-bold text-sm shrink-0">4</div>
+                    <div class="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-sm shrink-0">4</div>
                     <div class="space-y-2 flex-1">
                         <h4 class="font-extrabold text-slate-900 text-sm">Step 4: Configure Hotspot Redirect Target</h4>
                         <p class="text-xs text-slate-600 leading-relaxed">

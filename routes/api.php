@@ -22,6 +22,7 @@ Route::prefix('portal')
         Route::post('/whatsapp', [PortalAuthController::class, 'submitWhatsapp'])->name('whatsapp');
         Route::post('/quick',    [PortalAuthController::class, 'submitQuick'])->name('quick');
         Route::post('/email',    [PortalAuthController::class, 'submitEmail'])->name('email');
+        Route::post('/pms',      [PortalAuthController::class, 'submitPms'])->name('pms');
     });
 
 /*

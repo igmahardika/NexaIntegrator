@@ -51,7 +51,7 @@
                 </div>
                 <div class="text-xs text-slate-500 font-medium">Past 30 days cumulative</div>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-[#22449E] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+            <div class="w-10 h-10 rounded-xl bg-brand-50 border border-brand-100 text-brand flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -102,12 +102,12 @@
         <div class="kpi-card bg-white border border-slate-200/80 shadow-xs group">
             <div class="flex-1">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Today's WiFi Sessions</span>
-                <div class="text-2xl font-black text-[#22449E] mb-1 tracking-tight">
+                <div class="text-2xl font-black text-brand mb-1 tracking-tight">
                     {{ number_format($locationStats->sum('today_sessions_count')) }}
                 </div>
                 <div class="text-xs text-slate-500 font-medium">Total authentications today</div>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-[#22449E] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+            <div class="w-10 h-10 rounded-xl bg-brand-50 border border-brand-100 text-brand flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
                 </svg>
@@ -125,7 +125,7 @@
                     <h3 class="font-bold text-slate-900 text-base">30-Day Ad Impressions & Engagement</h3>
                     <p class="text-xs text-slate-500 mt-0.5">Daily volume of visitors viewing interstitial videos and engaging with portals</p>
                 </div>
-                <span class="badge bg-blue-50 text-[#22449E] border border-blue-100 text-[10px]">Daily Trend</span>
+                <span class="badge bg-brand-50 text-brand border border-brand-100 text-2xs">Daily Trend</span>
             </div>
             <div class="relative h-64 w-full">
                 <canvas id="impressionChart"></canvas>
@@ -151,11 +151,11 @@
     <!-- Dynamic Campaign Survey Analysis -->
     @if($selectedCampaign)
     <div class="space-y-4">
-        <div class="card p-5 bg-gradient-to-r from-blue-50/70 via-white to-indigo-50/50 border border-blue-100 shadow-xs">
+        <div class="card p-5 bg-gradient-to-r from-brand-50/70 via-white to-indigo-50/50 border border-brand-100 shadow-xs">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="badge bg-blue-100 text-[#22449E] border border-blue-200">Active Campaign</span>
+                        <span class="badge bg-brand-50 text-brand border border-brand-200">Active Campaign</span>
                         <h2 class="text-lg font-extrabold text-slate-900">{{ $selectedCampaign->title }}</h2>
                     </div>
                     <p class="text-xs text-slate-600 font-medium">
@@ -166,7 +166,7 @@
                 </div>
                 <div class="text-left md:text-right">
                     <div class="text-xs text-slate-500 font-bold uppercase tracking-wider">Completed Responses</div>
-                    <div class="text-2xl font-black text-[#22449E]">{{ number_format(count($questionStats) > 0 ? $questionStats[0]['total'] : 0) }}</div>
+                    <div class="text-2xl font-black text-brand">{{ number_format(count($questionStats) > 0 ? $questionStats[0]['total'] : 0) }}</div>
                 </div>
             </div>
         </div>
@@ -192,11 +192,11 @@
             <div class="card p-5 bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
                 <div class="flex items-start justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
                     <div>
-                        <div class="text-[10px] font-bold text-[#22449E] uppercase tracking-wider mb-1">Question #{{ $loop->iteration }} • {{ strtoupper(str_replace('_', ' ', $q->question_type)) }}</div>
+                        <div class="text-2xs font-bold text-brand uppercase tracking-wider mb-1">Question #{{ $loop->iteration }} • {{ strtoupper(str_replace('_', ' ', $q->question_type)) }}</div>
                         <h4 class="font-bold text-slate-900 text-sm leading-snug">{{ $q->question_text }}</h4>
                     </div>
                     @if($q->is_required)
-                    <span class="badge bg-amber-50 text-amber-800 border border-amber-200 text-[10px]">Required</span>
+                    <span class="badge bg-amber-50 text-amber-800 border border-amber-200 text-2xs">Required</span>
                     @endif
                 </div>
 
@@ -221,19 +221,19 @@
                                     {{ $opt }}
                                 @endif
                             </span>
-                            <span class="text-slate-500 font-mono text-[11px] font-bold">
-                                {{ $count }} <span class="text-slate-400 font-normal">({{ $pct }}%)</span>
+                            <span class="text-slate-500 font-mono text-2xs font-bold">
+                                {{ $count }} <span class="text-slate-500 font-normal">({{ $pct }}%)</span>
                             </span>
                         </div>
                         <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                             <div
-                                class="h-2 rounded-full transition-all duration-500 {{ $loop->first ? 'bg-[#22449E]' : 'bg-slate-400' }}"
+                                class="h-2 rounded-full transition-all duration-500 {{ $loop->first ? 'bg-brand' : 'bg-slate-400' }}"
                                 style="width: {{ $pct }}%"
                             ></div>
                         </div>
                     </div>
                     @empty
-                    <div class="text-center py-6 text-xs text-slate-400">No responses recorded yet</div>
+                    <div class="text-center py-6 text-xs text-slate-500">No responses recorded yet</div>
                     @endforelse
                 </div>
 
@@ -242,15 +242,15 @@
                 <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
                     @forelse(array_slice($stat['texts'], 0, 10) as $tIndex => $textAnswer)
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-xs text-slate-700 leading-relaxed flex items-start gap-2">
-                        <span class="text-slate-400 flex-shrink-0 font-mono text-[10px]">#{{ $tIndex + 1 }}</span>
+                        <span class="text-slate-500 flex-shrink-0 font-mono text-2xs">#{{ $tIndex + 1 }}</span>
                         <div class="flex-1 break-words">"{{ $textAnswer }}"</div>
                     </div>
                     @empty
-                    <div class="text-center py-6 text-xs text-slate-400">No text comments submitted yet</div>
+                    <div class="text-center py-6 text-xs text-slate-500">No text comments submitted yet</div>
                     @endforelse
 
                     @if(count($stat['texts']) > 10)
-                    <p class="text-[11px] text-slate-500 text-center pt-2 italic">
+                    <p class="text-2xs text-slate-500 text-center pt-2 italic">
                         Displaying 10 of {{ count($stat['texts']) }} written responses. Export CSV for full data.
                     </p>
                     @endif
@@ -264,7 +264,7 @@
     @else
     <!-- Prompt to select campaign -->
     <div class="card p-6 text-center bg-white border border-dashed border-slate-200/80 shadow-xs">
-        <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#22449E]">
+        <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
         </div>
         <h4 class="font-bold text-slate-900 text-sm mb-1">Detailed Survey & Questionnaire Breakdown</h4>

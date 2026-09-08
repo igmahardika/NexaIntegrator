@@ -16,7 +16,7 @@
 <div class="space-y-5">
 
     <!-- ======================= 5 KPI METRICS ROW (SMARTIV DNA) ======================= -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         
         <!-- Metric 1: Occupancy -->
         <div class="kpi-card group">
@@ -145,7 +145,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
         <!-- Left Promo Card (SMARTIV Hospitality DNA) -->
-        <div class="lg:col-span-5 bg-gradient-to-br from-[#1b3680] via-[#22449E] to-[#122557] rounded-2xl p-6 text-white relative overflow-hidden flex flex-col justify-between shadow-sm min-h-[260px]">
+        <div class="lg:col-span-5 bg-gradient-to-br from-brand-700 via-brand to-brand-900 rounded-2xl p-6 text-white relative overflow-hidden flex flex-col justify-between shadow-sm min-h-[260px]">
             <!-- Subtle Radial Highlights -->
             <div class="absolute -top-12 -right-12 w-48 h-48 bg-blue-400/20 rounded-full blur-2xl pointer-events-none"></div>
             <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-950/60 rounded-full blur-2xl pointer-events-none"></div>
@@ -339,10 +339,10 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-500 text-2xs font-bold uppercase tracking-wider">
-                            <th class="py-2 px-3 rounded-l-lg">Device</th>
-                            <th class="py-2 px-3">Date Time</th>
-                            <th class="py-2 px-3 rounded-r-lg">Content</th>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="table-th">Device</th>
+                            <th class="table-th">Date Time</th>
+                            <th class="table-th">Content</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-600">

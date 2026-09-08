@@ -1209,7 +1209,41 @@ body {
                     </div>
                 </form>
 
-                {{-- METHOD 6: QUESTION & SURVEY --}}
+                {{-- METHOD 6: HOTEL PMS (Room Number & Guest Last Name) --}}
+                @elseif($activeTemplate === 'hotel-pms')
+                <form id="pms-form" onsubmit="submitPms(event)">
+                    <div id="pms-error" class="nexa-alert-error" style="display:none;" role="alert"></div>
+                    <div class="nexa-pill-input-box mb-3">
+                        <label for="pms-room" class="sr-only">Nomor Kamar</label>
+                        <input 
+                            type="text" 
+                            id="pms-room" 
+                            class="nexa-pill-input" 
+                            placeholder="{{ $siteConfig['input_placeholder'] ?? 'Nomor Kamar (Contoh: 301)' }}" 
+                            required 
+                            autofocus 
+                            autocomplete="off"
+                        >
+                    </div>
+                    <div class="nexa-pill-input-box">
+                        <label for="pms-lastname" class="sr-only">Nama Belakang Tamu</label>
+                        <input 
+                            type="text" 
+                            id="pms-lastname" 
+                            class="nexa-pill-input" 
+                            placeholder="Nama Belakang Tamu" 
+                            required 
+                            autocomplete="family-name"
+                        >
+                        <button type="submit" id="pms-submit" class="nexa-circle-arrow-btn" aria-label="Verifikasi Tamu & Hubungkan Internet">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+
+                {{-- METHOD 7: QUESTION & SURVEY --}}
                 @else
                 <form id="survey-form" onsubmit="submitSurvey(event)">
                     <div id="survey-error" class="nexa-alert-error" style="display:none;" role="alert"></div>
@@ -1739,6 +1773,42 @@ function submitSurvey(event) {
             return;
         }
         showSuccess(resp.username, resp.password, 'Terima kasih atas jawaban Anda! Internet Anda telah aktif.', 'Survei Terkirim');
+    });
+}
+
+// 7. Submit Hotel PMS (Room Number & Guest Last Name)
+function submitPms(event) {
+    event.preventDefault();
+    var room = document.getElementById('pms-room').value.trim();
+    var lastName = document.getElementById('pms-lastname').value.trim();
+    var btn = document.getElementById('pms-submit');
+    var err = document.getElementById('pms-error');
+
+    if (!room || !lastName) {
+        showError(err, 'Nomor kamar dan nama belakang harus diisi.');
+        return;
+    }
+
+    hideError(err);
+    setLoading(btn, true);
+
+    ajaxPost('/api/portal/pms', {
+        mac: PORTAL_DATA.mac,
+        ip: PORTAL_DATA.ip,
+        location_id: PORTAL_DATA.locationId,
+        room_number: room,
+        last_name: lastName
+    }, function(e, resp) {
+        setLoading(btn, false);
+        if (e || !resp) {
+            showError(err, 'Terjadi kesalahan jaringan saat verifikasi PMS.');
+            return;
+        }
+        if (!resp.success) {
+            showError(err, resp.message || 'Data kamar atau nama belakang tidak cocok dengan data check-in.');
+            return;
+        }
+        showSuccess(resp.username, resp.password, 'Selamat datang, ' + (resp.guest_name || lastName) + '! Akses internet Kamar ' + room + ' telah aktif.', 'Kamar Terverifikasi');
     });
 }
 

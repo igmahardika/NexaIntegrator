@@ -9,13 +9,13 @@
     <!-- KPI Summary Row -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="card p-4 flex items-center gap-3.5 bg-white border border-slate-200/80 shadow-xs">
-            <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#22449E] shrink-0">
+            <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-brand shrink-0">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Accounts</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Total Accounts</div>
                 <div class="text-xl font-black text-slate-900">{{ $members->total() }}</div>
             </div>
         </div>
@@ -27,7 +27,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Accounts</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Active Accounts</div>
                 <div class="text-xl font-black text-emerald-600">
                     {{ $members->filter(fn($m) => $m->is_active)->count() }}
                 </div>
@@ -41,7 +41,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">VIP Guests</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">VIP Guests</div>
                 <div class="text-xl font-black text-purple-600">
                     {{ $members->filter(fn($m) => $m->role === 'vip')->count() }}
                 </div>
@@ -55,7 +55,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Internal Staff</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Internal Staff</div>
                 <div class="text-xl font-black text-cyan-600">
                     {{ $members->filter(fn($m) => $m->role === 'staff')->count() }}
                 </div>
@@ -69,7 +69,7 @@
         <!-- Add Member Form Panel -->
         <div class="card p-6 h-fit bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-                <div class="w-8 h-8 rounded-lg bg-blue-50 text-[#22449E] flex items-center justify-center font-bold">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 text-brand flex items-center justify-center font-bold">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
@@ -121,11 +121,11 @@
                 <div>
                     <label class="label text-slate-700 font-semibold">Bandwidth Rate-Limit</label>
                     <input type="text" name="rate_limit" class="input font-mono" value="{{ old('rate_limit', '20M/20M') }}" placeholder="20M/20M">
-                    <p class="text-[11px] text-slate-400 mt-1">Format: [Upload]/[Download]</p>
+                    <p class="text-2xs text-slate-500 mt-1">Format: [Upload]/[Download]</p>
                 </div>
 
                 <div class="flex items-center gap-2 pt-1">
-                    <input type="checkbox" name="is_active" value="1" id="create_active" checked class="w-4 h-4 rounded border-slate-300 text-[#22449E] focus:ring-[#22449E]">
+                    <input type="checkbox" name="is_active" value="1" id="create_active" checked class="w-4 h-4 rounded border-slate-300 text-brand focus:ring-brand">
                     <label for="create_active" class="text-xs text-slate-700 select-none cursor-pointer font-medium">Activate account immediately</label>
                 </div>
 
@@ -168,13 +168,13 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
                         <thead>
-                            <tr class="border-b border-slate-200/80 bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                                <th class="py-3 px-4 font-semibold">User & Name</th>
-                                <th class="py-3 px-4 font-semibold">Role</th>
-                                <th class="py-3 px-4 font-semibold">Rate Limit</th>
-                                <th class="py-3 px-4 font-semibold">Concurrency</th>
-                                <th class="py-3 px-4 font-semibold">Status</th>
-                                <th class="py-3 px-4 font-semibold text-right">Actions</th>
+                            <tr class="border-b border-slate-200/80 bg-slate-50">
+                                <th class="table-th">User & Name</th>
+                                <th class="table-th">Role</th>
+                                <th class="table-th">Rate Limit</th>
+                                <th class="table-th">Concurrency</th>
+                                <th class="table-th">Status</th>
+                                <th class="table-th text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -182,15 +182,15 @@
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="py-3 px-4">
                                     <div class="font-bold text-slate-900">{{ $m->full_name }}</div>
-                                    <div class="font-mono text-slate-500 text-[11px]">{{ $m->username }}</div>
+                                    <div class="font-mono text-slate-500 text-xs">{{ $m->username }}</div>
                                 </td>
                                 <td class="py-3 px-4">
                                     @if($m->role === 'vip')
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
                                         VIP
                                     </span>
                                     @else
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-[#22449E] border border-blue-200">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-blue-50 text-brand border border-blue-200">
                                         Staff
                                     </span>
                                     @endif
@@ -265,13 +265,16 @@
     <div
         x-show="editModalOpen"
         x-cloak
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-member-title"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
         @keydown.escape.window="editModalOpen = false"
     >
         <div class="card max-w-md w-full p-6 bg-white border border-slate-200 shadow-2xl relative" @click.outside="editModalOpen = false">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                <h3 class="font-bold text-slate-900 text-base">Edit Member Account</h3>
-                <button type="button" @click="editModalOpen = false" class="text-slate-400 hover:text-slate-700 text-lg">✕</button>
+                <h3 id="edit-member-title" class="font-bold text-slate-900 text-base">Edit Member Account</h3>
+                <button type="button" @click="editModalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors text-lg font-bold leading-none">✕</button>
             </div>
 
             <form :action="editFormAction" method="POST" class="space-y-4">
@@ -314,7 +317,7 @@
                 </div>
 
                 <div class="flex items-center gap-2 pt-1">
-                    <input type="checkbox" name="is_active" value="1" id="edit_active" :checked="editingMember.is_active" class="w-4 h-4 rounded border-slate-300 text-[#22449E]">
+                    <input type="checkbox" name="is_active" value="1" id="edit_active" :checked="editingMember.is_active" class="w-4 h-4 rounded border-slate-300 text-brand">
                     <label for="edit_active" class="text-xs text-slate-700 select-none cursor-pointer font-medium">Account is active</label>
                 </div>
 

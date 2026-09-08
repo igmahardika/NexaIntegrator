@@ -9,7 +9,7 @@
     <!-- Add Location Form -->
     <div class="card p-6 bg-white border border-slate-200/80 shadow-xs h-fit">
         <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-            <div class="w-8 h-8 rounded-lg bg-blue-50 text-[#22449E] flex items-center justify-center font-bold">
+            <div class="w-8 h-8 rounded-lg bg-brand-50 text-brand flex items-center justify-center font-bold">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
@@ -52,7 +52,7 @@
                 <input type="text" name="dns_name" class="input font-mono" value="{{ old('dns_name') }}" placeholder="wifi.login">
             </div>
             <div class="flex items-center gap-2 pt-1">
-                <input type="checkbox" name="is_active" value="1" id="la" checked class="w-4 h-4 rounded border-slate-300 text-[#22449E]">
+                <input type="checkbox" name="is_active" value="1" id="la" checked class="w-4 h-4 rounded border-slate-300 text-brand focus:ring-brand">
                 <label for="la" class="text-xs text-slate-700 select-none cursor-pointer font-medium">Gateway is active</label>
             </div>
             <button type="submit" class="btn-primary w-full shadow-sm flex items-center justify-center gap-2">
@@ -73,28 +73,28 @@
                     <div class="flex items-center gap-2 mb-1">
                         <h4 class="font-bold text-slate-900 text-sm">{{ $location->name }}</h4>
                         @if($location->is_active)
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
                         @else
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">Disabled</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">Disabled</span>
                         @endif
                     </div>
                     <p class="text-xs text-slate-500 mb-3">{{ $location->address ?? 'No physical address specified' }}</p>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
                         <div>
-                            <div class="text-slate-500 font-medium text-[11px]">Router IP</div>
+                            <div class="text-slate-500 font-medium text-2xs">Router IP</div>
                             <div class="text-slate-900 font-mono font-bold">{{ $location->router_ip ?? '—' }}</div>
                         </div>
                         <div>
-                            <div class="text-slate-500 font-medium text-[11px]">API Port</div>
+                            <div class="text-slate-500 font-medium text-2xs">API Port</div>
                             <div class="text-slate-900 font-mono font-bold">{{ $location->router_port }}</div>
                         </div>
                         <div>
-                            <div class="text-slate-500 font-medium text-[11px]">Vouchers</div>
+                            <div class="text-slate-500 font-medium text-2xs">Vouchers</div>
                             <div class="text-slate-900 font-semibold">{{ $location->vouchers_count }}</div>
                         </div>
                         <div>
-                            <div class="text-slate-500 font-medium text-[11px]">Sessions</div>
+                            <div class="text-slate-500 font-medium text-2xs">Sessions</div>
                             <div class="text-slate-900 font-semibold">{{ $location->sessions_count }}</div>
                         </div>
                     </div>
@@ -108,7 +108,7 @@
                         :disabled="testing === '{{ $location->id }}'"
                     >
                         <span x-show="testing !== '{{ $location->id }}'" class="flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5 text-[#22449E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-3.5 h-3.5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                             Test Ping
@@ -137,7 +137,7 @@
                     <form method="POST" action="{{ route('admin.locations.destroy', $location) }}"
                         onsubmit="return confirm('Delete gateway location {{ $location->name }} permanently?')">
                         @csrf @method('DELETE')
-                        <button type="submit" class="btn-danger w-full text-center text-xs py-1">✕</button>
+                        <button type="submit" class="btn-danger w-full text-center text-xs py-1" aria-label="Delete gateway location {{ $location->name }}">✕</button>
                     </form>
                 </div>
             </div>
@@ -155,15 +155,15 @@
             <div x-show="healthData['{{ $location->id }}']" x-cloak class="mt-3 pt-3 border-t border-slate-100">
                 <div class="grid grid-cols-3 gap-3 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200/60">
                     <div>
-                        <div class="text-slate-500 font-medium text-[11px]">CPU Load</div>
+                        <div class="text-slate-500 font-medium text-2xs">CPU Load</div>
                         <div class="text-slate-900 font-bold" x-text="(healthData['{{ $location->id }}']?.cpu_load ?? 0) + '%'"></div>
                     </div>
                     <div>
-                        <div class="text-slate-500 font-medium text-[11px]">Memory Usage</div>
+                        <div class="text-slate-500 font-medium text-2xs">Memory Usage</div>
                         <div class="text-slate-900 font-bold" x-text="(healthData['{{ $location->id }}']?.memory_pct ?? 0) + '%'"></div>
                     </div>
                     <div>
-                        <div class="text-slate-500 font-medium text-[11px]">Uptime</div>
+                        <div class="text-slate-500 font-medium text-2xs">Uptime</div>
                         <div class="text-slate-900 font-bold" x-text="healthData['{{ $location->id }}']?.uptime ?? '—'"></div>
                     </div>
                 </div>

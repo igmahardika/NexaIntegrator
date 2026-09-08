@@ -112,15 +112,15 @@
         <div class="card overflow-hidden bg-white border border-slate-200/80 shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-xs">
-                    <thead class="border-b border-slate-200/80 bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                    <thead class="border-b border-slate-200/80 bg-slate-50">
                         <tr>
-                            <th class="text-left py-3 px-4">Voucher Code</th>
-                            <th class="text-left py-3 px-4">Batch Name</th>
-                            <th class="text-left py-3 px-4 hidden md:table-cell">Duration</th>
-                            <th class="text-left py-3 px-4 hidden lg:table-cell">Speed Profile</th>
-                            <th class="text-left py-3 px-4 hidden lg:table-cell">Expires On</th>
-                            <th class="text-left py-3 px-4">Status</th>
-                            <th class="py-3 px-4 text-right">Action</th>
+                            <th class="table-th text-left">Voucher Code</th>
+                            <th class="table-th text-left">Batch Name</th>
+                            <th class="table-th text-left hidden md:table-cell">Duration</th>
+                            <th class="table-th text-left hidden lg:table-cell">Speed Profile</th>
+                            <th class="table-th text-left hidden lg:table-cell">Expires On</th>
+                            <th class="table-th text-left">Status</th>
+                            <th class="table-th text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -137,17 +137,17 @@
                             </td>
                             <td class="py-2.5 px-4">
                                 @if($v->is_used)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">Claimed</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">Claimed</span>
                                 @elseif($v->isExpired())
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">Expired</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Expired</span>
                                 @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
                                 @endif
                             </td>
                             <td class="py-2.5 px-4 text-right">
                                 <form method="POST" action="{{ route('admin.vouchers.destroy', $v) }}" onsubmit="return confirm('Delete this voucher permanently?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn-danger text-xs py-1 px-2.5" title="Delete Voucher">✕</button>
+                                    <button type="submit" aria-label="Delete voucher {{ $v->code }}" class="btn-danger text-xs py-1 px-2.5" title="Delete Voucher">✕</button>
                                 </form>
                             </td>
                         </tr>

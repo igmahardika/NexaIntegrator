@@ -22,11 +22,25 @@
                     },
                     colors: {
                         brand: {
+                            DEFAULT: '#22449E',
+                            hover: '#1b3680',
+                            light: '#eef4ff',
+                            50: '#eef4ff',
+                            100: '#d9e6ff',
+                            200: '#bcd3ff',
+                            300: '#8eb8ff',
+                            400: '#5890fc',
                             500: '#326bf7',
                             600: '#22449E',
                             700: '#1b3680',
                             800: '#152a63',
-                        }
+                            900: '#0f1d45',
+                        },
+                        canvas: '#F4F7FC',
+                        surface: '#FFFFFF'
+                    },
+                    fontSize: {
+                        '2xs': ['10px', '14px'],
                     }
                 }
             }
@@ -37,15 +51,16 @@
             font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; 
             background-color: #F4F7FC;
         }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="min-h-screen bg-[#F4F7FC] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+<body class="min-h-screen bg-canvas flex items-center justify-center p-4 sm:p-6 lg:p-8">
 
     <!-- Main Container (Split Screen) -->
-    <div class="w-full max-w-5xl bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
+    <div class="w-full max-w-5xl bg-surface rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
         
         <!-- ======================= LEFT HERO / PREVIEW BANNER ======================= -->
-        <div class="hidden lg:flex lg:col-span-5 bg-[#22449E] p-8 flex-col justify-between relative overflow-hidden text-white m-3 rounded-2xl">
+        <div class="hidden lg:flex lg:col-span-5 bg-brand p-8 flex-col justify-between relative overflow-hidden text-white m-3 rounded-2xl">
             <!-- Subtle Radial Gradient Glow -->
             <div class="absolute -top-24 -left-24 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-indigo-900/40 rounded-full blur-3xl pointer-events-none"></div>
@@ -53,12 +68,12 @@
             <!-- Top Header & Carousel Indicator -->
             <div class="relative z-10 text-center pt-4">
                 <h2 class="text-2xl font-extrabold tracking-tight text-white">Get Started Now</h2>
-                <p class="text-xs text-blue-100/80 mt-1.5 max-w-xs mx-auto font-normal">
+                <p class="text-xs text-blue-100/90 mt-1.5 max-w-xs mx-auto font-normal">
                     Our platform is designed to be user-friendly, responsive, and easy to navigate.
                 </p>
 
                 <!-- Carousel Dots -->
-                <div class="flex items-center justify-center gap-1.5 mt-4">
+                <div class="flex items-center justify-center gap-1.5 mt-4" aria-hidden="true">
                     <span class="w-6 h-1.5 rounded-full bg-white"></span>
                     <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
                     <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
@@ -71,15 +86,15 @@
                 <!-- Mini Header -->
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                     <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-md bg-[#22449E] flex items-center justify-center text-white">
+                        <div class="w-6 h-6 rounded-md bg-brand flex items-center justify-center text-white">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <rect x="2" y="5" width="20" height="14" rx="3" stroke="currentColor"/>
                                 <path d="M7 19l2 2m8-2l-2 2m-6-2h6" stroke-linecap="round"/>
                             </svg>
                         </div>
-                        <span class="text-xs font-extrabold text-slate-900">WiFi<span class="text-[#22449E]">Pads</span></span>
+                        <span class="text-xs font-extrabold text-slate-900">WiFi<span class="text-brand">Pads</span></span>
                     </div>
-                    <div class="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                    <div class="text-xs font-bold text-slate-700 flex items-center gap-1">
                         Halo, Admin 👋
                     </div>
                 </div>
@@ -89,16 +104,16 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="text-xs font-extrabold text-slate-900">Guest & Device Control</div>
-                            <div class="text-[10px] text-slate-400">Monitor live connected sessions</div>
+                            <div class="text-2xs text-slate-500 font-medium">Monitor live connected sessions</div>
                         </div>
-                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
+                        <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                             ● Active
                         </span>
                     </div>
 
                     <!-- Mini Search Bar -->
-                    <div class="mt-2.5 bg-slate-50 border border-slate-200/80 rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-[10px] text-slate-400">
-                        <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="mt-2.5 bg-slate-50 border border-slate-200/80 rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 text-2xs text-slate-500">
+                        <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                         <span>Search client / MAC...</span>
@@ -106,15 +121,15 @@
 
                     <!-- Mini List Rows -->
                     <div class="mt-2 space-y-1.5">
-                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-50 border border-slate-100 text-[10px]">
-                            <span class="font-bold text-[#22449E] px-1.5 py-0.5 rounded bg-blue-50">L2-POS</span>
+                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-50 border border-slate-100 text-2xs">
+                            <span class="font-bold text-brand px-1.5 py-0.5 rounded bg-blue-50">L2-POS</span>
                             <span class="font-semibold text-slate-700 truncate">Kasir POS Tablet</span>
-                            <span class="text-[9px] text-emerald-600 font-bold">Bypassed</span>
+                            <span class="text-2xs text-emerald-700 font-bold">Bypassed</span>
                         </div>
-                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-50 border border-slate-100 text-[10px]">
+                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-50 border border-slate-100 text-2xs">
                             <span class="font-bold text-indigo-600 px-1.5 py-0.5 rounded bg-indigo-50">GUEST</span>
                             <span class="font-semibold text-slate-700 truncate">iPhone 15 Pro</span>
-                            <span class="text-[9px] text-indigo-600 font-mono">5M/10M</span>
+                            <span class="text-2xs text-indigo-600 font-mono">5M/10M</span>
                         </div>
                     </div>
                 </div>
@@ -122,17 +137,18 @@
 
             <!-- Bottom Brand Badge -->
             <div class="relative z-10 pt-4 text-center">
-                <span class="text-[10px] uppercase font-bold tracking-widest text-blue-200/80">Next-Gen Network Access Control</span>
+                <span class="text-2xs uppercase font-bold tracking-widest text-blue-200/90">Next-Gen Network Access Control</span>
+            </div>
             </div>
         </div>
 
         <!-- ======================= RIGHT LOGIN FORM ======================= -->
-        <div class="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-between">
+        <div class="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-between" x-data="{ loading: false, showPass: false }">
             
             <!-- Brand Logo at Top -->
             <div>
-                <a href="{{ url('/') }}" class="inline-flex items-center gap-2.5 mb-8">
-                    <div class="w-9 h-9 rounded-xl bg-[#22449E] flex items-center justify-center text-white shadow-sm shadow-[#22449E]/30">
+                <a href="{{ url('/') }}" class="inline-flex items-center gap-2.5 mb-8 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded-xl">
+                    <div class="w-9 h-9 rounded-xl bg-brand flex items-center justify-center text-white shadow-sm shadow-brand/30">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <rect x="2" y="5" width="20" height="14" rx="3" stroke="currentColor"/>
                             <path d="M7 19l2 2m8-2l-2 2m-6-2h6" stroke-linecap="round"/>
@@ -140,27 +156,27 @@
                         </svg>
                     </div>
                     <div>
-                        <span class="text-xl font-extrabold tracking-tight text-slate-900">WiFi<span class="text-[#22449E]">Pads</span></span>
+                        <span class="text-xl font-extrabold tracking-tight text-slate-900">WiFi<span class="text-brand">Pads</span></span>
                     </div>
                 </a>
 
                 <!-- Title & Subtitle -->
                 <div class="mb-8">
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Get started now</h1>
-                    <p class="text-xs sm:text-sm text-slate-400 mt-1.5 font-normal">
-                        Please enter your information to access your account.
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1.5 font-medium">
+                        Please enter your credentials to access your controller account.
                     </p>
                 </div>
 
                 <!-- Form -->
-                <form method="POST" action="{{ route('login.post') }}" class="space-y-4">
+                <form method="POST" action="{{ route('login.post') }}" @submit="loading = true" class="space-y-4">
                     @csrf
 
                     <!-- Email Field with Icon -->
                     <div>
                         <label for="email" class="block text-xs font-bold text-slate-700 mb-1.5">Email</label>
                         <div class="relative flex items-center">
-                            <div class="absolute left-3.5 pointer-events-none text-slate-400">
+                            <div class="absolute left-3.5 pointer-events-none text-slate-400" aria-hidden="true">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                 </svg>
@@ -174,19 +190,20 @@
                                 required
                                 autofocus
                                 placeholder="name@domain.com"
-                                class="w-full bg-white border {{ (isset($errors) && $errors->has('email')) ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-[#22449E]' }} rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#22449E]/15 transition-all shadow-2xs"
+                                @if(isset($errors) && $errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif
+                                class="w-full bg-white border {{ (isset($errors) && $errors->has('email')) ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-200 focus:border-brand focus:ring-brand/15' }} rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all shadow-2xs"
                             >
                         </div>
                         @if(isset($errors) && $errors->has('email'))
-                        <p class="text-rose-500 text-[11px] mt-1 font-semibold">{{ $errors->first('email') }}</p>
+                        <p id="email-error" class="text-rose-600 text-xs mt-1 font-semibold">{{ $errors->first('email') }}</p>
                         @endif
                     </div>
 
                     <!-- Password Field with Lock & Eye Toggle -->
-                    <div x-data="{ showPass: false }">
+                    <div>
                         <label for="password" class="block text-xs font-bold text-slate-700 mb-1.5">Password</label>
                         <div class="relative flex items-center">
-                            <div class="absolute left-3.5 pointer-events-none text-slate-400">
+                            <div class="absolute left-3.5 pointer-events-none text-slate-400" aria-hidden="true">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
@@ -198,13 +215,14 @@
                                 required
                                 autocomplete="current-password"
                                 placeholder="••••••••••••"
-                                class="w-full bg-white border border-slate-200 focus:border-[#22449E] rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#22449E]/15 transition-all shadow-2xs"
+                                class="w-full bg-white border border-slate-200 focus:border-brand rounded-xl pl-10 pr-12 py-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/15 transition-all shadow-2xs"
                             >
+                            <!-- Password visibility toggle with compliant 40x40px touch target & visible focus -->
                             <button
                                 type="button"
                                 @click="showPass = !showPass"
-                                class="absolute right-3 text-slate-400 hover:text-slate-600 focus:outline-none"
-                                aria-label="Toggle password visibility"
+                                class="absolute right-1 w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded-lg transition-colors"
+                                :aria-label="showPass ? 'Sembunyikan password' : 'Lihat password'"
                             >
                                 <svg x-show="!showPass" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -225,35 +243,40 @@
                                 name="remember"
                                 id="remember"
                                 checked
-                                class="w-4 h-4 rounded text-[#22449E] focus:ring-[#22449E] border-slate-300"
+                                class="w-4 h-4 rounded text-brand focus:ring-brand border-slate-300"
                             >
-                            <span class="text-xs font-semibold text-slate-600">Remember Me</span>
+                            <span class="text-xs font-semibold text-slate-700">Remember Me</span>
                         </label>
-                        <a href="#" class="text-xs font-semibold text-[#22449E] hover:underline">
+                        <a href="#" class="text-xs font-semibold text-brand hover:text-brand-hover hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded">
                             Forgot Password?
                         </a>
                     </div>
 
-                    <!-- Login Button -->
+                    <!-- Login Button with Reactive Loading Spinner -->
                     <div class="pt-2">
                         <button
                             type="submit"
                             id="login-btn"
-                            class="w-full bg-[#22449E] hover:bg-[#1B3680] text-white py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-md shadow-[#22449E]/25 hover:shadow-lg hover:shadow-[#22449E]/35 active:scale-[0.99] cursor-pointer"
+                            :disabled="loading"
+                            class="w-full bg-brand hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none text-white py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-md shadow-brand/25 hover:shadow-lg hover:shadow-brand/35 active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
                         >
-                            Login
+                            <svg x-show="loading" x-cloak class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="loading ? 'Memverifikasi...' : 'Login'">Login</span>
                         </button>
                     </div>
                 </form>
 
                 <!-- Footer Hint -->
-                <div class="mt-6 text-center text-xs text-slate-500">
-                    Don't have an account? <a href="#" class="text-[#22449E] font-bold hover:underline">Register Now</a>
+                <div class="mt-6 text-center text-xs text-slate-600">
+                    Don't have an account? <a href="#" class="text-brand font-bold hover:underline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded">Register Now</a>
                 </div>
             </div>
 
-            <!-- Copyright Footer -->
-            <div class="pt-8 text-center text-[11px] text-slate-400">
+            <!-- Copyright Footer with WCAG AA Compliant Contrast -->
+            <div class="pt-8 text-center text-xs text-slate-500 font-medium">
                 &copy; {{ date('Y') }} WiFiPads. All Rights Reserved.
             </div>
         </div>

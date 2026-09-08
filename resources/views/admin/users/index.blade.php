@@ -15,7 +15,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Operator</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Total Operator</div>
                 <div class="text-2xl font-black text-slate-900">{{ $users->total() }}</div>
             </div>
         </div>
@@ -27,7 +27,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Akun Aktif</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Akun Aktif</div>
                 <div class="text-2xl font-black text-emerald-600">{{ $users->where('is_active', true)->count() }}</div>
             </div>
         </div>
@@ -39,7 +39,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Site Terdaftar</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Site Terdaftar</div>
                 <div class="text-2xl font-black text-brand">{{ $sites->count() }} Site</div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Level Hak Akses</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Level Hak Akses</div>
                 <div class="text-2xl font-black text-amber-600">5 Role</div>
             </div>
         </div>
@@ -98,13 +98,13 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr class="bg-slate-50/80 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider text-[11px]">
-                        <th class="py-3 px-4">Nama Operator</th>
-                        <th class="py-3 px-4">Role / Wewenang</th>
-                        <th class="py-3 px-4">Penugasan Site</th>
-                        <th class="py-3 px-4">Status</th>
-                        <th class="py-3 px-4">Terdaftar</th>
-                        <th class="py-3 px-4 text-right">Aksi</th>
+                    <tr class="bg-slate-50/80 border-b border-slate-200">
+                        <th class="table-th">Nama Operator</th>
+                        <th class="table-th">Role / Wewenang</th>
+                        <th class="table-th">Penugasan Site</th>
+                        <th class="table-th">Status</th>
+                        <th class="table-th">Terdaftar</th>
+                        <th class="table-th text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -119,24 +119,24 @@
                                     <div class="font-bold text-slate-900 flex items-center gap-1.5">
                                         {{ $user->name }}
                                         @if($user->id === auth()->id())
-                                        <span class="px-1.5 py-0.2 bg-blue-100 text-brand text-[9px] font-extrabold rounded">Anda</span>
+                                        <span class="px-1.5 py-0.5 bg-brand/10 text-brand text-2xs font-extrabold rounded-md">Anda</span>
                                         @endif
                                     </div>
-                                    <div class="text-slate-500 font-mono text-[11px]">{{ $user->email }}</div>
+                                    <div class="text-slate-500 font-mono text-xs">{{ $user->email }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="py-3 px-4">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold border {{ $roles[$user->role]['badge'] ?? 'bg-slate-100 text-slate-700' }}">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold border {{ $roles[$user->role]['badge'] ?? 'bg-slate-100 text-slate-700' }}">
                                 {{ $roles[$user->role]['label'] ?? $user->role }}
                             </span>
-                            <div class="text-[10px] text-slate-400 mt-0.5 max-w-xs truncate">
+                            <div class="text-2xs text-slate-500 mt-0.5 max-w-xs truncate font-medium">
                                 {{ $roles[$user->role]['description'] ?? '' }}
                             </div>
                         </td>
                         <td class="py-3 px-4">
                             @if($user->isSuperadmin())
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                                 <span>🌐</span> Global NOC (Semua Site)
                             </span>
                             @elseif($user->site)
@@ -144,18 +144,18 @@
                                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                                 <span>{{ $user->site->name }}</span>
                             </div>
-                            <div class="text-[10px] text-slate-400 font-mono">{{ $user->site->slug }}</div>
+                            <div class="text-2xs text-slate-500 font-mono">{{ $user->site->slug }}</div>
                             @else
                             <span class="text-rose-500 font-medium italic">Belum diasosiasikan</span>
                             @endif
                         </td>
                         <td class="py-3 px-4">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold {{ $user->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold {{ $user->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
                                 <span class="w-1.5 h-1.5 rounded-full mr-1.5 {{ $user->is_active ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
                                 {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </td>
-                        <td class="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                        <td class="py-3 px-4 text-slate-500 font-mono text-2xs">
                             {{ $user->created_at->format('d M Y') }}
                         </td>
                         <td class="py-3 px-4 text-right">
@@ -216,13 +216,16 @@
     <div 
         x-show="modalOpen" 
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="operator-modal-title"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
         @keydown.escape.window="modalOpen = false"
     >
         <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden" @click.away="modalOpen = false">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-900" x-text="modalMode === 'create' ? 'Tambah Operator Dashboard' : 'Edit Akun Operator'"></h3>
-                <button @click="modalOpen = false" class="text-slate-400 hover:text-slate-600">&times;</button>
+                <h3 id="operator-modal-title" class="text-sm font-bold text-slate-900" x-text="modalMode === 'create' ? 'Tambah Operator Dashboard' : 'Edit Akun Operator'"></h3>
+                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors text-lg leading-none">&times;</button>
             </div>
 
             <form :action="modalMode === 'create' ? '{{ route('admin.users.store') }}' : '/admin/users/' + formData.id" method="POST" class="p-6 space-y-4 text-xs">
@@ -270,7 +273,7 @@
                     <input type="password" name="password" :required="modalMode === 'create'" class="input input-sm w-full" placeholder="Minimal 8 karakter">
                 </div>
 
-                <div class="p-3 rounded-xl bg-blue-50 border border-blue-100 text-[11px] text-blue-900 leading-relaxed">
+                <div class="p-3 rounded-xl bg-blue-50 border border-blue-100 text-2xs text-blue-900 leading-relaxed">
                     <strong>🛡️ Kebijakan Isolasi Data:</strong> Operator yang ditugaskan ke Site Cabang secara otomatis dikunci hanya untuk melihat data tamu, voucher, dan router pada site tersebut.
                 </div>
 

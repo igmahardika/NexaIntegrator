@@ -13,7 +13,7 @@
                 <span>/</span>
                 <span class="text-brand">Hotspot Users</span>
             </div>
-            <h1 class="text-2xl font-extrabold text-[#0F172A] tracking-tight">Manajemen User Hotspot</h1>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen User Hotspot</h1>
             <p class="text-xs text-slate-500 mt-0.5">Satu modul terpadu untuk mengelola seluruh voucher, akun member, dan tamu WiFi di site ini.</p>
         </div>
 
@@ -87,11 +87,11 @@
     @endif
 
     <!-- KPI Metric Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <div class="kpi-card">
             <div>
                 <p class="text-2xs font-bold uppercase tracking-wider text-slate-500">Total User</p>
-                <p class="text-xl font-extrabold text-[#0F172A] mt-1">{{ number_format($stats['total']) }}</p>
+                <p class="text-xl font-extrabold text-slate-900 mt-1">{{ number_format($stats['total']) }}</p>
             </div>
             <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -156,7 +156,7 @@
             <!-- Segmented Tabs -->
             <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-full md:w-auto overflow-x-auto">
                 <a href="{{ route('admin.hotspot-users.index', ['tab' => 'all']) }}"
-                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition {{ $tab === 'all' ? 'bg-white text-[#0F172A] shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition {{ $tab === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
                     Semua User ({{ $stats['total'] }})
                 </a>
                 <a href="{{ route('admin.hotspot-users.index', ['tab' => 'voucher']) }}"
@@ -215,14 +215,14 @@
         <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 text-slate-600 font-bold uppercase text-2xs tracking-wider border-b border-slate-200">
-                        <th class="py-3 px-4">Identitas / Kode</th>
-                        <th class="py-3 px-3">Metode Login</th>
-                        <th class="py-3 px-3">Profil QoS</th>
-                        <th class="py-3 px-3">Status</th>
-                        <th class="py-3 px-3">Waktu / Kuota</th>
-                        <th class="py-3 px-3">Info Tamu</th>
-                        <th class="py-3 px-4 text-right">Aksi</th>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="table-th">Identitas / Kode</th>
+                        <th class="table-th">Metode Login</th>
+                        <th class="table-th">Profil QoS</th>
+                        <th class="table-th">Status</th>
+                        <th class="table-th">Waktu / Kuota</th>
+                        <th class="table-th">Info Tamu</th>
+                        <th class="table-th text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
@@ -363,11 +363,11 @@
     </div>
 
     <!-- ==================== MODAL GENERATE VOUCHERS ==================== -->
-    <div x-show="generateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
+    <div x-show="generateModal" @keydown.escape.window="generateModal = false" role="dialog" aria-modal="true" aria-labelledby="generate-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
         <div @click.away="generateModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 class="text-base font-extrabold text-[#0F172A]">Generate Voucher Massal</h3>
-                <button @click="generateModal = false" class="text-slate-400 hover:text-slate-600">
+                <h3 id="generate-modal-title" class="text-base font-extrabold text-slate-900">Generate Voucher Massal</h3>
+                <button type="button" @click="generateModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -425,11 +425,11 @@
     </div>
 
     <!-- ==================== MODAL BUAT AKUN MEMBER ==================== -->
-    <div x-show="memberModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
+    <div x-show="memberModal" @keydown.escape.window="memberModal = false" role="dialog" aria-modal="true" aria-labelledby="member-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
         <div @click.away="memberModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 class="text-base font-extrabold text-[#0F172A]">Buat Akun Member / Staff</h3>
-                <button @click="memberModal = false" class="text-slate-400 hover:text-slate-600">
+                <h3 id="member-modal-title" class="text-base font-extrabold text-slate-900">Buat Akun Member / Staff</h3>
+                <button type="button" @click="memberModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -481,11 +481,11 @@
     </div>
 
     <!-- ==================== MODAL PILIH BATCH CETAK ==================== -->
-    <div x-show="printModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
+    <div x-show="printModal" @keydown.escape.window="printModal = false" role="dialog" aria-modal="true" aria-labelledby="print-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
         <div @click.away="printModal = false" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 class="text-base font-extrabold text-[#0F172A]">Pilih Batch Voucher untuk Dicetak</h3>
-                <button @click="printModal = false" class="text-slate-400 hover:text-slate-600">
+                <h3 id="print-modal-title" class="text-base font-extrabold text-slate-900">Pilih Batch Voucher untuk Dicetak</h3>
+                <button type="button" @click="printModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>

@@ -66,6 +66,8 @@ Route::prefix('admin')
         // Analytics & Reports (Scoped to advertiser or global for superadmin)
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
         Route::get('/analytics/export', [AnalyticsController::class, 'exportCsv'])->name('analytics.export');
+        Route::get('/analytics/duration-log', [AnalyticsController::class, 'durationLogs'])->name('analytics.duration');
+        Route::get('/analytics/duration-log/export', [AnalyticsController::class, 'exportDurationLogsCsv'])->name('analytics.duration.export');
 
         // ========================================================
         // SUPERADMIN ONLY INFRASTRUCTURE & NETWORK OPERATIONS
@@ -92,6 +94,9 @@ Route::prefix('admin')
             Route::post('/radius/test-api/{site}', [EdgeGatewayController::class, 'testApi'])->name('radius.test-api');
             Route::post('/radius/test-coa/{site}', [EdgeGatewayController::class, 'testCoa'])->name('radius.test-coa');
             Route::get('/radius/download-login-html/{site}', [EdgeGatewayController::class, 'downloadLoginHtml'])->name('radius.download-login-html');
+            Route::post('/radius/failsafe-bypass/{site}', [EdgeGatewayController::class, 'toggleEmergencyBypass'])->name('radius.failsafe-bypass');
+            Route::post('/radius/toggle-hotspot/{site}', [EdgeGatewayController::class, 'toggleHotspot'])->name('radius.toggle-hotspot');
+            Route::get('/radius/traffic/{site}', [EdgeGatewayController::class, 'traffic'])->name('radius.traffic');
 
             // Dashboard Operator & User Access Management
             Route::resource('users', UserController::class)->except(['show']);

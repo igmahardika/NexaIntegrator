@@ -157,4 +157,40 @@ RSC;
             'Content-Disposition' => 'attachment; filename="login.html"',
         ]);
     }
+
+    /**
+     * AJAX: Toggle Emergency Walled Garden Bypass (0.0.0.0/0 pass-all).
+     */
+    public function toggleEmergencyBypass(Request $request, Location $site): JsonResponse
+    {
+        $enable = filter_var($request->input('enable', true), FILTER_VALIDATE_BOOLEAN);
+        $mikrotik = new MikrotikService($site);
+        $result = $mikrotik->toggleEmergencyBypass($enable);
+
+        return response()->json($result);
+    }
+
+    /**
+     * AJAX: Toggle entire MikroTik Hotspot server (Enable / Disable Hotspot).
+     */
+    public function toggleHotspot(Request $request, Location $site): JsonResponse
+    {
+        $enable = filter_var($request->input('enable', true), FILTER_VALIDATE_BOOLEAN);
+        $mikrotik = new MikrotikService($site);
+        $result = $mikrotik->toggleHotspotService($enable);
+
+        return response()->json($result);
+    }
+
+    /**
+     * AJAX: Live WAN Traffic Telemetry Stream.
+     */
+    public function traffic(Request $request, Location $site): JsonResponse
+    {
+        $interface = $request->input('interface', '');
+        $mikrotik = new MikrotikService($site);
+        $result = $mikrotik->getWanTraffic($interface);
+
+        return response()->json($result);
+    }
 }
