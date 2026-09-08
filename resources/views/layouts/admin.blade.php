@@ -360,13 +360,15 @@
         <!-- Navigation Menu Items: The Cohesive 6-Stage Site Captive Portal Flow -->
         <nav class="flex-1 px-3.5 py-4 space-y-1 overflow-y-auto">
             @php
-                $activeSite = $currentTenantSite ?? ($availableTenantSites->first() ?? null);
+                $activeSite = $currentTenantSite;
             @endphp
 
             <div class="px-3 mb-2">
                 <span class="text-2xs font-extrabold text-slate-400 uppercase tracking-wider block">ALUR SIKLUS SITE</span>
                 @if($activeSite)
                 <span class="text-2xs font-bold text-brand truncate block mt-0.5">📍 {{ $activeSite->name }}</span>
+                @else
+                <span class="text-2xs font-bold text-emerald-600 truncate block mt-0.5">🌐 All Sites (Global NOC)</span>
                 @endif
             </div>
 
@@ -374,7 +376,7 @@
             <a href="{{ route('admin.dashboard') }}" class="sidebar-item {{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}">
                 <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold {{ request()->routeIs('admin.dashboard*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">1</div>
                 <span class="flex-1">Overview & Status</span>
-                <span class="w-2 h-2 rounded-full {{ $activeSite?->is_active ? 'bg-emerald-500' : 'bg-slate-300' }}"></span>
+                <span class="w-2 h-2 rounded-full {{ $activeSite ? ($activeSite->is_active ? 'bg-emerald-500' : 'bg-slate-300') : 'bg-emerald-500' }}"></span>
             </a>
 
             <!-- Stage 2: Captive Portal Studio -->
@@ -386,7 +388,7 @@
             </a>
             @else
             <a href="{{ route('admin.templates.index') }}" class="sidebar-item {{ request()->routeIs('admin.templates*') ? 'active' : '' }}">
-                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold bg-slate-100 text-slate-600">2</div>
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold {{ request()->routeIs('admin.templates*') ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600' }}">2</div>
                 <span class="flex-1">Captive Portal Studio</span>
             </a>
             @endif
@@ -411,6 +413,14 @@
                 <span class="flex-1">Edge Gateway (MikroTik)</span>
                 <span class="text-3xs px-1 py-0.5 rounded font-mono font-bold {{ $activeSite->router_ip ? 'text-emerald-700 bg-emerald-50' : 'text-amber-700 bg-amber-50' }}">
                     {{ $activeSite->router_ip ? 'Sync' : 'Setup' }}
+                </span>
+            </a>
+            @else
+            <a href="{{ route('admin.sites.index') }}" class="sidebar-item {{ request()->routeIs('admin.sites.radius*') ? 'active' : '' }}">
+                <div class="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold bg-slate-100 text-slate-600">5</div>
+                <span class="flex-1">Edge Gateway (MikroTik)</span>
+                <span class="text-3xs px-1.5 py-0.5 rounded font-mono font-bold text-slate-500 bg-slate-100">
+                    Pilih Site
                 </span>
             </a>
             @endif

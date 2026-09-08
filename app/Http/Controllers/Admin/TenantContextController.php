@@ -16,12 +16,14 @@ class TenantContextController extends Controller
         $siteId = $request->input('site_id');
 
         if ($siteId === 'all' || empty($siteId)) {
-            session()->forget('active_site_id');
+            session(['active_site_id' => 'all']);
+            \App\Services\TenantManager::switchConnection(null);
             return redirect()->back()->with('success', 'Beralih ke konteks Global (Semua Site).');
         }
 
         $site = Location::findOrFail($siteId);
         session(['active_site_id' => $site->id]);
+        \App\Services\TenantManager::switchConnection($site);
 
         return redirect()->back()->with('success', "Konteks operasional beralih ke: {$site->name}");
     }

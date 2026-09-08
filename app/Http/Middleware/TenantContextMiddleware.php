@@ -16,18 +16,24 @@ class TenantContextMiddleware
         $activeSiteId = session('active_site_id');
         $currentTenantSite = null;
 
-        if (!empty($activeSiteId)) {
+        if ($activeSiteId === 'all') {
+            // Explicit Global NOC Mode: All Sites
+            $currentTenantSite = null;
+            \App\Services\TenantManager::switchConnection(null);
+        } elseif (!empty($activeSiteId)) {
             $currentTenantSite = $availableTenantSites->firstWhere('id', $activeSiteId);
-        }
-
-        // If no active site selected or invalid, default to the first available site
-        if (!$currentTenantSite && $availableTenantSites->isNotEmpty()) {
-            $currentTenantSite = $availableTenantSites->first();
-            session(['active_site_id' => $currentTenantSite->id]);
-        }
-
-        if ($currentTenantSite) {
-            \App\Services\TenantManager::switchConnection($currentTenantSite);
+            if ($currentTenantSite) {
+                \App\Services\TenantManager::switchConnection($currentTenantSite);
+            } else {
+                // If ID is stale/not found, default to All Sites
+                session(['active_site_id' => 'all']);
+                \App\Services\TenantManager::switchConnection(null);
+            }
+        } else {
+            // Default when session has no active_site_id: default to All Sites
+            session(['active_site_id' => 'all']);
+            $currentTenantSite = null;
+            \App\Services\TenantManager::switchConnection(null);
         }
 
         // Share with all Blade views

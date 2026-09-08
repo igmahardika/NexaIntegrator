@@ -48,6 +48,22 @@
         </div>
     </div>
 
+    <!-- Site Quick Switcher Bar (When in All Sites / Multi-Site Mode) -->
+    @if(isset($availableSites) && $availableSites->count() > 1)
+    <div class="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs overflow-x-auto">
+        <span class="text-2xs font-extrabold text-slate-400 uppercase tracking-wider px-2 shrink-0">Kelola Site:</span>
+        @foreach($availableSites as $s)
+        <a href="{{ route('admin.hotspot-users.index', ['site_id' => $s->id, 'tab' => $tab]) }}"
+           class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 flex items-center gap-1.5 {{ $currentSite && $currentSite->id === $s->id ? 'bg-brand text-white shadow-xs' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200' }}">
+            <span>📍 {{ $s->name }}</span>
+            @if($currentSite && $currentSite->id === $s->id)
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            @endif
+        </a>
+        @endforeach
+    </div>
+    @endif
+
     <!-- Alert Messages -->
     @if(session('success'))
     <div class="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center justify-between shadow-sm">
