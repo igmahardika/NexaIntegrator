@@ -15,9 +15,9 @@ class RadiusService
     }
 
     /**
-     * Generate complete MikroTik RouterOS CLI setup script for this site.
+     * Generate complete MikroTik RouterOS CLI setup script for this site (supports ROS v7 & v6).
      */
-    public function generateRouterOsScript(string $serverHost = ''): string
+    public function generateRouterOsScript(string $serverHost = '', string $version = 'v7'): string
     {
         $loc = $this->location;
 
@@ -39,10 +39,11 @@ class RadiusService
         $siteName   = addslashes($loc->name);
 
         $portalHost = request()->getHost() ?: 'portal.wifipads.local';
+        $targetRos = strtoupper($version) === 'V6' ? 'RouterOS v6 (Legacy)' : 'RouterOS v7 (Modern)';
 
         return <<<ROUTEROS
 # =====================================================================
-# WiFiPads - MikroTik RouterOS Zero-Burden RADIUS & Hotspot Setup
+# WiFiPads - MikroTik {$targetRos} Zero-Burden RADIUS & Hotspot Setup
 # Site: {$siteName} (ID: {$loc->id})
 # ARSITEKTUR ZERO-BURDEN:
 # - Router flash TIDAK menyimpan database user (/ip hotspot user = KOSONG).
@@ -82,17 +83,18 @@ class RadiusService
     keepalive-timeout=2m \\
     status-autorefresh=1m
 
-# 6. Walled Garden: Izinkan Akses ke Server Captive Portal & DNS
+# 6. Walled Garden: Izinkan Akses ke Server Captive Portal, DNS & CDN
 /ip hotspot walled-garden ip add dst-address={$serverIp} action=accept comment="WiFiPads-Server-IP"
 /ip hotspot walled-garden ip add dst-port=53 protocol=udp action=accept comment="WiFiPads-DNS-UDP"
 /ip hotspot walled-garden ip add dst-port=53 protocol=tcp action=accept comment="WiFiPads-DNS-TCP"
 /ip hotspot walled-garden add dst-host="*{$portalHost}*" action=allow comment="WiFiPads-Portal-Domain"
 /ip hotspot walled-garden add dst-host="*fonts.googleapis.com*" action=allow comment="WiFiPads-GoogleFonts"
 /ip hotspot walled-garden add dst-host="*fonts.gstatic.com*" action=allow comment="WiFiPads-GStatic"
+/ip hotspot walled-garden add dst-host="*unpkg.com*" action=allow comment="WiFiPads-AlpineJS"
 
 # 7. Verifikasi Status Koneksi RADIUS
 /radius monitor [find comment~"WiFiPads"] once
-:put ">>> Konfigurasi Zero-Burden untuk Site [{$siteName}] Berhasil Diterapkan! <<<"
+:put ">>> Konfigurasi Zero-Burden ({$targetRos}) untuk Site [{$siteName}] Berhasil Diterapkan! <<<"
 ROUTEROS;
     }
 
@@ -109,20 +111,14 @@ ROUTEROS;
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting to WiFi Portal...</title>
-    <meta http-equiv="refresh" content="0; url={$url}?site={$siteSlug}&mac=\$(mac)&ip=\$(ip)&link-login-only=\$(link-login-only)&link-orig=\$(link-orig-esc)&error=\$(error)">
-    <script type="text/javascript">
-        window.location.href = "{$url}?site={$siteSlug}&mac=\$(mac)&ip=\$(ip)&link-login-only=\$(link-login-only)&link-orig=\$(link-orig-esc)&error=\$(error)";
-    </script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connecting to WiFi Portal...</title>
+<meta http-equiv="refresh" content="0;url={$url}?site={$siteSlug}&mac=\$(mac)&ip=\$(ip)&link-login-only=\$(link-login-only)&link-orig=\$(link-orig-esc)&error=\$(error)">
+<script>window.location.href="{$url}?site={$siteSlug}&mac=\$(mac)&ip=\$(ip)&link-login-only=\$(link-login-only)&link-orig=\$(link-orig-esc)&error=\$(error)";</script>
+<style>body{margin:0;background:#0f172a;color:#fff;font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center}h3{margin:0 0 8px}p{margin:0;color:#94a3b8;font-size:13px}</style>
 </head>
-<body style="margin:0;padding:0;background:#0F172A;color:#94A3B8;font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;">
-    <div>
-        <p style="font-size:16px;font-weight:700;color:#FFFFFF;margin:0 0 8px 0;">Menghubungkan ke Portal WiFi...</p>
-        <p style="font-size:13px;margin:0;">Silakan tunggu beberapa saat.</p>
-    </div>
-</body>
+<body><div><h3>Menghubungkan ke Portal WiFi...</h3><p>Silakan tunggu beberapa saat.</p></div></body>
 </html>
 HTML;
     }

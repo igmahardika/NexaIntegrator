@@ -338,11 +338,11 @@
                 </div>
             </div>
 
-            <!-- Right: 1-Click RADIUS RouterOS Script -->
+            <!-- Right: 1-Click RADIUS RouterOS Script with ROS v7/v6 Toggle -->
             <div class="lg:col-span-6 space-y-4">
-                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between h-full">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center justify-between gap-4 mb-3">
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
                             <div class="flex items-center gap-2">
                                 <div class="w-6 h-6 rounded-lg bg-blue-50 text-brand flex items-center justify-center text-xs font-bold font-mono">
                                     ROS
@@ -350,6 +350,24 @@
                                 <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
                                     RouterOS RADIUS Script
                                 </h3>
+                            </div>
+
+                            <!-- ROS Version Toggle (v7 vs v6) -->
+                            <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                <button 
+                                    @click="rosVersion = 'v7'" 
+                                    :class="rosVersion === 'v7' ? 'bg-white text-brand shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'"
+                                    class="px-2.5 py-1 text-[11px] rounded-lg transition"
+                                >
+                                    ROS v7 (Modern)
+                                </button>
+                                <button 
+                                    @click="rosVersion = 'v6'" 
+                                    :class="rosVersion === 'v6' ? 'bg-white text-brand shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'"
+                                    class="px-2.5 py-1 text-[11px] rounded-lg transition"
+                                >
+                                    ROS v6 (Legacy)
+                                </button>
                             </div>
 
                             <button @click="copyRadiusScript()" class="px-3 py-1.5 text-xs font-bold text-brand bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition flex items-center gap-1.5">
@@ -369,15 +387,57 @@
                             </button>
                         </div>
 
-                        <p class="text-xs text-slate-500 mb-4">
-                            Commands to configure AAA RADIUS client & incoming CoA on MikroTik RouterOS:
+                        <p class="text-xs text-slate-500 mb-3">
+                            Salin dan jalankan skrip ini langsung pada <strong class="text-slate-800">Terminal WinBox</strong> untuk mengaktifkan AAA RADIUS & Walled Garden:
                         </p>
 
                         <!-- Terminal Code Display Box -->
-                        <div class="relative rounded-xl bg-slate-900 p-4 border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto shadow-inner max-h-[480px]">
-                            <pre class="leading-relaxed select-all" id="radiusScriptBox">{{ $mikrotikScript }}</pre>
+                        <div class="relative rounded-xl bg-slate-900 p-4 border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto shadow-inner max-h-[460px]">
+                            <pre x-show="rosVersion === 'v7'" class="leading-relaxed select-all" id="radiusScriptBoxV7">{{ $scriptV7 ?? $mikrotikScript }}</pre>
+                            <pre x-show="rosVersion === 'v6'" class="leading-relaxed select-all" id="radiusScriptBoxV6" x-cloak>{{ $scriptV6 ?? $mikrotikScript }}</pre>
                         </div>
                     </div>
+                </div>
+
+                <!-- Live RouterOS API Hardware Diagnostics Panel -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+                            <span>RouterOS API Hardware Telemetry (Port {{ $site->router_port ?: 8728 }})</span>
+                        </h3>
+
+                        <button @click="testApi()" :disabled="testingApi" class="px-3 py-1.5 text-xs font-bold text-brand bg-blue-50 hover:bg-blue-100 rounded-xl transition flex items-center gap-1">
+                            <span x-show="!testingApi">⚡ Test API Connection</span>
+                            <span x-show="testingApi" x-cloak>Querying Router...</span>
+                        </button>
+                    </div>
+
+                    <p class="text-xs text-slate-500 mb-3">
+                        Uji autentikasi API RouterOS secara real-time dan baca resource perangkat router (CPU, RAM, dan Uptime).
+                    </p>
+
+                    <template x-if="apiResult">
+                        <div class="p-3.5 rounded-xl text-xs font-mono border" :class="apiResult.connected ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-rose-50 text-rose-900 border-rose-200'">
+                            <div class="font-bold flex items-center gap-1.5 mb-1.5">
+                                <span x-text="apiResult.connected ? '✓ Router Terhubung & Aktif' : '✕ Koneksi Router Gagal'"></span>
+                                <span class="text-[10px] font-normal" x-text="apiResult.latency_ms ? '(' + apiResult.latency_ms + ' ms)' : ''"></span>
+                            </div>
+
+                            <template x-if="apiResult.connected">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-emerald-200/60 text-[11px]">
+                                    <div><strong>Board:</strong> <span x-text="apiResult.board_name"></span></div>
+                                    <div><strong>Version:</strong> <span x-text="apiResult.version"></span></div>
+                                    <div><strong>CPU:</strong> <span x-text="apiResult.cpu_load"></span></div>
+                                    <div><strong>RAM Bebas:</strong> <span x-text="apiResult.free_memory"></span></div>
+                                </div>
+                            </template>
+
+                            <template x-if="!apiResult.connected">
+                                <div class="text-[11px] text-rose-700" x-text="apiResult.error"></div>
+                            </template>
+                        </div>
+                    </template>
                 </div>
             </div>
 
@@ -458,8 +518,11 @@
 function routerIntegrationManager() {
     return {
         activeTab: 'notunnel',
+        rosVersion: 'v7',
         testMac: 'AA:BB:CC:DD:EE:FF',
         testing: false,
+        testingApi: false,
+        apiResult: null,
         copiedNoTunnel: false,
         copiedRadius: false,
         copiedLoginHtml: false,
@@ -524,10 +587,35 @@ function routerIntegrationManager() {
         },
 
         copyRadiusScript() {
-            const scriptText = document.getElementById('radiusScriptBox').innerText;
+            const elId = this.rosVersion === 'v7' ? 'radiusScriptBoxV7' : 'radiusScriptBoxV6';
+            const el = document.getElementById(elId) || document.getElementById('radiusScriptBoxV7');
+            const scriptText = el ? el.innerText : '';
             navigator.clipboard.writeText(scriptText).then(() => {
                 this.copiedRadius = true;
                 setTimeout(() => this.copiedRadius = false, 3000);
+            });
+        },
+
+        testApi() {
+            this.testingApi = true;
+            this.apiResult = null;
+
+            fetch('{{ route('admin.radius.test-api', $site) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.apiResult = data;
+                this.testingApi = false;
+            })
+            .catch(err => {
+                this.apiResult = { connected: false, error: err.message };
+                this.testingApi = false;
             });
         },
 

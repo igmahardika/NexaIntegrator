@@ -76,15 +76,34 @@ class MikrotikService
             fclose($socket);
             $tcpLatency = round((microtime(true) - $start) * 1000);
 
-            // Then test API authentication
-            $this->connect();
+            // Then test API authentication and retrieve system telemetry
+            $client = $this->connect();
             $latency = round((microtime(true) - $start) * 1000);
 
+            $resource = [];
+            $identity = [];
+            try {
+                $resource = $client->query(new Query('/system/resource/print'))->read();
+                $identity = $client->query(new Query('/system/identity/print'))->read();
+            } catch (Throwable $e) {
+                // Non-fatal if specific query fails
+            }
+
+            $res = $resource[0] ?? [];
+            $ident = $identity[0] ?? [];
+
             return [
-                'connected'  => true,
-                'latency_ms' => $latency,
-                'tcp_ms'     => $tcpLatency,
-                'error'      => null,
+                'connected'    => true,
+                'latency_ms'   => $latency,
+                'tcp_ms'       => $tcpLatency,
+                'version'      => $res['version'] ?? 'RouterOS',
+                'board_name'   => $res['board-name'] ?? 'MikroTik Router',
+                'cpu_load'     => isset($res['cpu-load']) ? $res['cpu-load'] . '%' : 'N/A',
+                'free_memory'  => isset($res['free-memory']) ? round($res['free-memory'] / 1048576, 1) . ' MB' : 'N/A',
+                'total_memory' => isset($res['total-memory']) ? round($res['total-memory'] / 1048576, 1) . ' MB' : 'N/A',
+                'uptime'       => $res['uptime'] ?? 'N/A',
+                'identity'     => $ident['name'] ?? $this->location->name,
+                'error'        => null,
             ];
         } catch (Throwable $e) {
             return [

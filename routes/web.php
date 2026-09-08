@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\DocumentationController;
+use App\Http\Controllers\Admin\EdgeGatewayController;
 use App\Http\Controllers\Admin\HotspotProfileController;
 use App\Http\Controllers\Admin\HotspotUserController;
 use App\Http\Controllers\Admin\IpBindingController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\SiteRadiusController;
 use App\Http\Controllers\Admin\SiteTemplateController;
 use App\Http\Controllers\Admin\TenantContextController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\PortalController;
@@ -85,7 +87,17 @@ Route::prefix('admin')
             Route::get('/sites/{site}/template/customizer', [SiteTemplateController::class, 'customizer'])->name('sites.template.customizer');
             Route::post('/sites/{site}/template/customizer', [SiteTemplateController::class, 'update'])->name('sites.template.update');
 
-            // Site RADIUS & Router Integration
+            // Dedicated Edge Gateway & RADIUS Hub
+            Route::get('/radius', [EdgeGatewayController::class, 'index'])->name('radius.index');
+            Route::post('/radius/test-api/{site}', [EdgeGatewayController::class, 'testApi'])->name('radius.test-api');
+            Route::post('/radius/test-coa/{site}', [EdgeGatewayController::class, 'testCoa'])->name('radius.test-coa');
+            Route::get('/radius/download-login-html/{site}', [EdgeGatewayController::class, 'downloadLoginHtml'])->name('radius.download-login-html');
+
+            // Dashboard Operator & User Access Management
+            Route::resource('users', UserController::class)->except(['show']);
+            Route::post('/users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+
+            // Site RADIUS & Router Integration (Legacy Direct Route)
             Route::get('/sites/{site}/radius', [SiteRadiusController::class, 'show'])->name('sites.radius.show');
             Route::post('/sites/{site}/radius', [SiteRadiusController::class, 'update'])->name('sites.radius.update');
             Route::post('/sites/{site}/radius/test-coa', [SiteRadiusController::class, 'testCoa'])->name('sites.radius.test-coa');

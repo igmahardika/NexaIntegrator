@@ -6,13 +6,23 @@ use App\Models\Location;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Throwable;
 
 class TenantManager
 {
     protected static ?Location $activeSite = null;
 
     /**
-     * Get the tenants storage directory path.
+     * Determine if MySQL driver is active for database operations.
+     */
+    public static function isMysql(): bool
+    {
+        return config('database.default') === 'mysql'
+            || config('database.connections.tenant.driver') === 'mysql';
+    }
+
+    /**
+     * Get the tenants storage directory path (used for SQLite driver).
      */
     public static function getTenantsDirectory(): string
     {
@@ -24,37 +34,90 @@ class TenantManager
     }
 
     /**
-     * Get the absolute path for a site's SQLite database.
+     * Get the database name for MySQL or absolute file path for SQLite.
      */
-    public static function getDatabasePath(Location|string $site): string
+    public static function getDatabaseIdentifier(Location|string $site): string
     {
         $siteId = $site instanceof Location ? $site->id : $site;
+
+        if (self::isMysql()) {
+            return "wifipads_site_{$siteId}";
+        }
+
         $dir = self::getTenantsDirectory();
         return $dir . DIRECTORY_SEPARATOR . "site_{$siteId}.sqlite";
     }
 
     /**
-     * Ensure the tenant SQLite database exists and run tenant migrations if newly created.
+     * Legacy helper for SQLite path.
+     */
+    public static function getDatabasePath(Location|string $site): string
+    {
+        return self::getDatabaseIdentifier($site);
+    }
+
+    /**
+     * Ensure the tenant database exists and run tenant migrations if newly created.
      */
     public static function ensureDatabase(Location|string $site): string
     {
-        $dbPath = self::getDatabasePath($site);
+        $identifier = self::getDatabaseIdentifier($site);
+
+        if (self::isMysql()) {
+            self::ensureMysqlDatabase($identifier);
+        } else {
+            self::ensureSqliteDatabase($identifier);
+        }
+
+        return $identifier;
+    }
+
+    /**
+     * Ensure SQLite file exists and migrate.
+     */
+    protected static function ensureSqliteDatabase(string $dbPath): void
+    {
         $isNew = !File::exists($dbPath);
 
         if ($isNew) {
             touch($dbPath);
             self::migrateTenantDatabase($dbPath);
         }
-
-        return $dbPath;
     }
 
     /**
-     * Run tenant migrations on a specific SQLite database path.
+     * Ensure MySQL database exists and migrate.
      */
-    public static function migrateTenantDatabase(string $dbPath): void
+    protected static function ensureMysqlDatabase(string $dbName): void
     {
-        config(['database.connections.tenant.database' => $dbPath]);
+        try {
+            // Execute CREATE DATABASE IF NOT EXISTS via default connection
+            DB::statement("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        } catch (Throwable $e) {
+            // Log or fallback if user lacks CREATE DATABASE privileges
+        }
+
+        // Check if tenant tables need migration
+        config(['database.connections.tenant.database' => $dbName]);
+        DB::purge('tenant');
+        DB::reconnect('tenant');
+
+        try {
+            $hasHotspotUsers = DB::connection('tenant')->getSchemaBuilder()->hasTable('hotspot_users');
+            if (!$hasHotspotUsers) {
+                self::migrateTenantDatabase($dbName);
+            }
+        } catch (Throwable $e) {
+            self::migrateTenantDatabase($dbName);
+        }
+    }
+
+    /**
+     * Run tenant migrations on the specified database.
+     */
+    public static function migrateTenantDatabase(string $database): void
+    {
+        config(['database.connections.tenant.database' => $database]);
         DB::purge('tenant');
         DB::reconnect('tenant');
 
@@ -84,9 +147,9 @@ class TenantManager
         }
 
         self::$activeSite = $site;
-        $dbPath = self::ensureDatabase($site);
+        $db = self::ensureDatabase($site);
 
-        config(['database.connections.tenant.database' => $dbPath]);
+        config(['database.connections.tenant.database' => $db]);
         DB::purge('tenant');
         DB::reconnect('tenant');
     }
@@ -96,12 +159,17 @@ class TenantManager
      */
     public static function getActiveSite(): ?Location
     {
-        if (self::$activeSite) {
+        $siteId = session('active_site_id');
+        if ($siteId === 'all') {
+            self::$activeSite = null;
+            return null;
+        }
+
+        if (self::$activeSite && (empty($siteId) || self::$activeSite->id === $siteId)) {
             return self::$activeSite;
         }
 
-        $siteId = session('active_site_id');
-        if (!empty($siteId) && $siteId !== 'all') {
+        if (!empty($siteId)) {
             self::$activeSite = Location::find($siteId);
             if (self::$activeSite) {
                 self::switchConnection(self::$activeSite);
@@ -109,5 +177,34 @@ class TenantManager
         }
 
         return self::$activeSite;
+    }
+
+    /**
+     * Run a callback across all active tenant databases and return collected results.
+     */
+    public static function runOnAllTenants(callable $callback): array
+    {
+        $sites = Location::where('is_active', true)->get();
+        $results = [];
+
+        $previousSite = self::$activeSite;
+
+        foreach ($sites as $site) {
+            self::switchConnection($site);
+            try {
+                $results[$site->id] = $callback($site);
+            } catch (Throwable $e) {
+                $results[$site->id] = null;
+            }
+        }
+
+        // Restore previous connection
+        if ($previousSite) {
+            self::switchConnection($previousSite);
+        } else {
+            self::switchConnection(null);
+        }
+
+        return $results;
     }
 }
