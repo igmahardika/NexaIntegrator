@@ -265,7 +265,10 @@ RSC;
 :do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
 :do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
 
-# 2. Hotspot User Profiles (QoS & Bandwidth Limiter)
+# 2. Hotspot Server & User Profiles (Izinkan HTTP-PAP & QoS)
+/ip hotspot profile
+:do { set [find] login-by=http-pap,http-chap } on-error={ :nothing }
+
 /ip hotspot user profile
 :do { add name="survey-user" rate-limit="2M/5M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
 :do { add name="voucher-user" rate-limit="5M/10M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }

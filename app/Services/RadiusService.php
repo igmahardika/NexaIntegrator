@@ -97,8 +97,8 @@ class RadiusService
                 'badge'       => 'Hotspot Server',
                 'badge_color' => 'indigo',
                 'title'       => 'Konfigurasi Hotspot Server Profile',
-                'desc'        => "Mengaktifkan opsi use-radius, radius-accounting, dan interim update (2m) pada server profile Hotspot.",
-                'code'        => "/ip hotspot profile set [find] \\\n    use-radius=yes \\\n    radius-accounting=yes \\\n    radius-interim-update=2m \\\n    radius-location-name=\"{$nasId}\" \\\n    nas-port-type=wireless-802.11",
+                'desc'        => "Mengaktifkan metode login HTTP-PAP (login portal eksternal), use-radius, radius-accounting, dan interim update (2m) pada server profile Hotspot.",
+                'code'        => "/ip hotspot profile set [find] \\\n    login-by=http-pap,http-chap \\\n    use-radius=yes \\\n    radius-accounting=yes \\\n    radius-interim-update=2m \\\n    radius-location-name=\"{$nasId}\" \\\n    nas-port-type=wireless-802.11",
             ],
             [
                 'step'        => 5,
