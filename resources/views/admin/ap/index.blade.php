@@ -310,10 +310,23 @@
                                     </svg>
                                 </button>
 
-                                <form method="POST" action="{{ route('admin.ap.destroy', $ap) }}" onsubmit="return confirm('Delete AP node \'{{ $ap->name }}\'?')">
+                                <form id="delete-ap-{{ $ap->id }}" method="POST" action="{{ route('admin.ap.destroy', $ap) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 focus-visible:ring-2 focus-visible:ring-rose-500" title="Delete AP" aria-label="Delete AP {{ $ap->name }}">
+                                    <button 
+                                        type="button" 
+                                        @click="$dispatch('open-confirm', {
+                                            title: 'Hapus Node Access Point',
+                                            message: 'Apakah Anda yakin ingin menghapus access point {{ addslashes($ap->name) }} ({{ $ap->ip_address }})? Riwayat telemetri ping akan dihapus.',
+                                            confirmText: 'Ya, Hapus AP',
+                                            cancelText: 'Batal',
+                                            danger: true,
+                                            onConfirm: () => document.getElementById('delete-ap-{{ $ap->id }}').submit()
+                                        })"
+                                        class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 focus-visible:ring-2 focus-visible:ring-rose-500" 
+                                        title="Hapus AP" 
+                                        aria-label="Hapus AP {{ $ap->name }}"
+                                    >
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
@@ -325,10 +338,10 @@
                     @empty
                     <tr>
                         <td colspan="6" class="py-12 text-center text-slate-400">
-                            <div class="text-sm font-bold text-slate-900">No Access Point Nodes Configured</div>
-                            <p class="text-xs text-slate-500 mt-1">Register your AP IP addresses for automated watchdog telemetry.</p>
+                            <div class="text-sm font-bold text-slate-900">Belum Ada Node Access Point Terdaftar</div>
+                            <p class="text-xs text-slate-500 mt-1">Daftarkan IP Address AP Anda untuk monitoring telemetri otomatis.</p>
                             <button @click="showAddModal = true" class="btn-primary text-xs mt-3 shadow-sm font-semibold">
-                                + Register New AP Node
+                                + Daftarkan Node AP Baru
                             </button>
                         </td>
                     </tr>
@@ -339,118 +352,82 @@
     </div>
 
     <!-- Modal Tambah AP -->
-    <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
-         role="dialog" aria-modal="true" aria-labelledby="add-ap-modal-title" @keydown.escape.window="showAddModal = false">
-        <div class="card w-full max-w-lg p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl relative" @click.outside="showAddModal = false">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 id="add-ap-modal-title" class="text-base font-extrabold text-slate-900">Add Access Point Node</h3>
-                        <p class="text-slate-500 text-xs">Automated connectivity verification via ICMP/TCP probe</p>
-                    </div>
-                </div>
-                <button @click="showAddModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 text-lg font-bold transition focus-visible:ring-2 focus-visible:ring-brand" aria-label="Tutup modal tambah AP">&times;</button>
+    <x-modal name="showAddModal" title="Tambah Node Access Point" max-width="lg">
+        <form method="POST" action="{{ route('admin.ap.store') }}" class="p-6 space-y-4">
+            @csrf
+            <input type="hidden" name="location_id" value="{{ $currentLocation ? $currentLocation->id : '' }}">
+
+            <div>
+                <label class="label text-slate-700 font-semibold">Nama / Identifier Node AP <span class="text-rose-500">*</span></label>
+                <input type="text" name="name" required placeholder="cth. AP-Lobby-UniFi-U6" class="input text-xs">
             </div>
 
-            <form method="POST" action="{{ route('admin.ap.store') }}" class="space-y-4">
-                @csrf
-                <input type="hidden" name="location_id" value="{{ $currentLocation ? $currentLocation->id : '' }}">
-
+            <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="label text-slate-700 font-semibold">AP Node Identifier <span class="text-rose-500">*</span></label>
-                    <input type="text" name="name" required placeholder="e.g. AP-Lobby-UniFi-U6" class="input text-xs">
+                    <label class="label text-slate-700 font-semibold">Alamat IP AP <span class="text-rose-500">*</span></label>
+                    <input type="text" name="ip_address" required placeholder="192.168.88.10" class="input font-mono text-xs">
                 </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="label text-slate-700 font-semibold">AP IP Address <span class="text-rose-500">*</span></label>
-                        <input type="text" name="ip_address" required placeholder="192.168.88.10" class="input font-mono text-xs">
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">MAC Address (Optional)</label>
-                        <input type="text" name="mac_address" placeholder="AA:BB:CC:DD:EE:FF" class="input font-mono text-xs">
-                    </div>
-                </div>
-
                 <div>
-                    <label class="label text-slate-700 font-semibold">Physical Zone / Placement</label>
-                    <input type="text" name="zone_location" placeholder="e.g. 1st Floor Guest Lobby" class="input text-xs">
+                    <label class="label text-slate-700 font-semibold">MAC Address (Opsional)</label>
+                    <input type="text" name="mac_address" placeholder="AA:BB:CC:DD:EE:FF" class="input font-mono text-xs">
                 </div>
+            </div>
 
-                <div>
-                    <label class="label text-slate-700 font-semibold">Administrative Notes (Optional)</label>
-                    <input type="text" name="notes" placeholder="e.g. PoE Switch Port 4" class="input text-xs">
-                </div>
+            <div>
+                <label class="label text-slate-700 font-semibold">Zona Fisik / Lokasi Penempatan</label>
+                <input type="text" name="zone_location" placeholder="cth. Lobby Tamu Lantai 1" class="input text-xs">
+            </div>
 
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
-                    <button type="button" @click="showAddModal = false" class="btn-secondary text-xs font-semibold">Cancel</button>
-                    <button type="submit" class="btn-primary text-xs font-semibold shadow-sm">Save & Start Monitoring</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div>
+                <label class="label text-slate-700 font-semibold">Catatan Administratif (Opsional)</label>
+                <input type="text" name="notes" placeholder="cth. Switch PoE Port 4" class="input text-xs">
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button type="button" @click="showAddModal = false" class="btn-secondary text-xs font-semibold">Batal</button>
+                <button type="submit" class="btn-primary text-xs font-semibold shadow-sm">Simpan & Mulai Monitoring</button>
+            </div>
+        </form>
+    </x-modal>
 
     <!-- Modal Edit AP -->
-    <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
-         role="dialog" aria-modal="true" aria-labelledby="edit-ap-modal-title" @keydown.escape.window="showEditModal = false">
-        <div class="card w-full max-w-lg p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl relative" @click.outside="showEditModal = false">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-brand-50 text-brand rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 id="edit-ap-modal-title" class="text-base font-extrabold text-slate-900">Edit Access Point Node</h3>
-                        <p class="text-slate-500 text-xs" x-text="editData.name"></p>
-                    </div>
-                </div>
-                <button @click="showEditModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 text-lg font-bold transition focus-visible:ring-2 focus-visible:ring-brand" aria-label="Tutup modal edit AP">&times;</button>
+    <x-modal name="showEditModal" title="Edit Node Access Point" max-width="lg">
+        <form :action="'{{ url('/admin/ap') }}/' + editData.id" method="POST" class="p-6 space-y-4">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label class="label text-slate-700 font-semibold">Nama / Identifier Node AP <span class="text-rose-500">*</span></label>
+                <input type="text" name="name" required x-model="editData.name" class="input text-xs">
             </div>
 
-            <form :action="'{{ url('/admin/ap') }}/' + editData.id" method="POST" class="space-y-4">
-                @csrf
-                @method('PUT')
-
+            <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="label text-slate-700 font-semibold">AP Node Identifier <span class="text-rose-500">*</span></label>
-                    <input type="text" name="name" required x-model="editData.name" class="input text-xs">
+                    <label class="label text-slate-700 font-semibold">Alamat IP AP <span class="text-rose-500">*</span></label>
+                    <input type="text" name="ip_address" required x-model="editData.ip_address" class="input font-mono text-xs">
                 </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="label text-slate-700 font-semibold">AP IP Address <span class="text-rose-500">*</span></label>
-                        <input type="text" name="ip_address" required x-model="editData.ip_address" class="input font-mono text-xs">
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">MAC Address</label>
-                        <input type="text" name="mac_address" x-model="editData.mac_address" class="input font-mono text-xs">
-                    </div>
-                </div>
-
                 <div>
-                    <label class="label text-slate-700 font-semibold">Physical Zone / Placement</label>
-                    <input type="text" name="zone_location" x-model="editData.zone_location" class="input text-xs">
+                    <label class="label text-slate-700 font-semibold">MAC Address</label>
+                    <input type="text" name="mac_address" x-model="editData.mac_address" class="input font-mono text-xs">
                 </div>
+            </div>
 
-                <div>
-                    <label class="label text-slate-700 font-semibold">Administrative Notes</label>
-                    <input type="text" name="notes" x-model="editData.notes" class="input text-xs">
-                </div>
+            <div>
+                <label class="label text-slate-700 font-semibold">Zona Fisik / Lokasi Penempatan</label>
+                <input type="text" name="zone_location" x-model="editData.zone_location" class="input text-xs">
+            </div>
 
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
-                    <button type="button" @click="showEditModal = false" class="btn-secondary text-xs font-semibold">Cancel</button>
-                    <button type="submit" class="btn-primary text-xs font-semibold shadow-sm">Update AP Node</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div>
+                <label class="label text-slate-700 font-semibold">Catatan Administratif</label>
+                <input type="text" name="notes" x-model="editData.notes" class="input text-xs">
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button type="button" @click="showEditModal = false" class="btn-secondary text-xs font-semibold">Batal</button>
+                <button type="submit" class="btn-primary text-xs font-semibold shadow-sm">Perbarui Node AP</button>
+            </div>
+        </form>
+    </x-modal>
 
 </div>
 @endsection

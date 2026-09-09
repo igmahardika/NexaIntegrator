@@ -332,9 +332,6 @@
                 <!-- 3 Gateway Architecture Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     
-                <!-- 3 Gateway Architecture Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    
                     <!-- Card 1: Direct RouterOS API (Primary Standard) -->
                     <label class="relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200"
                         :class="form.gateway_mode === 'direct_api' 

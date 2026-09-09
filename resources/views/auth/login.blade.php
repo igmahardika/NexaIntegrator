@@ -34,6 +34,7 @@
                             DEFAULT: '#22449E',
                             hover: '#1b3680',
                             light: '#eef4ff',
+                            dark: '#0f1d45',
                             50: '#eef4ff',
                             100: '#d9e6ff',
                             200: '#bcd3ff',
@@ -44,11 +45,20 @@
                             700: '#1b3680',
                             800: '#152a63',
                             900: '#0f1d45',
+                            950: '#0a132c',
                         },
                         canvas: '#F4F7FC',
                         surface: '#FFFFFF'
                     },
+                    boxShadow: {
+                        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+                        'xs': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+                    },
+                    backdropBlur: {
+                        'xs': '2px',
+                    },
                     fontSize: {
+                        '3xs': ['9px', '12px'],
                         '2xs': ['10px', '14px'],
                     }
                 }
@@ -147,7 +157,6 @@
             <!-- Bottom Brand Badge -->
             <div class="relative z-10 pt-4 text-center">
                 <span class="text-2xs uppercase font-bold tracking-widest text-blue-200/90">Next-Gen Network Access Control</span>
-            </div>
             </div>
         </div>
 

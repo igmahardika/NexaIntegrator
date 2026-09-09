@@ -64,28 +64,44 @@
 
             @if($currentLocation && $currentLocation->router_ip)
             <!-- Sync All ke Router -->
-            <form method="POST" action="{{ route('admin.profiles.sync-all') }}" onsubmit="return confirm('Kirim seluruh profil QoS ke router {{ $currentLocation->name }} ({{ $currentLocation->router_ip }})?')" class="inline">
-                @csrf
-                <input type="hidden" name="location_id" value="{{ $currentLocation->id }}">
-                <button type="submit" class="btn-secondary flex items-center gap-2 text-xs py-2 px-3.5 shadow-xs font-semibold hover:border-brand/40 hover:text-brand transition-colors" title="Sinkronkan seluruh profil ke MikroTik RouterOS">
-                    <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    <span>Sync All ke Router</span>
-                </button>
-            </form>
+            <button 
+                type="button" 
+                @click="$dispatch('open-confirm', {
+                    title: 'Sinkronisasi Seluruh Profil ke Router',
+                    message: 'Kirim dan sinkronkan seluruh konfigurasi profil QoS ke MikroTik Router {{ addslashes($currentLocation->name) }} ({{ $currentLocation->router_ip }})?',
+                    actionUrl: '{{ route('admin.profiles.sync-all') }}',
+                    method: 'POST',
+                    confirmLabel: 'Sync ke Router',
+                    isDestructive: false
+                })" 
+                class="btn-secondary flex items-center gap-2 text-xs py-2 px-3.5 shadow-xs font-semibold hover:border-brand/40 hover:text-brand transition-colors cursor-pointer" 
+                title="Sinkronkan seluruh profil ke MikroTik RouterOS"
+            >
+                <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Sync All ke Router</span>
+            </button>
 
             <!-- Import dari Router -->
-            <form method="POST" action="{{ route('admin.profiles.import') }}" onsubmit="return confirm('Import daftar profil dari router {{ $currentLocation->name }} ke WiFiPads?')" class="inline">
-                @csrf
-                <input type="hidden" name="location_id" value="{{ $currentLocation->id }}">
-                <button type="submit" class="btn-secondary flex items-center gap-2 text-xs py-2 px-3.5 shadow-xs font-semibold hover:border-emerald-500/40 hover:text-emerald-700 transition-colors" title="Baca profil yang ada di MikroTik RouterOS">
-                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                    </svg>
-                    <span>Import dari Router</span>
-                </button>
-            </form>
+            <button 
+                type="button" 
+                @click="$dispatch('open-confirm', {
+                    title: 'Import Profil dari Router',
+                    message: 'Baca dan import seluruh profil pengguna aktif dari MikroTik Router {{ addslashes($currentLocation->name) }} ke dalam database WiFiPads?',
+                    actionUrl: '{{ route('admin.profiles.import') }}',
+                    method: 'POST',
+                    confirmLabel: 'Import Profil',
+                    isDestructive: false
+                })" 
+                class="btn-secondary flex items-center gap-2 text-xs py-2 px-3.5 shadow-xs font-semibold hover:border-emerald-500/40 hover:text-emerald-700 transition-colors cursor-pointer" 
+                title="Baca profil yang ada di MikroTik RouterOS"
+            >
+                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+                <span>Import dari Router</span>
+            </button>
             @endif
 
             <button @click="showAddModal = true" class="btn-primary flex items-center gap-2 text-xs py-2 px-4 shadow-sm font-semibold">
@@ -104,7 +120,7 @@
             <div class="w-3 h-3 rounded-full {{ $currentLocation->router_ip ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400' }}"></div>
             <div>
                 <div class="text-xs font-bold text-slate-700">Active Site: <span class="text-slate-900 font-extrabold">{{ $currentLocation->name }}</span></div>
-                <div class="text-[11px] text-slate-500 font-mono mt-0.5">
+                <div class="text-2xs text-slate-500 font-mono mt-0.5">
                     Router Gateway: {{ $currentLocation->router_ip ?? 'Not configured' }} • API Port: {{ $currentLocation->router_port ?? 8728 }} • Hotspot Profile Sync: <span class="text-emerald-700 font-bold">Active</span>
                 </div>
             </div>
@@ -125,7 +141,7 @@
             </div>
             <div>
                 <div class="text-xs font-bold text-slate-900">Standard Guest</div>
-                <div class="text-[11px] text-slate-500 font-mono">2M Rx / 2M Tx</div>
+                <div class="text-2xs text-slate-500 font-mono">2M Rx / 2M Tx</div>
             </div>
         </div>
         <div class="card p-3.5 border border-slate-200/80 bg-white flex items-center gap-3 shadow-xs">
@@ -134,7 +150,7 @@
             </div>
             <div>
                 <div class="text-xs font-bold text-slate-900">Cafe & Roastery</div>
-                <div class="text-[11px] text-slate-500 font-mono">5M Rx / 5M Tx</div>
+                <div class="text-2xs text-slate-500 font-mono">5M Rx / 5M Tx</div>
             </div>
         </div>
         <div class="card p-3.5 border border-slate-200/80 bg-white flex items-center gap-3 shadow-xs">
@@ -143,7 +159,7 @@
             </div>
             <div>
                 <div class="text-xs font-bold text-slate-900">VIP / Premium</div>
-                <div class="text-[11px] text-slate-500 font-mono">10M Rx / 10M Tx</div>
+                <div class="text-2xs text-slate-500 font-mono">10M Rx / 10M Tx</div>
             </div>
         </div>
         <div class="card p-3.5 border border-slate-200/80 bg-white flex items-center gap-3 shadow-xs">
@@ -152,7 +168,7 @@
             </div>
             <div>
                 <div class="text-xs font-bold text-slate-900">Staff / POS Terminal</div>
-                <div class="text-[11px] text-slate-500 font-mono">Priority Latency</div>
+                <div class="text-2xs text-slate-500 font-mono">Priority Latency</div>
             </div>
         </div>
     </div>
@@ -208,23 +224,23 @@
                         <div class="text-2xs text-slate-500 mt-0.5 font-medium">Concurrency Tier</div>
                     </div>
                     <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <div class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Session Timeout</div>
+                        <div class="text-slate-400 text-2xs uppercase font-bold tracking-wider">Session Timeout</div>
                         <div class="text-slate-900 font-bold mt-0.5 font-mono">
                             {{ $profile->session_timeout ? $profile->session_timeout . ' min' : 'Unlimited (0)' }}
                         </div>
-                        <div class="text-[10px] text-slate-400 mt-0.5">Maximum session duration</div>
+                        <div class="text-2xs text-slate-400 mt-0.5">Maximum session duration</div>
                     </div>
                     <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <div class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Idle Timeout</div>
+                        <div class="text-slate-400 text-2xs uppercase font-bold tracking-wider">Idle Timeout</div>
                         <div class="text-slate-900 font-bold mt-0.5 font-mono">
                             {{ $profile->idle_timeout ? $profile->idle_timeout . ' min' : 'Unlimited (0)' }}
                         </div>
-                        <div class="text-[10px] text-slate-400 mt-0.5">Auto-kick on inactivity</div>
+                        <div class="text-2xs text-slate-400 mt-0.5">Auto-kick on inactivity</div>
                     </div>
                 </div>
 
                 @if($profile->keepalive_timeout)
-                <div class="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 px-1 font-mono">
+                <div class="mt-2.5 flex items-center justify-between text-2xs text-slate-500 px-1 font-mono">
                     <span>Keepalive Timeout:</span>
                     <span class="text-slate-800 font-bold">{{ $profile->keepalive_timeout }} min</span>
                 </div>
@@ -240,13 +256,20 @@
                     <span>Edit Profile</span>
                 </button>
 
-                <form method="POST" action="{{ route('admin.profiles.destroy', $profile) }}" onsubmit="return confirm('Permanently delete hotspot QoS profile \'{{ $profile->name }}\'?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn-danger text-xs py-1.5 px-3">
-                        Delete
-                    </button>
-                </form>
+                <button 
+                    type="button" 
+                    @click="$dispatch('open-confirm', {
+                        title: 'Hapus Profil: {{ addslashes($profile->name) }}',
+                        message: 'Hapus profil QoS hotspot ini secara permanen dari WiFiPads?',
+                        actionUrl: '{{ route('admin.profiles.destroy', $profile) }}',
+                        method: 'DELETE',
+                        confirmLabel: 'Hapus Profil',
+                        isDestructive: true
+                    })" 
+                    class="btn-danger text-xs py-1.5 px-3"
+                >
+                    Delete
+                </button>
             </div>
         </div>
         @empty
@@ -271,156 +294,122 @@
     </div>
 
     <!-- Modal Tambah Profil QoS -->
-    <div x-show="showAddModal" x-cloak role="dialog" aria-modal="true" aria-labelledby="add-profile-modal-title" @keydown.escape.window="showAddModal = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-        <div class="card w-full max-w-lg p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl relative" @click.outside="showAddModal = false">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-blue-50 text-brand rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 id="add-profile-modal-title" class="text-base font-extrabold text-slate-900">Add Bandwidth Profile (QoS)</h3>
-                        <p class="text-slate-500 text-xs">Automated sync to MikroTik /ip hotspot user profile</p>
-                    </div>
-                </div>
-                <button type="button" @click="showAddModal = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors text-lg font-bold leading-none">&times;</button>
+    <x-modal name="showAddModal" maxWidth="max-w-lg" title="Add Bandwidth Profile (QoS)" subtitle="Automated sync to MikroTik /ip hotspot user profile">
+        <!-- Quick Template Buttons -->
+        <div class="mb-4">
+            <div class="text-2xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Apply Quick Presets:</div>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" @click="setPreset('Guest-2M', '2M/2M', 1, 120, 15)" class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs border border-slate-200 font-semibold cursor-pointer">
+                    ⚡ 2M/2M (Guest)
+                </button>
+                <button type="button" @click="setPreset('Cafe-5M', '5M/5M', 2, 180, 20)" class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs border border-slate-200 font-semibold cursor-pointer">
+                    ⚡ 5M/5M (Cafe)
+                </button>
+                <button type="button" @click="setPreset('VIP-10M', '10M/10M', 3, 360, 30)" class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs border border-slate-200 font-semibold cursor-pointer">
+                    ⚡ 10M/10M (VIP)
+                </button>
+                <button type="button" @click="setPreset('Staff-Unlimited', '0/0', 5, 0, 0)" class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs border border-slate-200 font-semibold cursor-pointer">
+                    ⚡ Uncapped (Staff)
+                </button>
             </div>
-
-            <!-- Quick Template Buttons -->
-            <div class="mb-4">
-                <div class="text-2xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Apply Quick Presets:</div>
-                <div class="flex flex-wrap gap-2">
-                    <button type="button" @click="setPreset('Guest-2M', '2M/2M', 1, 120, 15)" class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs border border-slate-200 font-semibold">
-                        ⚡ 2M/2M (Guest)
-                    </button>
-                    <button type="button" @click="setPreset('Cafe-5M', '5M/5M', 2, 180, 20)" class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs border border-slate-200 font-semibold">
-                        ⚡ 5M/5M (Cafe)
-                    </button>
-                    <button type="button" @click="setPreset('VIP-10M', '10M/10M', 3, 360, 30)" class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs border border-slate-200 font-semibold">
-                        ⚡ 10M/10M (VIP)
-                    </button>
-                    <button type="button" @click="setPreset('Staff-Unlimited', '0/0', 5, 0, 0)" class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs border border-slate-200 font-semibold">
-                        ⚡ Uncapped (Staff)
-                    </button>
-                </div>
-            </div>
-
-            <form method="POST" action="{{ route('admin.profiles.store') }}" class="space-y-4">
-                @csrf
-                <input type="hidden" name="location_id" value="{{ $currentLocation ? $currentLocation->id : '' }}">
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="label text-slate-700 font-semibold">MikroTik Profile Identifier <span class="text-rose-500">*</span></label>
-                        <input type="text" id="new_name" name="name" required placeholder="e.g. Guest-2M" class="input text-xs font-mono" pattern="[a-zA-Z0-9_\-]+" title="Alphanumeric, dash, and underscore only">
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Display Label</label>
-                        <input type="text" id="new_display_name" name="display_name" placeholder="e.g. Regular Guest Tier" class="input text-xs">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="label text-slate-700 font-semibold">Speed Limit (Rate-Limit Rx/Tx) <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                        <input type="text" id="new_rate_limit" name="rate_limit" required placeholder="e.g. 2M/2M or 512k/1M" class="input font-mono text-xs">
-                        <div class="absolute right-3 top-2.5 text-xs text-brand font-mono font-bold">Rx / Tx</div>
-                    </div>
-                    <span class="text-2xs text-slate-500 mt-1 block font-medium">Format: [Rx]/[Tx] e.g. <strong>2M/2M</strong> or <strong>10M/20M</strong>. Use <strong>0/0</strong> for uncapped bandwidth.</span>
-                </div>
-
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Shared Users <span class="text-rose-500">*</span></label>
-                        <input type="number" id="new_shared_users" name="shared_users" value="1" min="1" max="500" required class="input text-xs">
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Session Timeout</label>
-                        <input type="number" id="new_session_timeout" name="session_timeout" value="120" min="0" required class="input text-xs font-mono">
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Idle Timeout</label>
-                        <input type="number" id="new_idle_timeout" name="idle_timeout" value="15" min="0" required class="input text-xs font-mono">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="label text-slate-700 font-semibold">Keepalive Timeout (Minutes)</label>
-                    <input type="number" name="keepalive_timeout" value="5" min="0" class="input text-xs font-mono">
-                </div>
-
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
-                    <button type="button" @click="showAddModal = false" class="btn-secondary text-xs font-semibold">Cancel</button>
-                    <button type="submit" class="btn-primary text-xs font-semibold shadow-sm">Save & Apply QoS</button>
-                </div>
-            </form>
         </div>
-    </div>
 
-    <!-- Modal Edit Profil QoS -->
-    <div x-show="showEditModal" x-cloak role="dialog" aria-modal="true" aria-labelledby="edit-profile-modal-title" @keydown.escape.window="showEditModal = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-        <div class="card w-full max-w-lg p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl relative" @click.outside="showEditModal = false">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-blue-50 text-brand rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 id="edit-profile-modal-title" class="text-base font-extrabold text-slate-900">Edit Profile: <span x-text="editData.name" class="text-brand font-mono"></span></h3>
-                        <p class="text-slate-500 text-xs">Updated parameters synchronize immediately with the edge router</p>
-                    </div>
+        <form method="POST" action="{{ route('admin.profiles.store') }}" class="space-y-4">
+            @csrf
+            <input type="hidden" name="location_id" value="{{ $currentLocation ? $currentLocation->id : '' }}">
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="label text-slate-700 font-semibold">MikroTik Profile Identifier <span class="text-rose-500">*</span></label>
+                    <input type="text" id="new_name" name="name" required placeholder="e.g. Guest-2M" class="input text-xs font-mono" pattern="[a-zA-Z0-9_\-]+" title="Alphanumeric, dash, and underscore only">
                 </div>
-                <button type="button" @click="showEditModal = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors text-lg font-bold leading-none">&times;</button>
-            </div>
-
-            <form :action="'{{ url('/admin/profiles') }}/' + editData.id" method="POST" class="space-y-4">
-                @csrf
-                @method('PUT')
-
                 <div>
                     <label class="label text-slate-700 font-semibold">Display Label</label>
-                    <input type="text" name="display_name" x-model="editData.display_name" class="input text-xs">
+                    <input type="text" id="new_display_name" name="display_name" placeholder="e.g. Regular Guest Tier" class="input text-xs">
                 </div>
+            </div>
 
+            <div>
+                <label class="label text-slate-700 font-semibold">Speed Limit (Rate-Limit Rx/Tx) <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                    <input type="text" id="new_rate_limit" name="rate_limit" required placeholder="e.g. 2M/2M or 512k/1M" class="input font-mono text-xs">
+                    <div class="absolute right-3 top-2.5 text-xs text-brand font-mono font-bold">Rx / Tx</div>
+                </div>
+                <span class="text-2xs text-slate-500 mt-1 block font-medium">Format: [Rx]/[Tx] e.g. <strong>2M/2M</strong> or <strong>10M/20M</strong>. Use <strong>0/0</strong> for uncapped bandwidth.</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
                 <div>
-                    <label class="label text-slate-700 font-semibold">Speed Limit (Rate-Limit Rx/Tx) <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                        <input type="text" name="rate_limit" required x-model="editData.rate_limit" class="input font-mono text-xs">
-                        <div class="absolute right-3 top-2.5 text-xs text-brand font-mono font-bold">Rx / Tx</div>
-                    </div>
+                    <label class="label text-slate-700 font-semibold">Shared Users <span class="text-rose-500">*</span></label>
+                    <input type="number" id="new_shared_users" name="shared_users" value="1" min="1" max="500" required class="input text-xs font-mono">
                 </div>
-
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Shared Users <span class="text-rose-500">*</span></label>
-                        <input type="number" name="shared_users" x-model="editData.shared_users" min="1" max="500" required class="input text-xs font-mono">
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Session Timeout</label>
-                        <input type="number" name="session_timeout" x-model="editData.session_timeout" min="0" required class="input text-xs font-mono">
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Idle Timeout</label>
-                        <input type="number" name="idle_timeout" x-model="editData.idle_timeout" min="0" required class="input text-xs font-mono">
-                    </div>
-                </div>
-
                 <div>
-                    <label class="label text-slate-700 font-semibold">Keepalive Timeout (Minutes)</label>
-                    <input type="number" name="keepalive_timeout" x-model="editData.keepalive_timeout" min="0" class="input text-xs font-mono">
+                    <label class="label text-slate-700 font-semibold">Session Timeout</label>
+                    <input type="number" id="new_session_timeout" name="session_timeout" value="120" min="0" required class="input text-xs font-mono">
                 </div>
+                <div>
+                    <label class="label text-slate-700 font-semibold">Idle Timeout</label>
+                    <input type="number" id="new_idle_timeout" name="idle_timeout" value="15" min="0" required class="input text-xs font-mono">
+                </div>
+            </div>
 
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
-                    <button type="button" @click="showEditModal = false" class="btn-secondary text-xs font-semibold">Cancel</button>
-                    <button type="submit" class="btn-primary text-xs font-semibold shadow-sm">Update Profile</button>
+            <div>
+                <label class="label text-slate-700 font-semibold">Keepalive Timeout (Minutes)</label>
+                <input type="number" name="keepalive_timeout" value="5" min="0" class="input text-xs font-mono">
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button type="button" @click="showAddModal = false" class="btn-secondary text-xs font-semibold">Cancel</button>
+                <button type="submit" class="btn-primary text-xs font-semibold shadow-sm">Save & Apply QoS</button>
+            </div>
+        </form>
+    </x-modal>
+
+    <!-- Modal Edit Profil QoS -->
+    <x-modal name="showEditModal" maxWidth="max-w-lg" xTitle="'Edit Profile: ' + editData.name" subtitle="Updated parameters synchronize immediately with the edge router">
+        <form :action="'{{ url('/admin/profiles') }}/' + editData.id" method="POST" class="space-y-4">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label class="label text-slate-700 font-semibold">Display Label</label>
+                <input type="text" name="display_name" x-model="editData.display_name" class="input text-xs">
+            </div>
+
+            <div>
+                <label class="label text-slate-700 font-semibold">Speed Limit (Rate-Limit Rx/Tx) <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                    <input type="text" name="rate_limit" required x-model="editData.rate_limit" class="input font-mono text-xs">
+                    <div class="absolute right-3 top-2.5 text-xs text-brand font-mono font-bold">Rx / Tx</div>
                 </div>
-            </form>
-        </div>
-    </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="label text-slate-700 font-semibold">Shared Users <span class="text-rose-500">*</span></label>
+                    <input type="number" name="shared_users" x-model="editData.shared_users" min="1" max="500" required class="input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="label text-slate-700 font-semibold">Session Timeout</label>
+                    <input type="number" name="session_timeout" x-model="editData.session_timeout" min="0" required class="input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="label text-slate-700 font-semibold">Idle Timeout</label>
+                    <input type="number" name="idle_timeout" x-model="editData.idle_timeout" min="0" required class="input text-xs font-mono">
+                </div>
+            </div>
+
+            <div>
+                <label class="label text-slate-700 font-semibold">Keepalive Timeout (Minutes)</label>
+                <input type="number" name="keepalive_timeout" x-model="editData.keepalive_timeout" min="0" class="input text-xs font-mono">
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button type="button" @click="showEditModal = false" class="btn-secondary text-xs font-semibold">Cancel</button>
+                <button type="submit" class="btn-primary text-xs font-semibold shadow-sm">Update Profile</button>
+            </div>
+        </form>
+    </x-modal>
 
 </div>
 @endsection

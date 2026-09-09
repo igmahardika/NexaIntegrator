@@ -184,10 +184,21 @@
                                     </button>
                                 </form>
 
-                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Hapus operator {{ $user->name }}?');" class="inline">
+                                <form id="delete-user-{{ $user->id }}" method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition">
+                                    <button 
+                                        type="button" 
+                                        @click="$dispatch('open-confirm', {
+                                            title: 'Hapus Akun Operator',
+                                            message: 'Apakah Anda yakin ingin menghapus operator {{ addslashes($user->name) }}? Akses login dashboard akan dicabut secara permanen.',
+                                            confirmText: 'Ya, Hapus Operator',
+                                            cancelText: 'Batal',
+                                            danger: true,
+                                            onConfirm: () => document.getElementById('delete-user-{{ $user->id }}').submit()
+                                        })"
+                                        class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition"
+                                    >
                                         Hapus
                                     </button>
                                 </form>
@@ -216,86 +227,69 @@
     <!-- ============================================================= -->
     <!-- MODAL CREATE / EDIT OPERATOR -->
     <!-- ============================================================= -->
-    <div 
-        x-show="modalOpen" 
-        x-cloak
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="operator-modal-title"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
-        @keydown.escape.window="modalOpen = false"
-    >
-        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden" @click.outside="modalOpen = false">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 id="operator-modal-title" class="text-sm font-bold text-slate-900" x-text="modalMode === 'create' ? 'Tambah Operator Dashboard' : 'Edit Akun Operator'"></h3>
-                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+    <x-modal name="modalOpen" x-title="modalMode === 'create' ? 'Tambah Operator Dashboard' : 'Edit Akun Operator'" max-width="md">
+        <form :action="modalMode === 'create' ? '{{ route('admin.users.store') }}' : '/admin/users/' + formData.id" method="POST" class="p-6 space-y-4 text-xs">
+            @csrf
+            <template x-if="modalMode === 'edit'">
+                <input type="hidden" name="_method" value="PUT">
+            </template>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Nama Lengkap <span class="text-rose-500">*</span></label>
+                <input type="text" name="name" x-model="formData.name" required class="input input-sm w-full" placeholder="cth. Budi Santoso">
             </div>
 
-            <form :action="modalMode === 'create' ? '{{ route('admin.users.store') }}' : '/admin/users/' + formData.id" method="POST" class="p-6 space-y-4 text-xs">
-                @csrf
-                <template x-if="modalMode === 'edit'">
-                    <input type="hidden" name="_method" value="PUT">
-                </template>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Alamat Email <span class="text-rose-500">*</span></label>
+                <input type="email" name="email" x-model="formData.email" required class="input input-sm w-full" placeholder="operator@cabang.com">
+            </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Nama Lengkap <span class="text-rose-500">*</span></label>
-                    <input type="text" name="name" x-model="formData.name" required class="input input-sm w-full" placeholder="cth. Budi Santoso">
+                    <label class="block font-semibold text-slate-700 mb-1">Role / Hak Akses <span class="text-rose-500">*</span></label>
+                    <select name="role" x-model="formData.role" required class="input input-sm w-full">
+                        @foreach($roles as $key => $r)
+                        <option value="{{ $key }}">{{ $r['label'] }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
+                <div x-show="formData.role !== 'superadmin'">
+                    <label class="block font-semibold text-slate-700 mb-1">Penugasan Site <span class="text-rose-500">*</span></label>
+                    <select name="site_id" x-model="formData.site_id" :required="formData.role !== 'superadmin'" class="input input-sm w-full">
+                        <option value="">-- Pilih Site Cabang --</option>
+                        @foreach($sites as $s)
+                        <option value="{{ $s->id }}">{{ $s->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">
+                    <span x-text="modalMode === 'create' ? 'Password' : 'Password Baru (Kosongkan jika tidak diubah)'"></span>
+                    <span x-show="modalMode === 'create'" class="text-rose-500">*</span>
+                </label>
+                <input type="password" name="password" :required="modalMode === 'create'" class="input input-sm w-full" placeholder="Minimal 8 karakter">
+            </div>
+
+            <div class="p-3 rounded-xl bg-blue-50 border border-blue-100 text-2xs text-blue-900 leading-relaxed flex items-start gap-2">
+                <svg class="w-4 h-4 text-brand shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                </svg>
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Alamat Email <span class="text-rose-500">*</span></label>
-                    <input type="email" name="email" x-model="formData.email" required class="input input-sm w-full" placeholder="operator@cabang.com">
+                    <strong>Kebijakan Isolasi Data:</strong> Operator yang ditugaskan ke Site Cabang secara otomatis dikunci hanya untuk melihat data tamu, voucher, dan router pada site tersebut.
                 </div>
+            </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Role / Hak Akses <span class="text-rose-500">*</span></label>
-                        <select name="role" x-model="formData.role" required class="input input-sm w-full">
-                            @foreach($roles as $key => $r)
-                            <option value="{{ $key }}">{{ $r['label'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div x-show="formData.role !== 'superadmin'">
-                        <label class="block font-semibold text-slate-700 mb-1">Penugasan Site <span class="text-rose-500">*</span></label>
-                        <select name="site_id" x-model="formData.site_id" :required="formData.role !== 'superadmin'" class="input input-sm w-full">
-                            <option value="">-- Pilih Site Cabang --</option>
-                            @foreach($sites as $s)
-                            <option value="{{ $s->id }}">{{ $s->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">
-                        <span x-text="modalMode === 'create' ? 'Password' : 'Password Baru (Kosongkan jika tidak diubah)'"></span>
-                        <span x-show="modalMode === 'create'" class="text-rose-500">*</span>
-                    </label>
-                    <input type="password" name="password" :required="modalMode === 'create'" class="input input-sm w-full" placeholder="Minimal 8 karakter">
-                </div>
-
-                <div class="p-3 rounded-xl bg-blue-50 border border-blue-100 text-2xs text-blue-900 leading-relaxed flex items-start gap-2">
-                    <svg class="w-4 h-4 text-brand shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
-                    </svg>
-                    <div>
-                        <strong>Kebijakan Isolasi Data:</strong> Operator yang ditugaskan ke Site Cabang secara otomatis dikunci hanya untuk melihat data tamu, voucher, dan router pada site tersebut.
-                    </div>
-                </div>
-
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                    <button type="button" @click="modalOpen = false" class="btn-secondary text-xs">Batal</button>
-                    <button type="submit" class="btn-primary text-xs shadow-sm">
-                        <span x-text="modalMode === 'create' ? 'Simpan Operator' : 'Perbarui Akun'"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button type="button" @click="modalOpen = false" class="btn-secondary text-xs">Batal</button>
+                <button type="submit" class="btn-primary text-xs shadow-sm">
+                    <span x-text="modalMode === 'create' ? 'Simpan Operator' : 'Perbarui Akun'"></span>
+                </button>
+            </div>
+        </form>
+    </x-modal>
 
 </div>
 @endsection

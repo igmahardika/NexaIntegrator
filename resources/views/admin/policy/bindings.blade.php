@@ -11,10 +11,10 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Target Site:</span>
+                    <span class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Target Site:</span>
                     <h2 class="text-base font-extrabold text-slate-900">{{ $currentLocation?->name ?? 'Select Site' }}</h2>
                     @if($currentLocation)
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold {{ $currentLocation->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold {{ $currentLocation->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
                         Router: {{ $currentLocation->router_ip ?: 'Not configured' }}
                     </span>
                     @endif
@@ -140,7 +140,7 @@
                                 </div>
                                 <div>
                                     <div class="font-bold text-slate-900">{{ $b->comment ?: 'No description' }}</div>
-                                    <div class="text-[11px] text-slate-500 capitalize">{{ $b->formatted_category }}</div>
+                                    <div class="text-2xs text-slate-500 capitalize">{{ $b->formatted_category }}</div>
                                 </div>
                             </div>
                         </td>
@@ -158,11 +158,11 @@
                         <!-- Policy Type -->
                         <td class="p-3.5">
                             @if($b->type === 'bypassed')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                 ✓ Bypassed (Whitelist)
                             </span>
                             @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                                 ✕ Blocked (Blacklist)
                             </span>
                             @endif
@@ -171,26 +171,39 @@
                         <!-- Router Sync Status -->
                         <td class="p-3.5">
                             @if($b->synced_to_router)
-                            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+                            <span class="inline-flex items-center gap-1 text-2xs font-bold text-emerald-600">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Synced
                             </span>
                             @else
-                            <span class="text-[11px] text-slate-500 font-medium">Cloud Staged</span>
+                            <span class="text-2xs text-slate-500 font-medium">Cloud Staged</span>
                             @endif
                         </td>
 
                         <!-- Created At -->
-                        <td class="p-3.5 text-slate-500 text-[11px] font-mono">
+                        <td class="p-3.5 text-slate-500 text-2xs font-mono">
                             {{ $b->created_at?->format('d M Y H:i') }}
                         </td>
 
                         <!-- Action -->
                         <td class="p-3.5 text-right">
-                            <form method="POST" action="{{ route('admin.policy.bindings.destroy', $b) }}" onsubmit="return confirm('Delete this Layer-2 MAC policy rule?')">
+                            <form id="delete-binding-{{ $b->id }}" method="POST" action="{{ route('admin.policy.bindings.destroy', $b) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn-danger text-xs py-1 px-2.5">
+                                <button 
+                                    type="button" 
+                                    @click="$dispatch('open-confirm', {
+                                        title: 'Hapus Kebijakan MAC Layer-2',
+                                        message: 'Apakah Anda yakin ingin menghapus aturan kebijakan MAC {{ $b->mac_address }}? Perangkat tidak lagi menerapkan bypass/blokir ini.',
+                                        confirmText: 'Ya, Hapus Aturan',
+                                        cancelText: 'Batal',
+                                        danger: true,
+                                        onConfirm: () => document.getElementById('delete-binding-{{ $b->id }}').submit()
+                                    })"
+                                    class="btn-danger text-xs py-1 px-2.5"
+                                    aria-label="Hapus kebijakan MAC {{ $b->mac_address }}"
+                                    title="Hapus Kebijakan"
+                                >
                                     ✕
                                 </button>
                             </form>
@@ -199,7 +212,7 @@
                     @empty
                     <tr>
                         <td colspan="7" class="p-12 text-center text-slate-400">
-                            No Layer-2 policy rules found for this category.
+                            Tidak ada aturan kebijakan Layer-2 yang ditemukan untuk kategori ini.
                         </td>
                     </tr>
                     @endforelse
@@ -215,85 +228,63 @@
     </div>
 
     <!-- ==================== MODAL: ADD BINDING ==================== -->
-    <div
-        x-show="modalOpen"
-        x-cloak
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="mac-policy-modal-title"
-        @keydown.escape.window="modalOpen = false"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
-    >
-        <div @click.outside="modalOpen = false" class="card max-w-lg w-full p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <h3 id="mac-policy-modal-title" class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
-                    </svg>
-                    <span>Add Layer-2 MAC Policy</span>
-                </h3>
-                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+    <x-modal name="modalOpen" title="Tambah Kebijakan MAC Layer-2" max-width="lg">
+        <form method="POST" action="{{ route('admin.policy.bindings.store') }}" class="p-6 space-y-4">
+            @csrf
+
+            <div>
+                <label class="label text-slate-700 font-semibold">Target Site Lokasi <span class="text-rose-500">*</span></label>
+                <select name="location_id" class="input bg-white" required>
+                    @foreach($locations as $loc)
+                    <option value="{{ $loc->id }}" {{ $currentLocation?->id === $loc->id ? 'selected' : '' }}>
+                        {{ $loc->name }}
+                    </option>
+                    @endforeach
+                </select>
             </div>
 
-            <form method="POST" action="{{ route('admin.policy.bindings.store') }}" class="space-y-4">
-                @csrf
-
+            <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="label text-slate-700 font-semibold">Target Site Location <span class="text-rose-500">*</span></label>
-                    <select name="location_id" class="input bg-white" required>
-                        @foreach($locations as $loc)
-                        <option value="{{ $loc->id }}" {{ $currentLocation?->id === $loc->id ? 'selected' : '' }}>
-                            {{ $loc->name }}
-                        </option>
-                        @endforeach
+                    <label class="label text-slate-700 font-semibold">Tipe Kebijakan <span class="text-rose-500">*</span></label>
+                    <select name="type" class="input bg-white" required>
+                        <option value="bypassed">Bypass (Whitelist IoT / Smart TV / CCTV)</option>
+                        <option value="blocked">Blokir (Blacklist Layer-2)</option>
                     </select>
                 </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Policy Type <span class="text-rose-500">*</span></label>
-                        <select name="type" class="input bg-white" required>
-                            <option value="bypassed">Bypassed (Whitelist IoT/TV/CCTV)</option>
-                            <option value="blocked">Blocked (Blacklist Layer-2)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Device Category</label>
-                        <select name="device_category" class="input bg-white">
-                            <option value="smart_tv">Smart TV / In-Room Display</option>
-                            <option value="cctv">IP CCTV Camera</option>
-                            <option value="printer">POS Thermal Printer</option>
-                            <option value="pos">EDC Terminal / POS</option>
-                            <option value="console">Gaming Console</option>
-                            <option value="iot">Other IoT Sensor</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div>
-                    <label class="label text-slate-700 font-semibold">Device MAC Address <span class="text-rose-500">*</span></label>
-                    <input type="text" name="mac_address" required class="input font-mono uppercase font-bold" placeholder="AA:BB:CC:DD:EE:FF">
+                    <label class="label text-slate-700 font-semibold">Kategori Perangkat</label>
+                    <select name="device_category" class="input bg-white">
+                        <option value="smart_tv">Smart TV / Layar Kamar</option>
+                        <option value="cctv">IP CCTV Camera</option>
+                        <option value="printer">Printer Thermal POS</option>
+                        <option value="pos">Terminal EDC / POS Kasir</option>
+                        <option value="console">Gaming Console</option>
+                        <option value="iot">Sensor IoT Lainnya</option>
+                    </select>
                 </div>
+            </div>
 
-                <div>
-                    <label class="label text-slate-700 font-semibold">Fixed Static IP Address (Optional)</label>
-                    <input type="text" name="address" class="input font-mono" placeholder="192.168.88.50">
-                </div>
+            <div>
+                <label class="label text-slate-700 font-semibold">MAC Address Perangkat <span class="text-rose-500">*</span></label>
+                <input type="text" name="mac_address" required class="input font-mono uppercase font-bold" placeholder="AA:BB:CC:DD:EE:FF">
+            </div>
 
-                <div>
-                    <label class="label text-slate-700 font-semibold">Description / Unit Location</label>
-                    <input type="text" name="comment" class="input" placeholder="e.g. Smart TV Room 302">
-                </div>
+            <div>
+                <label class="label text-slate-700 font-semibold">Fixed Static IP Address (Opsional)</label>
+                <input type="text" name="address" class="input font-mono" placeholder="192.168.88.50">
+            </div>
 
-                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                    <button type="button" @click="modalOpen = false" class="btn-secondary text-xs py-2 px-4 font-semibold">Cancel</button>
-                    <button type="submit" class="btn-primary text-xs py-2 px-5 font-semibold">Save Policy Rule</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div>
+                <label class="label text-slate-700 font-semibold">Keterangan / Lokasi Unit</label>
+                <input type="text" name="comment" class="input" placeholder="cth. Smart TV Kamar 302">
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                <button type="button" @click="modalOpen = false" class="btn-secondary text-xs py-2 px-4 font-semibold">Batal</button>
+                <button type="submit" class="btn-primary text-xs py-2 px-5 font-semibold">Simpan Aturan</button>
+            </div>
+        </form>
+    </x-modal>
 
 </div>
 

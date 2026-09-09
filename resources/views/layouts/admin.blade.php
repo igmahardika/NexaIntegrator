@@ -7,10 +7,10 @@
     <title>@yield('title', 'Dashboard') — WiFiPads NAC Controller</title>
     <meta name="description" content="WiFiPads — Multi-Tenant Network Access Control & Edge Gateway Controller">
 
-    <!-- Google Fonts: Plus Jakarta Sans (Headings/Brand) + Inter (Body/UI) -->
+    <!-- Google Fonts: Plus Jakarta Sans (Headings/Brand) + Inter (Body/UI) + JetBrains Mono (Tech/Data) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS CDN (with console warning filter) -->
     <script>
@@ -36,6 +36,7 @@
                             DEFAULT: '#22449E',
                             hover: '#1b3680',
                             light: '#eef4ff',
+                            dark: '#0f1d45',
                             50: '#eef4ff',
                             100: '#d9e6ff',
                             200: '#bcd3ff',
@@ -58,11 +59,16 @@
                         'pill': 'var(--radius-pill, 9999px)',
                     },
                     boxShadow: {
+                        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
                         'xs': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
                         'sm': '0 2px 6px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.04)',
                         'md': '0 4px 14px 0 rgba(34, 68, 158, 0.15)',
                     },
+                    backdropBlur: {
+                        'xs': '2px',
+                    },
                     fontSize: {
+                        '3xs': ['9px', { lineHeight: '12px' }],
                         '2xs': ['10px', { lineHeight: '14px' }],
                         'xs': ['12px', { lineHeight: '16px' }],
                         'sm': ['14px', { lineHeight: '20px' }],
@@ -456,17 +462,24 @@
                 <div class="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 transition-all hover:bg-slate-50">
                     <div class="flex items-center justify-between gap-2 mb-1.5">
                         <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-500">Site Scope</span>
-                        @if($activeSite)
-                            <span class="inline-flex items-center gap-1.5 text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Online
-                            </span>
-                        @else
-                            <span class="inline-flex items-center gap-1.5 text-2xs font-bold text-brand bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60">
-                                <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
-                                Global NOC
-                            </span>
-                        @endif
+                        <div class="flex items-center gap-1.5">
+                            @if($activeSite)
+                                <span class="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $activeSite->is_active ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500' }}"></span>
+                                    {{ $activeSite->is_active ? 'Online' : 'Inactive' }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 text-2xs font-bold text-brand bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
+                                    Global NOC
+                                </span>
+                            @endif
+                            @if(auth()->user()?->isSuperadmin())
+                                <button type="button" @click="$dispatch('open-site-picker')" title="Cari & Ganti Site (Shortcut: Ctrl+K)" class="text-2xs text-brand hover:underline font-bold px-1.5 py-0.5 rounded bg-blue-100/60 hover:bg-blue-100 transition-colors cursor-pointer">
+                                    Ganti
+                                </button>
+                            @endif
+                        </div>
                     </div>
                     <div class="flex items-center gap-2.5">
                         <div class="w-7 h-7 rounded-lg bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center text-slate-600 shrink-0">
@@ -493,14 +506,14 @@
             </div>
 
             <!-- SECTION 1: SITE OPERATIONS -->
-            <div class="px-2 pt-1.5 pb-1 text-2xs font-extrabold uppercase tracking-wider text-slate-500">Site Operations</div>
+            <div class="px-2 pt-1.5 pb-1 text-2xs font-extrabold uppercase tracking-wider text-slate-500">Operasional Site</div>
 
             <!-- Item 1: Overview & Status (All Roles) -->
             <a href="{{ route('admin.dashboard') }}" class="sidebar-item {{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
                 </svg>
-                <span class="truncate">Overview & Health</span>
+                <span class="truncate">Ikhtisar & Status</span>
             </a>
 
             <!-- Item 2: Captive Portal Studio (Site Admin & Superadmin) -->
@@ -526,7 +539,7 @@
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/>
                 </svg>
-                <span class="truncate">Bandwidth Profiles</span>
+                <span class="truncate">Profil Bandwidth</span>
             </a>
             @endif
 
@@ -536,7 +549,7 @@
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/>
                 </svg>
-                <span class="truncate">{{ auth()->user()?->isCashier() ? 'Voucher Desk' : 'Hotspot Users' }}</span>
+                <span class="truncate">{{ auth()->user()?->isCashier() ? 'Voucher Desk' : 'User Hotspot' }}</span>
             </a>
             @endif
 
@@ -556,19 +569,19 @@
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/>
                 </svg>
-                <span class="truncate">Live Sessions</span>
+                <span class="truncate">Sesi Aktif</span>
             </a>
             @endif
 
             <!-- SECTION: CAMPAIGNS & MARKETING -->
             @if(auth()->user()?->isSuperAdmin() || auth()->user()?->isAdvertiser())
-            <div class="px-2 pt-4 pb-1 text-2xs font-extrabold uppercase tracking-wider text-slate-500">Marketing & Ads</div>
+            <div class="px-2 pt-4 pb-1 text-2xs font-extrabold uppercase tracking-wider text-slate-500">Pemasaran & Iklan</div>
 
             <a href="{{ route('admin.campaigns.index') }}" class="sidebar-item {{ request()->routeIs('admin.campaigns*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.455a20.01 20.01 0 01-1.378-3.929m3.04-9.47c.253-.962.584-1.892.985-2.783.247-.55.06-1.21-.463-1.511l-.657-.38c-.551-.318-1.26-.117-1.527.455a20.01 20.01 0 00-1.378 3.929m12.39 4.887a1.5 1.5 0 000-2.828M15 7.5v9"/>
                 </svg>
-                <span class="truncate">Campaigns & Surveys</span>
+                <span class="truncate">Kampanye & Survei</span>
             </a>
             @endif
 
@@ -580,29 +593,29 @@
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.75a1.5 1.5 0 011.5-1.5h1.5a1.5 1.5 0 011.5 1.5V21m6-9h.75m-.75 3h.75m-.75 3h.75"/>
                 </svg>
-                <span class="truncate">Sites Directory</span>
+                <span class="truncate">Direktori Site</span>
             </a>
 
             <a href="{{ route('admin.users.index') }}" class="sidebar-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
                 </svg>
-                <span class="truncate">Operator Access</span>
+                <span class="truncate">Akses Operator</span>
             </a>
 
             <a href="{{ route('admin.analytics.index') }}" class="sidebar-item {{ request()->routeIs('admin.analytics.index') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
                 </svg>
-                <span class="truncate">Global Analytics</span>
+                <span class="truncate">Analitik Global</span>
             </a>
 
             <a href="{{ route('admin.analytics.duration') }}" class="sidebar-item {{ request()->routeIs('admin.analytics.duration*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span class="truncate">Duration & Forensik</span>
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 ml-auto item-badge">Audit</span>
+                <span class="truncate">Log Sesi & Forensik</span>
+                <span class="px-1.5 py-0.5 rounded text-2xs font-bold bg-amber-50 text-amber-700 border border-amber-200/60 ml-auto item-badge">Audit</span>
             </a>
 
             <a href="{{ route('portal') }}?preview=1" target="_blank" class="sidebar-item">
@@ -616,7 +629,7 @@
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
                 </svg>
-                <span class="truncate">API & Documentation</span>
+                <span class="truncate">Dokumentasi & API</span>
             </a>
             @endif
         </nav>
@@ -630,7 +643,7 @@
                     </div>
                     <div class="min-w-0">
                         <div class="text-xs font-bold text-slate-900 truncate leading-snug">{{ auth()->user()?->name }}</div>
-                        <div class="text-[10px] text-slate-500 capitalize leading-tight flex items-center gap-1.5 mt-0.5">
+                        <div class="text-2xs text-slate-500 capitalize leading-tight flex items-center gap-1.5 mt-0.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
                             <span class="truncate">{{ auth()->user()?->role ?? 'Operator' }}</span>
                         </div>
@@ -659,7 +672,7 @@
     <!-- ======================== MAIN CONTENT CANVAS ======================== -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <!-- Top Bar Header (Pristine White Surface with SMARTIV Quick Actions) -->
-        <header class="h-16 flex items-center justify-between px-6 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex-shrink-0 z-10">
+        <header class="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex-shrink-0 z-10">
             <div class="flex items-center gap-4">
                 <!-- Mobile hamburger button (WCAG 44x44px target) -->
                 <button type="button" @click="sidebarOpen = !sidebarOpen" aria-label="Open navigation menu" class="lg:hidden w-11 h-11 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
@@ -670,41 +683,296 @@
                 
                 <!-- Personalized Greeting (SMARTIV DNA) -->
                 <div>
-                    <h1 class="text-sm font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                    <div class="text-sm font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                         <span>Hi {{ auth()->user()?->name ? explode(' ', auth()->user()->name)[0] : 'Admin' }} Team — {{ isset($currentTenantSite) && $currentTenantSite ? $currentTenantSite->name : 'NOC Global' }}!</span>
-                    </h1>
+                    </div>
                     <div class="text-xs text-slate-500 font-medium">@yield('page-title', 'Overview')</div>
                 </div>
             </div>
 
-            <!-- Header Quick Actions & Tenant Context Switcher -->
-            <div class="flex items-center gap-3">
-                @if(isset($availableTenantSites) && $availableTenantSites->count() > 0)
-                <!-- Tenant Context Switcher (Impersonation / Switch Account) -->
-                <form method="POST" action="{{ route('admin.context.switch') }}" class="flex items-center">
-                    @csrf
-                    <div class="relative flex items-center">
-                        <div class="absolute left-2.5 pointer-events-none text-slate-400">
-                            <span class="w-2 h-2 rounded-full inline-block {{ isset($currentTenantSite) && $currentTenantSite ? 'bg-emerald-500' : 'bg-brand' }}"></span>
-                        </div>
-                        <select name="site_id" onchange="this.form.submit()" class="bg-slate-50 border border-slate-200 rounded-xl pl-7 pr-8 py-1.5 text-xs text-slate-700 font-semibold focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 cursor-pointer hover:border-slate-300 transition-all appearance-none shadow-xs">
-                            <option value="all" {{ !isset($currentTenantSite) || !$currentTenantSite ? 'selected' : '' }}>
-                                All Sites (Global NOC)
-                            </option>
-                            @foreach($availableTenantSites as $site)
-                            <option value="{{ $site->id }}" {{ isset($currentTenantSite) && $currentTenantSite && $currentTenantSite->id === $site->id ? 'selected' : '' }}>
-                                Site: {{ $site->name }}
-                            </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute right-2.5 pointer-events-none text-slate-400">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
+            @php
+                $sitePickerList = ($availableTenantSites ?? collect())->map(function($s) {
+                    return [
+                        'id' => (string) $s->id,
+                        'name' => (string) $s->name,
+                        'customer_name' => (string) ($s->customer_name ?? ''),
+                        'business_type' => (string) ($s->business_type ?? 'other'),
+                        'router_ip' => (string) ($s->router_ip ?: ($s->radius_server_ip ?: '')),
+                        'address' => (string) ($s->address ?? ''),
+                        'gateway_mode' => (string) ($s->gateway_mode ?? 'direct_api'),
+                        'is_active' => (bool) $s->is_active,
+                    ];
+                })->values();
+                $currentSiteIdentifier = isset($currentTenantSite) && $currentTenantSite ? $currentTenantSite->id : 'all';
+            @endphp
+
+            <!-- Header Quick Actions & Searchable Tenant Context Picker -->
+            <div class="flex items-center gap-2 sm:gap-3" x-data="siteSearchPicker(@js($sitePickerList), '{{ $currentSiteIdentifier }}')" @open-site-picker.window="openModal()">
+                
+                @if(auth()->user()?->isSuperadmin() || (isset($availableTenantSites) && $availableTenantSites->count() > 0))
+                <!-- Searchable Site Switcher Button (Command Palette Trigger) -->
+                <div class="relative">
+                    <button 
+                        id="site-picker-trigger"
+                        type="button" 
+                        @click="openModal()" 
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/90 hover:border-brand/40 text-xs font-semibold text-slate-700 hover:text-slate-900 transition-all shadow-2xs hover:shadow-xs group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20"
+                        title="Pilih atau cari site (Shortcut: Ctrl+K / ⌘K)"
+                        aria-label="Pilih atau cari site"
+                    >
+                        <span class="w-2 h-2 rounded-full shrink-0 {{ isset($currentTenantSite) && $currentTenantSite ? ($currentTenantSite->is_active ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500') : 'bg-brand' }}"></span>
+                        <span class="font-bold text-slate-800 group-hover:text-brand transition-colors max-w-[130px] sm:max-w-[200px] truncate">
+                            {{ isset($currentTenantSite) && $currentTenantSite ? 'Site: ' . $currentTenantSite->name : '🌐 All Sites (Global NOC)' }}
+                        </span>
+                        <span class="hidden lg:inline-flex items-center text-3xs px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-500 font-mono tracking-tighter">
+                            ⌘K
+                        </span>
+                        <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                </div>
+
+                @if(auth()->user()?->isSuperadmin())
+                <a href="{{ route('admin.sites.index') }}" title="Sites Directory (Kelola Semua Site)" class="w-8 h-8 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-brand hover:bg-blue-50 transition-colors shrink-0" aria-label="Sites Directory">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </a>
+                @endif
+                @endif
+
+                <!-- Search Modal (Teleported to Body to avoid overflow clipping) -->
+                <template x-teleport="body">
+                    <div 
+                        x-show="isOpen" 
+                        x-cloak
+                        class="fixed inset-0 z-[9999] flex items-start justify-center pt-12 sm:pt-20 px-4 overflow-y-auto"
+                        role="dialog" 
+                        aria-modal="true"
+                    >
+                        <!-- Backdrop Blur -->
+                        <div 
+                            x-show="isOpen"
+                            x-transition:enter="ease-out duration-200" 
+                            x-transition:enter-start="opacity-0" 
+                            x-transition:enter-end="opacity-100" 
+                            x-transition:leave="ease-in duration-150" 
+                            x-transition:leave-start="opacity-100" 
+                            x-transition:leave-end="opacity-0"
+                            class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" 
+                            @click="closeModal()"
+                        ></div>
+
+                        <!-- Command Palette Container -->
+                        <div 
+                            x-show="isOpen"
+                            x-transition:enter="ease-out duration-200" 
+                            x-transition:enter-start="opacity-0 scale-95 translate-y-3" 
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0" 
+                            x-transition:leave="ease-in duration-150" 
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
+                            x-transition:leave-end="opacity-0 scale-95 translate-y-3"
+                            @click.outside="closeModal()"
+                            class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden z-10 my-auto sm:my-0"
+                        >
+                            <!-- Search Header -->
+                            <div class="relative border-b border-slate-100 flex items-center px-4 bg-white">
+                                <svg class="w-5 h-5 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <input 
+                                    x-ref="searchInput" 
+                                    type="text" 
+                                    x-model="search" 
+                                    @input="handleSearchInput()"
+                                    @keydown.arrow-down.prevent="navigateDown()"
+                                    @keydown.arrow-up.prevent="navigateUp()"
+                                    @keydown.enter.prevent="selectHighlighted()"
+                                    @keydown.escape.prevent="closeModal()"
+                                    placeholder="Cari nama site, customer, kota, IP gateway..." 
+                                    class="w-full bg-transparent pl-3 pr-20 py-4 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none"
+                                >
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <button 
+                                        type="button" 
+                                        x-show="search.length > 0" 
+                                        @click="search = ''; handleSearchInput(); $refs.searchInput.focus()"
+                                        class="w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                                        aria-label="Hapus teks pencarian"
+                                    >✕</button>
+                                    <span class="text-3xs font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">ESC</span>
+                                </div>
+                            </div>
+
+                            <!-- Quick Filter Tabs -->
+                            <div class="flex items-center justify-between px-4 py-2 bg-slate-50/80 border-b border-slate-100 text-xs">
+                                <div class="flex items-center gap-1">
+                                    <button 
+                                        type="button" 
+                                        @click="filter = 'all'; selectedIndex = 0"
+                                        :class="filter === 'all' ? 'bg-white text-brand font-bold shadow-2xs border border-slate-200' : 'text-slate-600 hover:text-slate-900 font-medium'"
+                                        class="px-2.5 py-1 rounded-lg transition-all text-2xs cursor-pointer"
+                                    >
+                                        Semua (<span x-text="sites.length"></span>)
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        @click="filter = 'active'; selectedIndex = 0"
+                                        :class="filter === 'active' ? 'bg-white text-emerald-700 font-bold shadow-2xs border border-emerald-200' : 'text-slate-600 hover:text-slate-900 font-medium'"
+                                        class="px-2.5 py-1 rounded-lg transition-all text-2xs cursor-pointer"
+                                    >
+                                        Aktif (<span x-text="sites.filter(s => s.is_active).length"></span>)
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        @click="filter = 'inactive'; selectedIndex = 0"
+                                        :class="filter === 'inactive' ? 'bg-white text-slate-700 font-bold shadow-2xs border border-slate-200' : 'text-slate-600 hover:text-slate-900 font-medium'"
+                                        class="px-2.5 py-1 rounded-lg transition-all text-2xs cursor-pointer"
+                                    >
+                                        Disabled (<span x-text="sites.filter(s => !s.is_active).length"></span>)
+                                    </button>
+                                </div>
+                                <span class="text-3xs text-slate-400 font-medium hidden sm:inline" x-text="'Ditemukan: ' + filteredSites.length + ' site'"></span>
+                            </div>
+
+                            <!-- Sites Results List -->
+                            <div class="max-h-80 overflow-y-auto divide-y divide-slate-100 p-2 space-y-1">
+                                
+                                <!-- Special Option: Global NOC (All Sites) -->
+                                <div 
+                                    x-show="matchesGlobal"
+                                    @click="selectSite('all')"
+                                    @mouseenter="selectedIndex = -1"
+                                    :class="selectedIndex === -1 ? 'bg-blue-50/80 border-brand/30' : 'hover:bg-slate-50 border-transparent'"
+                                    class="p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                                >
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-9 h-9 rounded-xl bg-blue-100/70 text-brand flex items-center justify-center shrink-0 font-bold text-sm">
+                                            🌐
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs font-bold text-slate-900 group-hover:text-brand transition-colors truncate">All Sites (Global NOC)</span>
+                                                <span class="text-3xs font-mono font-bold px-1.5 py-0.2 rounded bg-blue-100 text-brand uppercase">Multi-Site</span>
+                                            </div>
+                                            <div class="text-2xs text-slate-500 truncate mt-0.5">
+                                                Monitor agregat seluruh lokasi tanpa isolasi database tenant
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <template x-if="currentSiteId === 'all'">
+                                            <span class="inline-flex items-center gap-1 text-3xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Sedang Aktif
+                                            </span>
+                                        </template>
+                                        <template x-if="currentSiteId !== 'all'">
+                                            <span class="text-xs font-bold text-slate-400 group-hover:text-brand opacity-0 group-hover:opacity-100 transition-opacity">
+                                                Pilih →
+                                            </span>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Filtered Sites -->
+                                <template x-for="(site, index) in filteredSites" :key="site.id">
+                                    <div 
+                                        @click="selectSite(site.id)"
+                                        @mouseenter="selectedIndex = index"
+                                        :class="selectedIndex === index ? 'bg-blue-50/80 border-brand/30' : 'hover:bg-slate-50 border-transparent'"
+                                        class="p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                                    >
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div 
+                                                :class="site.is_active ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/60' : 'bg-slate-100 text-slate-400 border border-slate-200'"
+                                                class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-bold text-xs"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <span class="text-xs font-bold text-slate-900 group-hover:text-brand transition-colors truncate" x-text="site.name"></span>
+                                                    <span 
+                                                        :class="site.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'"
+                                                        class="text-3xs font-semibold px-1.5 py-0.2 rounded border"
+                                                        x-text="site.is_active ? 'Active' : 'Disabled'"
+                                                    ></span>
+                                                    <span class="text-3xs font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 uppercase" x-text="site.business_type"></span>
+                                                </div>
+                                                <div class="text-2xs text-slate-500 truncate mt-0.5 flex items-center gap-2">
+                                                    <span x-show="site.customer_name" x-text="site.customer_name"></span>
+                                                    <span x-show="site.customer_name && site.router_ip">•</span>
+                                                    <span class="font-mono text-3xs" x-show="site.router_ip" x-text="site.router_ip"></span>
+                                                    <span x-show="site.address" class="truncate" x-text="'📍 ' + site.address"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="shrink-0">
+                                            <template x-if="currentSiteId === site.id">
+                                                <span class="inline-flex items-center gap-1 text-3xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    Sedang Aktif
+                                                </span>
+                                            </template>
+                                            <template x-if="currentSiteId !== site.id">
+                                                <span class="text-xs font-bold text-slate-400 group-hover:text-brand opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                                    Pilih <span aria-hidden="true">→</span>
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Empty State -->
+                                <div x-show="filteredSites.length === 0 && !matchesGlobal" class="p-8 text-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
+                                    <h4 class="text-xs font-bold text-slate-800 mb-1">Site Tidak Ditemukan</h4>
+                                    <p class="text-2xs text-slate-500 mb-4" x-text="'Tidak ada site yang cocok dengan kata kunci &quot;' + search + '&quot;'"></p>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button type="button" @click="search = ''; filter = 'all'; handleSearchInput()" class="text-2xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                                            Reset Pencarian
+                                        </button>
+                                        <a href="{{ route('admin.sites.create') }}" class="text-2xs font-bold text-white bg-brand hover:bg-brand-hover px-3 py-1.5 rounded-lg transition-colors shadow-2xs">
+                                            + Tambah Site Baru
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer Bar -->
+                            <div class="bg-slate-50 border-t border-slate-100 px-4 py-3 flex items-center justify-between text-2xs text-slate-500">
+                                <div class="hidden sm:flex items-center gap-3 text-3xs text-slate-400 font-medium">
+                                    <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono shadow-2xs">↑</kbd><kbd class="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono shadow-2xs">↓</kbd> navigasi</span>
+                                    <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono shadow-2xs">↵</kbd> pilih</span>
+                                    <span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono shadow-2xs">esc</kbd> tutup</span>
+                                </div>
+                                <div class="flex items-center gap-3 ml-auto text-2xs">
+                                    <a href="{{ route('admin.sites.create') }}" class="font-bold text-brand hover:underline flex items-center gap-1">
+                                        + Site Baru
+                                    </a>
+                                    <span class="text-slate-300">•</span>
+                                    <a href="{{ route('admin.sites.index') }}" class="font-bold text-slate-700 hover:text-slate-900 hover:underline flex items-center gap-1">
+                                        Semua Site (Direktori) →
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </template>
+
+                <!-- Hidden Form for Context Switch -->
+                <form x-ref="contextSwitchForm" method="POST" action="{{ route('admin.context.switch') }}" class="hidden">
+                    @csrf
+                    <input type="hidden" name="site_id" x-ref="contextSiteIdInput" value="">
                 </form>
-                @endif
 
                 <!-- Status / Emergency Pill -->
                 <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-brand text-xs font-bold">
@@ -758,6 +1026,134 @@
         </main>
     </div>
 </div>
+
+<script>
+function siteSearchPicker(initialSites, currentSiteId) {
+    return {
+        isOpen: false,
+        search: '',
+        filter: 'all',
+        sites: Array.isArray(initialSites) ? initialSites : [],
+        currentSiteId: currentSiteId || 'all',
+        selectedIndex: 0,
+        searchDebounceTimer: null,
+
+        init() {
+            window.addEventListener('keydown', (e) => {
+                // Command+K or Ctrl+K opens site search
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                    const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+                    if (activeTag === 'textarea') return;
+                    e.preventDefault();
+                    if (this.isOpen) {
+                        this.closeModal();
+                    } else {
+                        this.openModal();
+                    }
+                }
+            });
+        },
+
+        openModal() {
+            this.isOpen = true;
+            this.search = '';
+            this.filter = 'all';
+            this.selectedIndex = 0;
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    this.$refs.searchInput?.focus();
+                }, 50);
+            });
+        },
+
+        closeModal() {
+            this.isOpen = false;
+        },
+
+        get matchesGlobal() {
+            if (this.filter !== 'all') return false;
+            let q = this.search.toLowerCase().trim();
+            if (!q) return true;
+            return 'all sites global noc centralized semua multi-site'.includes(q) || 'global'.includes(q) || 'noc'.includes(q);
+        },
+
+        get filteredSites() {
+            let q = this.search.toLowerCase().trim();
+            return this.sites.filter(site => {
+                if (this.filter === 'active' && !site.is_active) return false;
+                if (this.filter === 'inactive' && site.is_active) return false;
+                if (!q) return true;
+                return (site.name && site.name.toLowerCase().includes(q)) ||
+                       (site.customer_name && site.customer_name.toLowerCase().includes(q)) ||
+                       (site.address && site.address.toLowerCase().includes(q)) ||
+                       (site.router_ip && site.router_ip.toLowerCase().includes(q)) ||
+                       (site.business_type && site.business_type.toLowerCase().includes(q));
+            });
+        },
+
+        handleSearchInput() {
+            this.selectedIndex = 0;
+            clearTimeout(this.searchDebounceTimer);
+            let q = this.search.trim();
+            if (q.length >= 2) {
+                this.searchDebounceTimer = setTimeout(() => {
+                    fetch(`{{ route('admin.context.sites.search') }}?q=${encodeURIComponent(q)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (Array.isArray(data) && data.length > 0) {
+                                data.forEach(remoteSite => {
+                                    if (!this.sites.some(s => String(s.id) === String(remoteSite.id))) {
+                                        this.sites.push({
+                                            id: String(remoteSite.id),
+                                            name: String(remoteSite.name || ''),
+                                            customer_name: String(remoteSite.customer_name || ''),
+                                            business_type: String(remoteSite.business_type || 'other'),
+                                            router_ip: String(remoteSite.router_ip || ''),
+                                            address: String(remoteSite.address || ''),
+                                            gateway_mode: String(remoteSite.gateway_mode || 'direct_api'),
+                                            is_active: Boolean(remoteSite.is_active),
+                                        });
+                                    }
+                                });
+                            }
+                        })
+                        .catch(() => {});
+                }, 250);
+            }
+        },
+
+        navigateDown() {
+            let maxIndex = this.filteredSites.length - 1;
+            if (this.selectedIndex < maxIndex) {
+                this.selectedIndex++;
+            }
+        },
+
+        navigateUp() {
+            if (this.selectedIndex > (this.matchesGlobal ? -1 : 0)) {
+                this.selectedIndex--;
+            }
+        },
+
+        selectHighlighted() {
+            if (this.selectedIndex === -1 && this.matchesGlobal) {
+                this.selectSite('all');
+                return;
+            }
+            if (this.filteredSites.length > 0 && this.selectedIndex >= 0 && this.selectedIndex < this.filteredSites.length) {
+                this.selectSite(this.filteredSites[this.selectedIndex].id);
+            }
+        },
+
+        selectSite(siteId) {
+            this.$refs.contextSiteIdInput.value = siteId;
+            this.$refs.contextSwitchForm.submit();
+        }
+    };
+}
+</script>
+
+<x-confirm-dialog />
 
 @yield('scripts')
 @stack('scripts')

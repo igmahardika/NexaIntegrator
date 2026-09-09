@@ -57,6 +57,23 @@
         </div>
     </div>
 
+    <!-- Active Context Notice -->
+    @if(isset($currentTenantSite) && $currentTenantSite)
+    <div class="card p-3 mb-6 bg-emerald-50/80 border border-emerald-200/80 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xs">
+        <div class="flex items-center gap-2.5 text-emerald-900 font-semibold">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+            <span>Konteks Aktif: <strong>{{ $currentTenantSite->name }}</strong> (Voucher, user, dan gateway difilter untuk site ini)</span>
+        </div>
+        <form method="POST" action="{{ route('admin.context.switch') }}">
+            @csrf
+            <input type="hidden" name="site_id" value="all">
+            <button type="submit" class="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg transition-colors shadow-2xs">
+                🌐 Beralih ke Global NOC (Semua Site)
+            </button>
+        </form>
+    </div>
+    @endif
+
     <!-- Filter & Add Button Bar -->
     <div class="card p-4 mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between bg-white border border-slate-200/80 shadow-xs">
         <form method="GET" action="{{ route('admin.sites.index') }}" class="flex flex-wrap gap-2 items-center w-full sm:w-auto">
@@ -93,7 +110,7 @@
     <!-- Sites Cards Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse($sites as $site)
-        <div class="card p-5 flex flex-col justify-between bg-white border border-slate-200/80 shadow-xs hover:border-brand/40 hover:shadow-md transition-all duration-200">
+        <div class="card p-5 flex flex-col justify-between bg-white border border-slate-200/80 shadow-xs hover:border-brand/40 hover:shadow-md transition-all duration-200 {{ isset($currentTenantSite) && $currentTenantSite && $currentTenantSite->id === $site->id ? 'ring-2 ring-brand/40 border-brand' : '' }}">
             <div>
                 <!-- Header: Name & Status -->
                 <div class="flex items-start justify-between gap-3 mb-3">
@@ -166,6 +183,27 @@
 
             <!-- Action Buttons Footer -->
             <div class="space-y-2 pt-2">
+                <!-- Direct Context Switch Button -->
+                <form method="POST" action="{{ route('admin.context.switch') }}" class="w-full">
+                    @csrf
+                    <input type="hidden" name="site_id" value="{{ $site->id }}">
+                    @if(isset($currentTenantSite) && $currentTenantSite && $currentTenantSite->id === $site->id)
+                    <button type="button" disabled class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-xs flex items-center justify-center gap-2 cursor-default">
+                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span>Sedang Dikelola (Active Context)</span>
+                    </button>
+                    @else
+                    <button type="submit" class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-brand text-white hover:bg-brand-hover shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        <span>Kelola Site Ini (Switch Context)</span>
+                    </button>
+                    @endif
+                </form>
+
                 <!-- Management Hub Links -->
                 <div class="grid grid-cols-4 gap-1.5">
                     <a href="{{ route('admin.sites.template.gallery', $site) }}" class="btn-secondary text-2xs py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-brand/40 hover:text-brand font-semibold">
@@ -208,13 +246,20 @@
                             Edit
                         </button>
 
-                        <form method="POST" action="{{ route('admin.sites.destroy', $site) }}" onsubmit="return confirm('Permanently delete this site and associated device sessions?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-xs text-rose-600 hover:text-rose-700 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 font-semibold transition-colors">
-                                Delete
-                            </button>
-                        </form>
+                        <button 
+                            type="button" 
+                            @click="$dispatch('open-confirm', {
+                                title: 'Hapus Site: {{ addslashes($site->name) }}',
+                                message: 'Apakah Anda yakin ingin menghapus site ini beserta seluruh histori sesi jaringan terkait? Tindakan ini bersifat permanen.',
+                                actionUrl: '{{ route('admin.sites.destroy', $site) }}',
+                                method: 'DELETE',
+                                confirmLabel: 'Hapus Site',
+                                isDestructive: true
+                            })" 
+                            class="text-xs text-rose-600 hover:text-rose-700 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 font-semibold transition-colors cursor-pointer"
+                        >
+                            Delete
+                        </button>
                     </div>
                 </div>
             </div>
@@ -236,138 +281,118 @@
     </div>
 
     <!-- ==================== MODAL: ADD / EDIT SITE ==================== -->
-    <div
-        x-show="modalOpen"
-        x-cloak
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="site-modal-title"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
-        @keydown.escape.window="modalOpen = false"
-    >
-        <div
-            @click.outside="modalOpen = false"
-            class="card max-w-2xl w-full p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl max-h-[90vh] overflow-y-auto"
-        >
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
-                <h3 id="site-modal-title" class="text-base font-bold text-slate-900" x-text="isEdit ? 'Edit Site & Customer Profile' : 'Add New Site / Customer'"></h3>
-                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+    <x-modal name="modalOpen" maxWidth="max-w-2xl" xTitle="isEdit ? 'Edit Site & Customer Profile' : 'Add New Site / Customer'">
+        <form :action="isEdit ? `/admin/sites/${currentSite.id}` : '{{ route('admin.sites.store') }}'" method="POST" class="space-y-4">
+            @csrf
+            <template x-if="isEdit">
+                <input type="hidden" name="_method" value="PUT">
+            </template>
+            <input type="hidden" name="gateway_mode" x-model="form.gateway_mode">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="label text-slate-700 font-semibold">Site / Branch Name <span class="text-rose-500">*</span></label>
+                    <input type="text" name="name" x-model="form.name" required class="input" placeholder="e.g. Downtown Cafe & Roastery">
+                </div>
+                <div>
+                    <label class="label text-slate-700 font-semibold">Customer / Company Name</label>
+                    <input type="text" name="customer_name" x-model="form.customer_name" class="input" placeholder="e.g. PT Kopi Nusantara">
+                </div>
             </div>
 
-            <form :action="isEdit ? `/admin/sites/${currentSite.id}` : '{{ route('admin.sites.store') }}'" method="POST" class="space-y-4">
-                @csrf
-                <template x-if="isEdit">
-                    <input type="hidden" name="_method" value="PUT">
-                </template>
-                <input type="hidden" name="gateway_mode" x-model="form.gateway_mode">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="label text-slate-700 font-semibold">Business Category <span class="text-rose-500">*</span></label>
+                    <select name="business_type" x-model="form.business_type" class="input" required>
+                        <option value="cafe">Cafe / Restaurant</option>
+                        <option value="hotel">Hotel / Resort</option>
+                        <option value="retail">Retail / Store</option>
+                        <option value="coworking">Co-Working Space</option>
+                        <option value="office">Corporate Office</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label text-slate-700 font-semibold">PIC Email</label>
+                    <input type="email" name="contact_email" x-model="form.contact_email" class="input" placeholder="manager@site.com">
+                </div>
+                <div>
+                    <label class="label text-slate-700 font-semibold">Phone / WhatsApp</label>
+                    <input type="text" name="contact_phone" x-model="form.contact_phone" class="input" placeholder="+62 812-3456-7890">
+                </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Site / Branch Name <span class="text-rose-500">*</span></label>
-                        <input type="text" name="name" x-model="form.name" required class="input" placeholder="e.g. Downtown Cafe & Roastery">
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold">Customer / Company Name</label>
-                        <input type="text" name="customer_name" x-model="form.customer_name" class="input" placeholder="e.g. PT Kopi Nusantara">
-                    </div>
+            <div>
+                <label class="label text-slate-700 font-semibold">Full Physical Address</label>
+                <textarea name="address" x-model="form.address" rows="2" class="input" placeholder="e.g. Jl. Senopati No. 10, Kebayoran Baru..."></textarea>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
+                    </svg>
+                    <span>Edge Router & Gateway Settings</span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                        <label class="label text-slate-700 font-semibold">Business Category <span class="text-rose-500">*</span></label>
-                        <select name="business_type" x-model="form.business_type" class="input" required>
-                            <option value="cafe">Cafe / Restaurant</option>
-                            <option value="hotel">Hotel / Resort</option>
-                            <option value="retail">Retail / Store</option>
-                            <option value="coworking">Co-Working Space</option>
-                            <option value="office">Corporate Office</option>
-                            <option value="other">Other</option>
-                        </select>
+                        <label class="label text-slate-700 font-semibold mb-1 block">Router IP</label>
+                        <input type="text" name="router_ip" x-model="form.router_ip" class="input input-sm font-mono" placeholder="192.168.88.1">
                     </div>
                     <div>
-                        <label class="label text-slate-700 font-semibold">PIC Email</label>
-                        <input type="email" name="contact_email" x-model="form.contact_email" class="input" placeholder="manager@site.com">
+                        <label class="label text-slate-700 font-semibold mb-1 block">API Port</label>
+                        <input type="number" name="router_port" x-model="form.router_port" class="input input-sm font-mono" placeholder="8728">
                     </div>
                     <div>
-                        <label class="label text-slate-700 font-semibold">Phone / WhatsApp</label>
-                        <input type="text" name="contact_phone" x-model="form.contact_phone" class="input" placeholder="+62 812-3456-7890">
+                        <label class="label text-slate-700 font-semibold mb-1 block">Hotspot DNS Hostname</label>
+                        <input type="text" name="dns_name" x-model="form.dns_name" class="input input-sm font-mono" placeholder="wifi.login">
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="label text-slate-700 font-semibold mb-1 block">API User</label>
+                        <input type="text" name="router_user" x-model="form.router_user" class="input input-sm font-mono" placeholder="admin">
+                    </div>
+                    <div>
+                        <label class="label text-slate-700 font-semibold mb-1 block">API Password</label>
+                        <input type="password" name="router_password" x-model="form.router_password" class="input input-sm font-mono" :placeholder="isEdit ? '(Leave empty to keep existing)' : '••••••••'">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="label text-slate-700 font-semibold">Full Physical Address</label>
-                    <textarea name="address" x-model="form.address" rows="2" class="input" placeholder="e.g. Jl. Senopati No. 10, Kebayoran Baru..."></textarea>
+                    <label class="label text-slate-700 font-semibold mb-1 block">Default Login Method</label>
+                    <select name="active_template" x-model="form.active_template" class="input input-sm">
+                        <option value="username-password">Username & Password</option>
+                        <option value="access-code">Access Code (Voucher)</option>
+                        <option value="whatsapp-login">WhatsApp Login</option>
+                        <option value="question">Question & Rating Survey</option>
+                        <option value="button">1-Click Free Access Button</option>
+                        <option value="email">Email Lead Capture</option>
+                    </select>
                 </div>
-
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
-                    <div class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
-                        </svg>
-                        <span>Edge Router & Gateway Settings</span>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="label text-slate-700 font-semibold mb-1 block">Router IP</label>
-                            <input type="text" name="router_ip" x-model="form.router_ip" class="input input-sm font-mono" placeholder="192.168.88.1">
-                        </div>
-                        <div>
-                            <label class="label text-slate-700 font-semibold mb-1 block">API Port</label>
-                            <input type="number" name="router_port" x-model="form.router_port" class="input input-sm font-mono" placeholder="8728">
-                        </div>
-                        <div>
-                            <label class="label text-slate-700 font-semibold mb-1 block">Hotspot DNS Hostname</label>
-                            <input type="text" name="dns_name" x-model="form.dns_name" class="input input-sm font-mono" placeholder="wifi.login">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label class="label text-slate-700 font-semibold mb-1 block">API User</label>
-                            <input type="text" name="router_user" x-model="form.router_user" class="input input-sm font-mono" placeholder="admin">
-                        </div>
-                        <div>
-                            <label class="label text-slate-700 font-semibold mb-1 block">API Password</label>
-                            <input type="password" name="router_password" x-model="form.router_password" class="input input-sm font-mono" :placeholder="isEdit ? '(Leave empty to keep existing)' : '••••••••'">
-                        </div>
-                    </div>
+                <div>
+                    <label class="label text-slate-700 font-semibold mb-1 block">Device Capacity Limit</label>
+                    <input type="number" name="max_active_devices" x-model="form.max_active_devices" class="input input-sm bg-white border-slate-200 text-slate-900 w-full" placeholder="100">
                 </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="label text-slate-700 font-semibold mb-1 block">Default Login Method</label>
-                        <select name="active_template" x-model="form.active_template" class="input input-sm">
-                            <option value="username-password">Username & Password</option>
-                            <option value="access-code">Access Code (Voucher)</option>
-                            <option value="whatsapp-login">WhatsApp Login</option>
-                            <option value="question">Question & Rating Survey</option>
-                            <option value="button">1-Click Free Access Button</option>
-                            <option value="email">Email Lead Capture</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold mb-1 block">Device Capacity Limit</label>
-                        <input type="number" name="max_active_devices" x-model="form.max_active_devices" class="input input-sm bg-white border-slate-200 text-slate-900 w-full" placeholder="100">
-                    </div>
-                </div>
+            <div class="flex items-center gap-2 pt-2">
+                <input type="checkbox" name="is_active" value="1" id="is_active_cb" x-model="form.is_active" class="accent-brand w-4 h-4 rounded">
+                <label for="is_active_cb" class="text-xs text-slate-700 font-medium cursor-pointer">Activate site to accept guest device logins</label>
+            </div>
 
-                <div class="flex items-center gap-2 pt-2">
-                    <input type="checkbox" name="is_active" value="1" id="is_active_cb" x-model="form.is_active" class="accent-brand w-4 h-4 rounded">
-                    <label for="is_active_cb" class="text-xs text-slate-700 font-medium">Activate site to accept guest device logins</label>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                    <button type="button" @click="modalOpen = false" class="btn-secondary text-xs font-semibold">Cancel</button>
-                    <button type="submit" class="btn-primary text-xs font-semibold">
-                        <span x-text="isEdit ? 'Save Changes' : 'Create Site'"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <button type="button" @click="modalOpen = false" class="btn-secondary text-xs font-semibold">Cancel</button>
+                <button type="submit" class="btn-primary text-xs font-semibold">
+                    <span x-text="isEdit ? 'Save Changes' : 'Create Site'"></span>
+                </button>
+            </div>
+        </form>
+    </x-modal>
 
 </div>
 

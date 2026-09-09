@@ -29,7 +29,15 @@
                         brand: {
                             DEFAULT: '#22449E',
                             hover: '#1b3680',
+                            dark: '#0f1d45',
                         }
+                    },
+                    fontSize: {
+                        '3xs': ['9px', { lineHeight: '12px' }],
+                        '2xs': ['10px', { lineHeight: '14px' }],
+                    },
+                    boxShadow: {
+                        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
                     }
                 }
             }
@@ -101,7 +109,7 @@
                     <span>Kuota Data:</span>
                     <span class="font-bold text-slate-700">{{ $v->data_limit_bytes ? round($v->data_limit_bytes / 1048576) . ' MB' : 'Unlimited' }}</span>
                 </div>
-                <p class="text-center text-[10px] text-slate-500 mt-2">Hubungkan ke Wi-Fi, buka browser, masukkan kode di atas.</p>
+                <p class="text-center text-2xs text-slate-500 mt-2">Hubungkan ke Wi-Fi, buka browser, masukkan kode di atas.</p>
             </div>
         </div>
         @endforeach

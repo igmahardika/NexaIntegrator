@@ -71,9 +71,24 @@
                     <td class="py-3 px-4 text-right">
                         <div class="flex items-center gap-2 justify-end">
                             <a href="{{ route('admin.campaigns.edit', $campaign) }}" class="btn-secondary text-xs py-1.5 px-3 font-semibold">Edit</a>
-                            <form method="POST" action="{{ route('admin.campaigns.destroy', $campaign) }}" onsubmit="return confirm('Delete this campaign permanently?')">
+                            <form id="delete-campaign-{{ $campaign->id }}" method="POST" action="{{ route('admin.campaigns.destroy', $campaign) }}" class="inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn-danger text-xs py-1.5 px-2.5" aria-label="Delete campaign {{ $campaign->title }}">✕</button>
+                                <button 
+                                    type="button" 
+                                    @click="$dispatch('open-confirm', {
+                                        title: 'Hapus Kampanye Iklan',
+                                        message: 'Apakah Anda yakin ingin menghapus kampanye \'{{ addslashes($campaign->title) }}\'? Seluruh data analitik dan tanggapan kuesioner akan dihapus permanen.',
+                                        confirmText: 'Ya, Hapus Kampanye',
+                                        cancelText: 'Batal',
+                                        danger: true,
+                                        onConfirm: () => document.getElementById('delete-campaign-{{ $campaign->id }}').submit()
+                                    })"
+                                    class="btn-danger text-xs py-1.5 px-2.5" 
+                                    aria-label="Hapus kampanye {{ $campaign->title }}"
+                                    title="Hapus Kampanye"
+                                >
+                                    ✕
+                                </button>
                             </form>
                         </div>
                     </td>

@@ -392,11 +392,19 @@
                                     </button>
                                 </form>
 
-                                <form action="{{ route('admin.hotspot-users.destroy', $user) }}" method="POST" class="inline"
-                                      onsubmit="return confirm('Hapus user {{ $user->identifier }}?')">
+                                <form id="delete-hotspot-user-{{ $user->id }}" action="{{ route('admin.hotspot-users.destroy', $user) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1 rounded-md text-rose-500 hover:text-rose-700 hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none transition-colors"
+                                    <button type="button" 
+                                            @click="$dispatch('open-confirm', {
+                                                title: 'Hapus User Hotspot',
+                                                message: 'Apakah Anda yakin ingin menghapus user {{ addslashes($user->identifier) }}? Sesi dan otorisasi akses hotspot akan dihentikan.',
+                                                confirmText: 'Ya, Hapus User',
+                                                cancelText: 'Batal',
+                                                danger: true,
+                                                onConfirm: () => document.getElementById('delete-hotspot-user-{{ $user->id }}').submit()
+                                            })"
+                                            class="p-1 rounded-md text-rose-500 hover:text-rose-700 hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none transition-colors"
                                             aria-label="Hapus user {{ $user->identifier }}"
                                             title="Hapus User">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -427,26 +435,9 @@
     </div>
 
     <!-- ==================== UNIFIED MULTI-METHOD CREATE MODAL ==================== -->
-    <div x-show="createModal" x-cloak @keydown.escape.window="createModal = false" role="dialog" aria-modal="true" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-        <div @click.outside="createModal = false" class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-brand flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-extrabold text-slate-900">Buat User Hotspot Baru</h3>
-                        <p class="text-xs text-slate-500">Pilih metode login sesuai skenario autentikasi dan variabel MikroTik.</p>
-                    </div>
-                </div>
-                <button type="button" @click="createModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
+    <x-modal name="createModal" title="Buat User Hotspot Baru" max-width="2xl">
+        <div class="p-6 space-y-4">
+            <p class="text-xs text-slate-500 -mt-2">Pilih metode login sesuai skenario autentikasi dan variabel MikroTik.</p>
 
             <!-- Login Method Selector Tabs -->
             <div class="mt-4">
@@ -881,19 +872,12 @@
 
             </div>
         </div>
-    </div>
+    </x-modal>
 
     <!-- ==================== MODAL PILIH BATCH CETAK ==================== -->
-    <div x-show="printModal" x-cloak @keydown.escape.window="printModal = false" role="dialog" aria-modal="true" aria-labelledby="print-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-        <div @click.outside="printModal = false" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 id="print-modal-title" class="text-base font-extrabold text-slate-900">Pilih Batch Voucher untuk Dicetak</h3>
-                <button type="button" @click="printModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-
-            <div class="mt-4 space-y-2 max-h-60 overflow-y-auto">
+    <x-modal name="printModal" title="Pilih Batch Voucher untuk Dicetak" max-width="sm">
+        <div class="p-6">
+            <div class="space-y-2 max-h-60 overflow-y-auto">
                 @foreach($batches as $b)
                 <a href="{{ route('admin.hotspot-users.print', $b) }}" target="_blank"
                    class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand hover:bg-blue-50/50 transition">
@@ -903,7 +887,7 @@
                 @endforeach
             </div>
         </div>
-    </div>
+    </x-modal>
 
 </div>
 @endsection
