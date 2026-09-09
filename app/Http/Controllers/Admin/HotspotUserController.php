@@ -21,15 +21,47 @@ class HotspotUserController extends Controller
     public function index(Request $request): View
     {
         $availableSites = \App\Models\Location::where('is_active', true)->orderBy('name')->get();
+        if ($availableSites->isEmpty()) {
+            $availableSites = \App\Models\Location::orderBy('name')->get();
+        }
         $currentSite = TenantManager::getActiveSite();
 
-        // If in All Sites mode, allow selecting site from query, or default to first site
+        // If in All Sites mode or no site selected, allow selecting site from query, or default to first site
         if (!$currentSite) {
             $targetSiteId = $request->query('site_id');
             $currentSite = $targetSiteId ? $availableSites->firstWhere('id', $targetSiteId) : $availableSites->first();
             if ($currentSite) {
                 TenantManager::switchConnection($currentSite);
             }
+        }
+
+        // If still no site available (system has 0 locations)
+        if (!$currentSite) {
+            TenantManager::switchConnection(null);
+            $users = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25);
+            $stats = [
+                'total'    => 0,
+                'vouchers' => 0,
+                'members'  => 0,
+                'leads'    => 0,
+                'active'   => 0,
+                'ready'    => 0,
+            ];
+            $profiles = collect();
+            $batches  = collect();
+            $tab      = $request->query('tab', 'all');
+            $enabledMethods = [];
+
+            return view('admin.hotspot_users.index', compact(
+                'users',
+                'stats',
+                'profiles',
+                'batches',
+                'tab',
+                'currentSite',
+                'availableSites',
+                'enabledMethods'
+            ));
         }
 
         $query = HotspotUser::with('profile');
@@ -141,7 +173,7 @@ class HotspotUserController extends Controller
     {
         $currentSite = TenantManager::getActiveSite();
         if (!$currentSite) {
-            $site = \App\Models\Location::where('is_active', true)->first();
+            $site = \App\Models\Location::where('is_active', true)->first() ?: \App\Models\Location::first();
             if ($site) {
                 TenantManager::switchConnection($site);
                 return $site;

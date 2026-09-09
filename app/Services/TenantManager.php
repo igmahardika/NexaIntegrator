@@ -129,12 +129,32 @@ class TenantManager
     }
 
     /**
+     * Ensure the default fallback tenant database exists and is migrated.
+     */
+    public static function ensureDefaultDatabase(): string
+    {
+        if (self::isMysql()) {
+            self::ensureMysqlDatabase('wifipads_site_default');
+            return 'wifipads_site_default';
+        }
+
+        $dir = self::getTenantsDirectory();
+        $defaultPath = $dir . DIRECTORY_SEPARATOR . 'default.sqlite';
+        self::ensureSqliteDatabase($defaultPath);
+        return $defaultPath;
+    }
+
+    /**
      * Switch the active tenant database connection dynamically.
      */
     public static function switchConnection(Location|string|null $site): void
     {
         if (empty($site)) {
             self::$activeSite = null;
+            $defaultDb = self::ensureDefaultDatabase();
+            config(['database.connections.tenant.database' => $defaultDb]);
+            DB::purge('tenant');
+            DB::reconnect('tenant');
             return;
         }
 
