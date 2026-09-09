@@ -403,7 +403,10 @@
 # WiFiPads Provisioning Script for Site: {{ $currentLocation->slug ?? 'default-location' }}
 # ==============================================================
 /ip hotspot walled-garden
-add dst-host={{ $serverHost }} comment="WiFiPads Portal Host"
+add dst-host={{ $serverHost }} comment="Nexa Portal Host"
+add dst-host="*.nexa.net.id" comment="Nexa Domain Assets"
+add dst-host="fonts.googleapis.com" comment="Google Fonts"
+add dst-host="fonts.gstatic.com" comment="Google Fonts Static"
 add dst-host="*.wifipads.com" comment="WiFiPads CDN"
 
 /system scheduler

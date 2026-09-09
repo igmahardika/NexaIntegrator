@@ -96,10 +96,18 @@ class SiteController extends Controller
     public function provision(Location $site, Request $request): View
     {
         $serverHost = $request->getHost();
-        $scheme = $request->getScheme();
-        $port = $request->getPort();
-        $portSuffix = ($port && !in_array($port, [80, 443])) ? ":{$port}" : "";
-        $baseUrl = "{$scheme}://{$serverHost}{$portSuffix}";
+        $fallbackHost = parse_url(config('app.url', 'https://lcps.nexa.net.id'), PHP_URL_HOST) ?: 'lcps.nexa.net.id';
+        $fallbackBaseUrl = rtrim(config('app.url', 'https://lcps.nexa.net.id'), '/');
+
+        if (in_array($serverHost, ['localhost', '127.0.0.1', '']) || empty($serverHost)) {
+            $serverHost = !empty($site->radius_server_ip) ? $site->radius_server_ip : $fallbackHost;
+            $baseUrl = $fallbackBaseUrl;
+        } else {
+            $scheme = $request->getScheme();
+            $port = $request->getPort();
+            $portSuffix = ($port && !in_array($port, [80, 443])) ? ":{$port}" : "";
+            $baseUrl = "{$scheme}://{$serverHost}{$portSuffix}";
+        }
 
         $script = $site->getProvisioningScript($serverHost, $baseUrl);
         $radiusService = new RadiusService($site);

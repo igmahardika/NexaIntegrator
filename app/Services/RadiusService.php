@@ -165,7 +165,12 @@ class RadiusService
      */
     public function generateMinimalLoginHtml(string $portalUrl = ''): string
     {
-        $url = !empty($portalUrl) ? $portalUrl : url('/portal');
+        $canonicalPortalUrl = rtrim(config('app.url', 'https://lcps.nexa.net.id'), '/') . '/portal';
+        if (empty($portalUrl) || str_contains($portalUrl, '127.0.0.1') || str_contains($portalUrl, 'localhost')) {
+            $url = $canonicalPortalUrl;
+        } else {
+            $url = $portalUrl;
+        }
         $siteId = $this->location->id;
         $siteSlug = $this->location->slug;
 
@@ -178,7 +183,7 @@ class RadiusService
 <title>Connecting to WiFi Portal...</title>
 <meta http-equiv="refresh" content="0;url={$url}?site={$siteSlug}&mac=\$(mac)&ip=\$(ip)&link-login-only=\$(link-login-only)&link-orig=\$(link-orig-esc)&error=\$(error)">
 <script>window.location.href="{$url}?site={$siteSlug}&mac=\$(mac)&ip=\$(ip)&link-login-only=\$(link-login-only)&link-orig=\$(link-orig-esc)&error=\$(error)";</script>
-<style>body{margin:0;background:#0f172a;color:#fff;font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center}h3{margin:0 0 8px}p{margin:0;color:#94a3b8;font-size:13px}</style>
+<style>body{margin:0;background:#090d16;color:#fff;font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center}h3{margin:0 0 8px;font-size:1.1rem}p{margin:0;color:#94a3b8;font-size:13px}</style>
 </head>
 <body><div><h3>Menghubungkan ke Portal WiFi...</h3><p>Silakan tunggu beberapa saat.</p></div></body>
 </html>

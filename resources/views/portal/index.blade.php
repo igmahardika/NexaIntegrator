@@ -10,31 +10,33 @@
 
 <style>
 /* ==========================================================================
-   UI/UX PRO MAX DESIGN SYSTEM: NEXA HOTSPOT CAPTIVE PORTAL
-   Standardized Metrics: 4px/8px Spacing Grid, WCAG AA/AAA Contrast,
-   Refined Typography Hierarchy, Micro-interactions & Seamless Responsiveness
+   UI/UX PRO MAX DESIGN SYSTEM: NEXA HOTSPOT CAPTIVE PORTAL (REDESIGNED)
+   Aesthetic: Sleek Frosted Glassmorphism, Zero-Topbar Immersive Canvas,
+   Refined Typography Hierarchy, Micro-interactions & Mobile CNA Optimization
 ========================================================================== */
 
 :root {
-    /* Color Palette (WCAG AA Compliant >= 4.5:1 against white) */
-    --nexa-primary: #0e7490;
+    /* Brand Theme Colors */
+    --nexa-primary: {{ $siteConfig['primary_color'] ?? '#0284c7' }};
     --nexa-primary-hover: color-mix(in srgb, var(--nexa-primary) 85%, black);
     --nexa-primary-active: color-mix(in srgb, var(--nexa-primary) 70%, black);
-    --nexa-primary-ring: color-mix(in srgb, var(--nexa-primary) 28%, transparent);
-    --nexa-topbar: {{ $siteConfig['topbar_color'] ?? '#0e7490' }};
-    --nexa-topbar-hover: color-mix(in srgb, var(--nexa-topbar) 88%, black);
+    --nexa-primary-ring: color-mix(in srgb, var(--nexa-primary) 24%, transparent);
+    --nexa-primary-glow: color-mix(in srgb, var(--nexa-primary) 18%, transparent);
+    --nexa-accent: {{ $siteConfig['accent_color'] ?? '#06b6d4' }};
 
     /* Neutrals & Surfaces */
     --surface-card: #ffffff;
+    --surface-card-glass: rgba(255, 255, 255, 0.96);
     --surface-card-subtle: #f8fafc;
     --surface-input: #f1f5f9;
     --surface-input-hover: #e2e8f0;
+    --surface-input-focus: #ffffff;
     
     /* Text Hierarchy */
     --text-heading: #0f172a;
     --text-body: #334155;
     --text-muted: #64748b;
-    --text-placeholder: #64748b;
+    --text-placeholder: #94a3b8;
     --text-inverse: #ffffff;
 
     /* Semantic States */
@@ -43,22 +45,22 @@
     --state-error-text: #b91c1c;
     --state-success: #10b981;
 
-    /* Radii & Shadows */
-    --radius-modal: 22px;
-    --radius-banner: 16px;
+    /* Radii & Elevation Shadows */
+    --radius-card: 26px;
+    --radius-inner: 18px;
     --radius-pill: 9999px;
-    --radius-sm: 8px;
-    --shadow-modal: 0 24px 64px -12px rgba(0, 0, 0, 0.55), 0 12px 24px -8px rgba(0, 0, 0, 0.3);
-    --shadow-btn: 0 4px 14px rgba(0, 166, 244, 0.38);
-    --shadow-btn-hover: 0 6px 20px rgba(0, 166, 244, 0.52);
+    --radius-sm: 10px;
+    --shadow-card: 0 25px 65px -15px rgba(0, 0, 0, 0.55), 0 10px 25px -5px rgba(0, 0, 0, 0.28);
+    --shadow-btn: 0 4px 14px color-mix(in srgb, var(--nexa-primary) 42%, transparent);
+    --shadow-btn-hover: 0 8px 22px color-mix(in srgb, var(--nexa-primary) 58%, transparent);
 
     /* Fonts */
     --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     
-    /* Transition Timing */
+    /* Transitions */
     --timing-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --timing-smooth: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    --timing-smooth: 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Screen Reader Accessible Utility */
@@ -88,7 +90,7 @@
 html, body {
     width: 100%;
     max-width: 100%;
-    height: 100%;
+    min-height: 100vh;
     margin: 0;
     padding: 0;
     font-family: var(--font-ui);
@@ -115,206 +117,68 @@ body {
     flex-direction: column;
 }
 
-/* Ambient Deep Lighting Overlay */
+/* Atmospheric Viewport Deep Lighting Overlay */
 .nexa-viewport-overlay {
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at 50% 45%, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.76) 100%);
+    background: radial-gradient(circle at 50% 28%, rgba(14, 116, 144, 0.25) 0%, rgba(9, 13, 22, 0.82) 78%);
     pointer-events: none;
     z-index: 1;
 }
 
-/* ==========================================================================
-   1. TOP STATUS BAR (CYAN / TEAL HEADER)
-========================================================================== */
-.nexa-top-bar {
+/* Ambient Radial Glow Orbs */
+.nexa-ambient-glow {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 40px;
-    background: var(--nexa-topbar);
-    color: var(--text-inverse);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 18px;
-    font-family: var(--font-display);
-    font-size: 0.875rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    z-index: 1001;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-    user-select: none;
-}
-
-.nexa-top-bar-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.nexa-top-bar-close {
-    position: relative;
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.9);
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background var(--timing-fast), color var(--timing-fast);
-}
-
-.nexa-top-bar-close::before {
-    content: '';
-    position: absolute;
-    top: -8px;
-    bottom: -8px;
-    left: -8px;
-    right: -8px;
-}
-
-.nexa-top-bar-close:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
-}
-
-.nexa-top-bar-close svg {
-    width: 18px;
-    height: 18px;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--nexa-primary-glow) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+    filter: blur(40px);
 }
 
 /* ==========================================================================
-   2. WELCOME SCREEN BACKGROUND LAYER (STANDBY STATE)
+   1. IMMERSIVE CAPTIVE PORTAL WRAPPER (ZERO-NAVBAR FULL VIEWPORT)
 ========================================================================== */
-.nexa-welcome-container {
+.nexa-portal-canvas {
     position: relative;
     z-index: 2;
-    flex: 1;
+    width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 72px 20px 40px;
-    text-align: center;
-    min-height: calc(100vh - 40px);
-    width: 100%;
-    max-width: 100%;
+    padding: 32px 16px;
 }
 
-.nexa-welcome-title {
-    font-family: var(--font-display);
-    font-size: clamp(2.1rem, 5.5vw, 3.4rem);
-    font-weight: 900;
-    letter-spacing: 0.06em;
-    color: var(--text-inverse);
-    text-transform: uppercase;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.85);
-    margin-bottom: 6px;
-    line-height: 1.15;
-}
-
-.nexa-welcome-logo-wrap {
-    margin-bottom: 32px;
-}
-
-.nexa-welcome-logo {
-    width: min(320px, 82vw);
-    height: auto;
-    filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.75));
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.nexa-welcome-logo:hover {
-    transform: scale(1.025);
-}
-
-.nexa-welcome-login-btn {
-    background: rgba(15, 23, 42, 0.86);
-    color: var(--text-inverse);
-    border: 1.5px solid rgba(255, 255, 255, 0.22);
-    padding: 13px 34px;
-    border-radius: var(--radius-pill);
-    font-family: var(--font-ui);
-    font-size: 0.9375rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    transition: all var(--timing-smooth);
-}
-
-.nexa-welcome-login-btn:hover {
-    background: #000000;
-    border-color: var(--nexa-topbar);
-    box-shadow: 0 10px 35px rgba(0, 180, 216, 0.45);
-    transform: translateY(-2px);
-}
-
-.nexa-welcome-login-btn:active {
-    transform: translateY(0) scale(0.98);
-}
-
-/* ==========================================================================
-   3. LOGIN POPUP MODAL (2-COLUMN WHITE CARD DIALOG)
-========================================================================== */
-.nexa-modal-backdrop {
-    position: fixed;
-    top: 40px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: calc(100% - 40px);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 16px;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.nexa-modal-backdrop::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-}
-
+/* 2-Column Redesigned Modal Card */
 .nexa-modal-card {
-    background: var(--surface-card);
-    border-radius: var(--radius-modal);
-    box-shadow: var(--shadow-modal);
+    background: var(--surface-card-glass);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
     width: 100%;
-    max-width: 820px;
+    max-width: 860px;
     margin: auto;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: row;
-    min-height: 440px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    animation: nexaModalPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    min-height: 480px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    animation: nexaCardPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes nexaModalPopIn {
+@keyframes nexaCardPopIn {
     from {
         opacity: 0;
-        transform: scale(0.95) translateY(14px);
+        transform: scale(0.96) translateY(16px);
     }
     to {
         opacity: 1;
@@ -322,53 +186,26 @@ body {
     }
 }
 
-/* Close Button (x) in top right corner of card */
-.nexa-card-close-btn {
-    position: absolute;
-    top: 14px;
-    right: 16px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 20;
-    transition: background var(--timing-fast), color var(--timing-fast), transform var(--timing-fast);
-}
-
-.nexa-card-close-btn::before {
+/* Subtle Top Card Gradient Accent Line */
+.nexa-modal-card::before {
     content: '';
     position: absolute;
-    top: -8px;
-    bottom: -8px;
-    left: -8px;
-    right: -8px;
-}
-
-.nexa-card-close-btn:hover {
-    background: var(--surface-input-hover);
-    color: var(--text-heading);
-    transform: rotate(90deg);
-}
-
-.nexa-card-close-btn svg {
-    width: 18px;
-    height: 18px;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--nexa-primary), var(--nexa-accent), var(--nexa-primary));
+    z-index: 10;
 }
 
 /* --------------------------------------------------------------------------
-   3A. LEFT COLUMN: Brand Header, Forms, and Footer
+   2A. LEFT PANEL: Brand Header, Forms, and Footer
 -------------------------------------------------------------------------- */
 .nexa-card-left {
-    flex: 1;
+    flex: 1.15;
     min-width: 0;
     width: 100%;
-    padding: 40px 36px 30px;
+    padding: 38px 36px 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -377,19 +214,65 @@ body {
     background: var(--surface-card);
 }
 
+/* Live Hotspot Status Pill */
+.nexa-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    background: rgba(14, 116, 144, 0.08);
+    border: 1px solid rgba(14, 116, 144, 0.16);
+    color: var(--nexa-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 16px;
+}
+
+.nexa-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: nexaPulse 2s infinite;
+}
+
+@keyframes nexaPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
 .nexa-brand-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
+    width: 100%;
 }
 
 .nexa-brand-logo {
-    width: 185px;
+    width: 195px;
     max-width: 100%;
     height: auto;
-    margin-bottom: 8px;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.04));
+    margin-bottom: 10px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));
+    transition: transform var(--timing-smooth);
+}
+
+.nexa-brand-logo:hover {
+    transform: scale(1.02);
 }
 
 .nexa-ig-badge {
@@ -400,15 +283,19 @@ body {
     font-weight: 600;
     color: var(--text-heading);
     text-decoration: none;
-    padding: 3px 10px;
-    border-radius: var(--radius-sm);
-    transition: color var(--timing-fast), background var(--timing-fast), transform var(--timing-fast);
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-card-subtle);
+    border: 1px solid var(--surface-input-hover);
+    transition: all var(--timing-fast);
 }
 
 .nexa-ig-badge:hover {
     color: #e1306c;
-    background: var(--surface-card-subtle);
+    border-color: rgba(225, 48, 108, 0.35);
+    background: #fff;
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(225, 48, 108, 0.15);
 }
 
 .nexa-ig-icon {
@@ -417,11 +304,35 @@ body {
     flex-shrink: 0;
 }
 
+/* Title & Subtitle */
+.nexa-intro-box {
+    margin-top: 10px;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.nexa-intro-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-heading);
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+}
+
+.nexa-intro-subtitle {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    max-width: 290px;
+    margin: 0 auto;
+}
+
 /* Form Container & Pill Inputs */
 .nexa-form-wrap {
     width: 100%;
     max-width: 320px;
-    margin: 10px auto;
+    margin: 6px auto 14px;
 }
 
 .nexa-pill-input-box {
@@ -429,18 +340,18 @@ body {
     border-radius: var(--radius-pill);
     display: flex;
     align-items: center;
-    padding: 4px 5px 4px 18px;
+    padding: 5px 6px 5px 20px;
     width: 100%;
-    height: 48px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+    height: 50px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
     border: 1.5px solid transparent;
     transition: border-color var(--timing-fast), background var(--timing-fast), box-shadow var(--timing-fast);
 }
 
 .nexa-pill-input-box:focus-within {
     border-color: var(--nexa-primary);
-    background: #ffffff;
-    box-shadow: 0 0 0 3px var(--nexa-primary-ring);
+    background: var(--surface-input-focus);
+    box-shadow: 0 0 0 4px var(--nexa-primary-ring);
 }
 
 .nexa-pill-input-box.mb-3 {
@@ -475,7 +386,7 @@ body {
     flex-shrink: 0;
 }
 
-/* Circular Blue Arrow Submit Button */
+/* Circular Submit Arrow Button */
 .nexa-circle-arrow-btn {
     background: var(--nexa-primary);
     border: none;
@@ -499,6 +410,10 @@ body {
     box-shadow: var(--shadow-btn-hover);
 }
 
+.nexa-circle-arrow-btn:hover:not(:disabled) svg {
+    transform: translateX(1.5px);
+}
+
 .nexa-circle-arrow-btn:active:not(:disabled) {
     background: var(--nexa-primary-active);
     transform: scale(0.96);
@@ -507,6 +422,7 @@ body {
 .nexa-circle-arrow-btn svg {
     width: 18px;
     height: 18px;
+    transition: transform var(--timing-fast);
 }
 
 .nexa-circle-arrow-btn:disabled {
@@ -545,17 +461,17 @@ body {
 }
 
 .nexa-submit-pill-btn .nexa-circle-arrow-btn.sm {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
     background: #ffffff;
     color: var(--nexa-primary);
     box-shadow: none;
 }
 
 .nexa-submit-pill-btn .nexa-circle-arrow-btn.sm svg {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
 }
 
 /* Alert Notification in Form */
@@ -658,7 +574,16 @@ body {
     background: var(--nexa-primary);
     border-color: var(--nexa-primary);
     color: var(--text-inverse);
-    box-shadow: 0 2px 8px rgba(0, 166, 244, 0.4);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--nexa-primary) 35%, transparent);
+}
+
+/* Terms Note */
+.nexa-tos-note {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-top: 4px;
+    max-width: 290px;
 }
 
 /* Left Column Footer: "Internet By [nexa]" */
@@ -667,45 +592,51 @@ body {
     align-items: center;
     justify-content: center;
     gap: 7px;
-    margin-top: 22px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(241, 245, 249, 0.85);
+    width: 100%;
 }
 
 .nexa-by-label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-muted);
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
 }
 
 .nexa-by-logo {
-    height: 22px;
+    height: 20px;
     width: auto;
     display: inline-block;
     vertical-align: middle;
 }
 
 /* --------------------------------------------------------------------------
-   3B. RIGHT COLUMN: Promotional Slider Banner & Pagination
+   2B. RIGHT PANEL: Promotional Slider Banner & Showcase
 -------------------------------------------------------------------------- */
 .nexa-card-right {
-    flex: 1;
+    flex: 0.95;
     min-width: 0;
-    padding: 28px;
+    padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: var(--surface-card);
+    background: #f8fafc;
+    border-left: 1px solid rgba(241, 245, 249, 0.9);
+    position: relative;
 }
 
 .nexa-slider-wrap {
     width: 100%;
-    max-width: 340px;
-    aspect-ratio: 1/1;
-    border-radius: var(--radius-banner);
+    max-width: 320px;
+    aspect-ratio: 4/5;
+    border-radius: var(--radius-inner);
     overflow: hidden;
     position: relative;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12);
     background: var(--surface-input);
 }
 
@@ -715,7 +646,7 @@ body {
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
 }
 
@@ -731,12 +662,31 @@ body {
     display: block;
 }
 
+/* Overlay Badge on Flyer */
+.nexa-promo-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 5;
+    background: rgba(15, 23, 42, 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.02em;
+}
+
+/* Carousel Pagination Dots */
 .nexa-carousel-dots {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    margin-top: 16px;
+    gap: 7px;
+    margin-top: 14px;
 }
 
 .nexa-dot {
@@ -751,57 +701,50 @@ body {
     transition: all var(--timing-fast);
 }
 
-.nexa-dot::before {
-    content: '';
-    position: absolute;
-    top: -18px;
-    bottom: -18px;
-    left: -18px;
-    right: -18px;
-}
-
 .nexa-dot.active {
-    background: var(--text-muted);
-    transform: scale(1.25);
+    background: var(--nexa-primary);
+    width: 22px;
+    border-radius: var(--radius-pill);
 }
 
 /* ==========================================================================
-   4. SUCCESS STATE (WITH ANIMATED CHECKMARK & REDIRECT)
+   3. SUCCESS STATE (WITH ANIMATED CHECKMARK & PROGRESS)
 ========================================================================== */
 .nexa-success-panel {
     display: none;
-    padding: 48px 24px;
+    padding: 48px 28px;
     text-align: center;
     width: 100%;
-    animation: nexaFadeIn 0.3s ease;
+    animation: nexaFadeIn 0.35s ease;
 }
 
 @keyframes nexaFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .nexa-success-icon {
-    width: 72px;
-    height: 72px;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
     background: #ecfdf5;
     color: var(--state-success);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 18px;
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.22);
+    margin: 0 auto 20px;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+    border: 3px solid #d1fae5;
 }
 
 .nexa-success-icon svg {
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
 }
 
 .nexa-success-title {
     font-family: var(--font-display);
-    font-size: 1.45rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-heading);
     margin-bottom: 6px;
@@ -826,13 +769,13 @@ body {
 .nexa-progress-fill {
     height: 100%;
     width: 0%;
-    background: var(--nexa-primary);
+    background: linear-gradient(90deg, var(--nexa-primary), var(--nexa-accent));
     border-radius: var(--radius-pill);
-    transition: width 3s linear;
+    transition: width 3.2s linear;
 }
 
 /* ==========================================================================
-   5. TEMPLATE STUDIO FLOATING TOOLBAR (FOR ADMIN PREVIEW)
+   4. TEMPLATE STUDIO FLOATING TOOLBAR (FOR ADMIN PREVIEW / SIMULATION)
 ========================================================================== */
 .studio-bar {
     position: fixed;
@@ -910,7 +853,7 @@ body {
     color: #fff;
     background: var(--nexa-primary);
     font-weight: 800;
-    box-shadow: 0 2px 8px rgba(0, 166, 244, 0.45);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--nexa-primary) 50%, transparent);
 }
 
 .studio-btn {
@@ -937,37 +880,59 @@ body {
 .studio-btn-edit:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
 
 /* ==========================================================================
-   6. RESPONSIVE OPTIMIZATION (MOBILE & TABLETS)
+   5. RESPONSIVE OPTIMIZATION (MOBILE CNA & SMARTPHONES)
 ========================================================================== */
 @media (max-width: 768px) {
-    .nexa-modal-backdrop {
-        padding: 16px 12px 76px;
-        align-items: flex-start;
-        justify-content: center;
+    .nexa-portal-canvas {
+        padding: 16px 12px 32px;
+        justify-content: flex-start;
+        min-height: 100vh;
     }
     .nexa-modal-card {
         flex-direction: column;
-        max-width: 360px;
+        max-width: 410px;
         width: 100%;
-        margin: 6px auto;
+        margin: 0 auto;
         min-height: auto;
-        border-radius: 20px;
+        border-radius: 22px;
     }
     .nexa-card-left {
-        padding: 28px 20px 22px;
+        padding: 26px 20px 20px;
         order: 1;
     }
+    .nexa-status-pill {
+        margin-bottom: 12px;
+    }
     .nexa-brand-logo {
-        width: 160px;
+        width: 165px;
+    }
+    .nexa-intro-title {
+        font-size: 1.15rem;
     }
     .nexa-card-right {
-        padding: 16px 20px 24px;
         order: 2;
-        border-top: 1px solid #f1f5f9;
+        padding: 0 20px 22px;
+        background: transparent;
         border-left: none;
+        border-top: none;
     }
     .nexa-slider-wrap {
-        max-width: 260px;
+        max-width: 100%;
+        width: 100%;
+        height: 160px;
+        aspect-ratio: auto;
+        border-radius: 14px;
+    }
+    .nexa-slider-wrap img {
+        object-fit: cover;
+        object-position: center 20%;
+    }
+    .nexa-carousel-dots {
+        margin-top: 10px;
+    }
+    .nexa-card-footer {
+        margin-top: 14px;
+        padding-top: 12px;
     }
     .studio-bar {
         bottom: 8px;
@@ -986,6 +951,7 @@ body {
     }
 }
 </style>
+
 @if(!empty($siteConfig['custom_css']))
 <style id="custom-css-live">
 {!! preg_replace('/<\s*\/?\s*(style|script)[^>]*>/i', '', $siteConfig['custom_css']) !!}
@@ -995,63 +961,25 @@ body {
 
 @section('content')
 
-<!-- Ambient Depth Overlay -->
+<!-- Ambient Lighting Depth Overlays -->
 <div class="nexa-viewport-overlay" aria-hidden="true"></div>
+<div class="nexa-ambient-glow" aria-hidden="true"></div>
 
 <!-- ============================================================
-     TOP STATUS BAR (CYAN / TEAL HEADER)
+     IMMERSIVE CAPTIVE PORTAL CANVAS (ZERO TOPBAR)
 ============================================================ -->
-<header class="nexa-top-bar" id="nexa-top-bar" role="banner">
-    <div class="nexa-top-bar-title">
-        <span>{{ $siteConfig['topbar_title'] ?? ($allTemplates[$activeTemplate]['name'] ?? 'Access Code') }}</span>
-    </div>
-    <button type="button" class="nexa-top-bar-close" onclick="toggleLoginModal()" aria-label="Tutup atau Buka Jendela Login">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-    </button>
-</header>
-
-<!-- ============================================================
-     WELCOME SCREEN BACKGROUND LAYER (STANDBY STATE)
-============================================================ -->
-<main class="nexa-welcome-container" role="main">
-    <h1 class="nexa-welcome-title">WELCOME TO</h1>
-    
-    <div class="nexa-welcome-logo-wrap">
-        <img 
-            src="{{ $siteConfig['logo_white'] ?? '/images/nexa/logo-hotspot-white.png' }}" 
-            alt="{{ $siteConfig['brand_name'] ?? 'nexa Hotspot' }}" 
-            class="nexa-welcome-logo"
-        >
-    </div>
-
-    <div>
-        <button type="button" class="nexa-welcome-login-btn" onclick="openLoginModal()">
-            <svg style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-            </svg>
-            <span>Login For Internet Access</span>
-        </button>
-    </div>
-</main>
-
-<!-- ============================================================
-     LOGIN POPUP MODAL (2-COLUMN WHITE CARD DIALOG)
-============================================================ -->
-<div id="nexa-login-modal" class="nexa-modal-backdrop" style="{{ request()->has('closed') ? 'display:none;' : '' }}" onclick="if(event.target === this) closeLoginModal()" role="dialog" aria-modal="true">
+<main id="nexa-login-modal" class="nexa-portal-canvas" role="main">
     <div class="nexa-modal-card" id="nexa-card-inner">
-        <!-- Close Button (x) in upper right corner of the card -->
-        <button type="button" class="nexa-card-close-btn" onclick="closeLoginModal()" aria-label="Tutup Dialog">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        </button>
 
-        <!-- LEFT COLUMN: Brand Header, Form Inputs, Internet By Footer -->
+        <!-- LEFT PANEL: Brand Header, Form Inputs, Internet By Footer -->
         <div class="nexa-card-left" id="nexa-login-column">
+            
+            <!-- Online Hotspot Status Badge -->
+            <div class="nexa-status-pill">
+                <span class="nexa-pulse-dot" aria-hidden="true"></span>
+                <span>{{ $siteConfig['brand_tagline'] ?? 'High-Speed Guest WiFi' }}</span>
+            </div>
+
             <!-- Brand Logo & Instagram Handle -->
             <div class="nexa-brand-header">
                 <img 
@@ -1067,6 +995,16 @@ body {
                     </svg>
                     <span>{{ $siteConfig['instagram'] ?? 'nexanet.id' }}</span>
                 </a>
+            </div>
+
+            <!-- Intro Headline & Subtitle -->
+            <div class="nexa-intro-box">
+                <h1 class="nexa-intro-title">
+                    {{ $siteConfig['hero_title'] ?? ($allTemplates[$activeTemplate]['name'] ?? 'Input Access Code') }}
+                </h1>
+                <p class="nexa-intro-subtitle">
+                    {{ $siteConfig['hero_subtitle'] ?? 'Masukkan kode akses atau voucher Anda untuk terhubung ke internet' }}
+                </p>
             </div>
 
             <!-- Form Wrapper based on active login method -->
@@ -1165,13 +1103,10 @@ body {
                 @elseif($activeTemplate === 'button')
                 <form id="quick-form" onsubmit="submitQuick(event)">
                     <div id="quick-error" class="nexa-alert-error" style="display:none;" role="alert"></div>
-                    <p style="font-size:0.8125rem; color:var(--text-muted); margin-bottom:14px; line-height:1.45;">
-                        {{ $siteConfig['hero_subtitle'] ?? 'Klik tombol di bawah untuk langsung terhubung ke internet.' }}
-                    </p>
                     <button type="submit" id="quick-submit" class="nexa-submit-pill-btn">
-                        <span>{{ $siteConfig['button_text'] ?? 'Hubungkan Internet' }}</span>
-                        <span class="nexa-circle-arrow-btn sm">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <span>{{ $siteConfig['button_text'] ?? 'Hubungkan Internet Sekarang' }}</span>
+                        <span class="nexa-circle-arrow-btn sm" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M5 12h14M12 5l7 7-7 7"/>
                             </svg>
                         </span>
@@ -1253,7 +1188,7 @@ body {
                         <div class="nexa-q-item">
                             <div class="nexa-q-title">
                                 {{ $loop->iteration }}. {{ $q->question_text }}
-                                @if($q->is_required)<span style="color:var(--error)" aria-hidden="true">*</span>@endif
+                                @if($q->is_required)<span style="color:var(--state-error-text)" aria-hidden="true">*</span>@endif
                             </div>
 
                             @if($q->isChoice())
@@ -1290,8 +1225,8 @@ body {
 
                     <button type="submit" id="survey-submit" class="nexa-submit-pill-btn">
                         <span>{{ $siteConfig['button_text'] ?? 'Kirim & Aktifkan' }}</span>
-                        <span class="nexa-circle-arrow-btn sm">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <span class="nexa-circle-arrow-btn sm" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M5 12h14M12 5l7 7-7 7"/>
                             </svg>
                         </span>
@@ -1300,6 +1235,11 @@ body {
                 @endif
 
             </div>
+
+            <!-- Terms & Privacy Notice -->
+            <p class="nexa-tos-note">
+                {{ $siteConfig['tos_text'] ?? 'Dengan melanjutkan, Anda menyetujui syarat & ketentuan jaringan ini.' }}
+            </p>
 
             <!-- Footer: "Internet By [nexa]" -->
             <div class="nexa-card-footer">
@@ -1312,9 +1252,12 @@ body {
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: Promotional Slider Banner & Pagination Dots -->
-        <div class="nexa-card-right" id="nexa-promo-column">
+        <!-- RIGHT PANEL: Promotional Slider Banner & Showcase -->
+        <div class="nexa-card-right" id="nexa-promo-column" style="{{ ($siteConfig['promo_enabled'] ?? true) ? '' : 'display:none;' }}">
             <div class="nexa-slider-wrap">
+                <!-- Overlay Promo Tag -->
+                <span class="nexa-promo-badge">{{ $siteConfig['promo_badge'] ?? 'Ultra-Fast Fiber' }}</span>
+
                 <!-- Slide 1 -->
                 <div class="nexa-slide-item active" id="nexa-slide-0">
                     <img src="{{ $siteConfig['promo_image'] ?? '/images/nexa/promo-slide-1.jpg' }}" alt="Promo Ultra High Speed WiFi">
@@ -1339,7 +1282,7 @@ body {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
-            <h2 class="nexa-success-title" id="nexa-success-title">Koneksi Berhasil!</h2>
+            <h2 class="nexa-success-title" id="nexa-success-title">Koneksi Berhasil! 🎉</h2>
             <p class="nexa-success-sub" id="nexa-success-msg">Internet Anda sedang diaktifkan...</p>
             <div class="nexa-progress-track">
                 <div class="nexa-progress-fill" id="nexa-progress-bar"></div>
@@ -1347,7 +1290,7 @@ body {
         </div>
 
     </div>
-</div>
+</main>
 
 <!-- Hidden MikroTik redirect form -->
 <form id="mikrotik-form" method="POST" action="{{ $linkLogin }}" style="display:none">
@@ -1405,41 +1348,23 @@ var PORTAL_DATA = {
     isSimulation: {{ $isSimulation ? 'true' : 'false' }},
 };
 
-// Modal Open / Close Handler
+// Modal Open / Close Handlers (maintained for simulator & event bus)
 function openLoginModal() {
     var modal = document.getElementById('nexa-login-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeLoginModal() {
     var modal = document.getElementById('nexa-login-modal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
+    if (modal) modal.style.display = 'none';
 }
 
 function toggleLoginModal() {
     var modal = document.getElementById('nexa-login-modal');
     if (modal) {
-        if (modal.style.display === 'none') {
-            openLoginModal();
-        } else {
-            closeLoginModal();
-        }
+        modal.style.display = (modal.style.display === 'none') ? 'flex' : 'none';
     }
 }
-
-// Keyboard Navigation & Focus (WCAG 2.1 AA)
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' || e.key === 'Esc') {
-        var modal = document.getElementById('nexa-login-modal');
-        if (modal && modal.style.display !== 'none') {
-            closeLoginModal();
-        }
-    }
-});
 
 // Carousel Banner Slider Logic
 var currentSlide = 0;
@@ -1469,6 +1394,17 @@ function startSlideTimer() {
 }
 
 startSlideTimer();
+
+// Pause slider on hover
+var sliderWrap = document.querySelector('.nexa-slider-wrap');
+if (sliderWrap) {
+    sliderWrap.addEventListener('mouseenter', function() {
+        if (slideTimer) clearInterval(slideTimer);
+    });
+    sliderWrap.addEventListener('mouseleave', function() {
+        startSlideTimer();
+    });
+}
 
 // Survey Rating Helper
 function selectRating(qId, value, btn) {
@@ -1824,16 +1760,16 @@ window.addEventListener('message', function(event) {
         var cfg = event.data.config;
         var root = document.documentElement;
 
-        // Primary & Topbar Colors
+        // Primary & Theme Colors
         if (cfg.primary_color) {
             root.style.setProperty('--nexa-primary', cfg.primary_color);
             root.style.setProperty('--nexa-primary-hover', 'color-mix(in srgb, ' + cfg.primary_color + ' 85%, black)');
-            root.style.setProperty('--nexa-primary-ring', 'color-mix(in srgb, ' + cfg.primary_color + ' 28%, transparent)');
+            root.style.setProperty('--nexa-primary-ring', 'color-mix(in srgb, ' + cfg.primary_color + ' 24%, transparent)');
             root.style.setProperty('--shadow-btn', '0 4px 14px ' + cfg.primary_color + '66');
-            root.style.setProperty('--shadow-btn-hover', '0 6px 20px ' + cfg.primary_color + '99');
+            root.style.setProperty('--shadow-btn-hover', '0 8px 22px ' + cfg.primary_color + '99');
         }
-        if (cfg.topbar_color || cfg.accent_color) {
-            root.style.setProperty('--nexa-topbar', cfg.topbar_color || cfg.accent_color);
+        if (cfg.accent_color || cfg.topbar_color) {
+            root.style.setProperty('--nexa-accent', cfg.accent_color || cfg.topbar_color);
         }
 
         // Background Styling
@@ -1853,21 +1789,25 @@ window.addEventListener('message', function(event) {
             var brandLogo = document.querySelector('.nexa-brand-logo');
             if (brandLogo) brandLogo.src = cfg.logo_url;
         }
-        if (cfg.logo_white) {
-            var welcomeLogo = document.querySelector('.nexa-welcome-logo');
-            if (welcomeLogo) welcomeLogo.src = cfg.logo_white;
-        }
 
         // Brand Name
         if (cfg.brand_name) {
-            var bLogos = document.querySelectorAll('.nexa-brand-logo, .nexa-welcome-logo');
+            var bLogos = document.querySelectorAll('.nexa-brand-logo');
             bLogos.forEach(function(el) { el.alt = cfg.brand_name; });
         }
 
-        // Topbar Title
-        if (cfg.topbar_title || cfg.brand_name) {
-            var tbTitle = document.querySelector('.nexa-top-bar-title span');
-            if (tbTitle) tbTitle.textContent = cfg.topbar_title || cfg.brand_name;
+        // Intro Title & Subtitle
+        if (cfg.hero_title || cfg.topbar_title) {
+            var titleEl = document.querySelector('.nexa-intro-title');
+            if (titleEl) titleEl.textContent = cfg.hero_title || cfg.topbar_title;
+        }
+        if (cfg.hero_subtitle) {
+            var subEl = document.querySelector('.nexa-intro-subtitle');
+            if (subEl) subEl.textContent = cfg.hero_subtitle;
+        }
+        if (cfg.brand_tagline) {
+            var tagEl = document.querySelector('.nexa-status-pill span:last-child');
+            if (tagEl) tagEl.textContent = cfg.brand_tagline;
         }
 
         // Instagram Handle
@@ -1883,9 +1823,9 @@ window.addEventListener('message', function(event) {
         }
 
         // Input Placeholder
-        if (cfg.input_placeholder || cfg.hero_title) {
+        if (cfg.input_placeholder) {
             var voucherIn = document.getElementById('voucher-code');
-            if (voucherIn) voucherIn.placeholder = cfg.input_placeholder || cfg.hero_title;
+            if (voucherIn) voucherIn.placeholder = cfg.input_placeholder;
         }
 
         // Action Button Text (if submit button contains text)
@@ -1901,6 +1841,10 @@ window.addEventListener('message', function(event) {
         var promoCol = document.getElementById('nexa-promo-column');
         if (promoCol && cfg.promo_enabled !== undefined) {
             promoCol.style.display = cfg.promo_enabled ? 'flex' : 'none';
+        }
+        if (cfg.promo_badge) {
+            var pBadge = document.querySelector('.nexa-promo-badge');
+            if (pBadge) pBadge.textContent = cfg.promo_badge;
         }
         if (cfg.promo_image) {
             var img0 = document.querySelector('#nexa-slide-0 img');

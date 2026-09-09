@@ -64,7 +64,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="label text-slate-700 font-semibold mb-1 block">Top Cyan Bar Title</label>
+                        <label class="label text-slate-700 font-semibold mb-1 block">Portal Screen Title</label>
                         <input type="text" name="topbar_title" x-model="config.topbar_title" class="input bg-white border-slate-200 text-slate-900 rounded-lg w-full" placeholder="Access Code">
                     </div>
                 </div>
@@ -124,7 +124,7 @@
                     </div>
 
                     <div>
-                        <label class="label text-slate-700 font-semibold mb-1 block">Top Bar Color <span class="text-rose-500">*</span></label>
+                        <label class="label text-slate-700 font-semibold mb-1 block">Accent / Glow Color <span class="text-rose-500">*</span></label>
                         <div class="flex items-center gap-2">
                             <input type="color" x-model="config.topbar_color" class="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-slate-200">
                             <input type="text" name="topbar_color" x-model="config.topbar_color" class="input font-mono bg-white border-slate-200 text-slate-900 rounded-lg flex-1">

@@ -197,8 +197,10 @@
                 <h3 class="font-bold text-slate-900 text-sm">Walled Garden Allowlist Entries:</h3>
                 <div class="p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl overflow-x-auto">
 <pre>/ip hotspot walled-garden
-add dst-host={{ $serverHost }} comment="WiFiPads Cloud Controller"
-add dst-host="*.wifipads.com" comment="WiFiPads CDN"
+add dst-host={{ $serverHost }} comment="Nexa Portal Server"
+add dst-host="*.nexa.net.id" comment="Nexa Domain Assets"
+add dst-host=fonts.googleapis.com comment="Google Fonts"
+add dst-host=fonts.gstatic.com comment="Google Fonts Static"
 add dst-host=captive.apple.com comment="Apple CNA"
 add dst-host=connectivitycheck.gstatic.com comment="Android CNA"
 add dst-host=msftconnecttest.com comment="Windows CNA"</pre>

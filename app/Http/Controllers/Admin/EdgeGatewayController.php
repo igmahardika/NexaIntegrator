@@ -169,7 +169,10 @@ RSC;
     public function downloadLoginHtml(Location $site): Response
     {
         $service = new RadiusService($site);
-        $baseUrl = url('/portal');
+        $canonicalBase = rtrim(config('app.url', 'https://lcps.nexa.net.id'), '/');
+        $baseUrl = in_array(request()->getHost(), ['127.0.0.1', 'localhost', ''])
+            ? $canonicalBase . '/portal'
+            : url('/portal');
         $html = $service->generateMinimalLoginHtml($baseUrl);
 
         return response($html, 200, [

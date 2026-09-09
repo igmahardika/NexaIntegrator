@@ -76,6 +76,7 @@ class User extends Authenticatable
      * Determine if user is authorized to manage or view a specific site.
      *
      * @param \App\Models\Location|string|null $site
+     * @return bool
      */
     public function canAccessSite($site): bool
     {
@@ -87,7 +88,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $targetId = $site instanceof Location ? $site->id : $site;
+        $targetId = ($site instanceof Location) ? $site->id : $site;
         return (string) $this->site_id === (string) $targetId;
     }
 }

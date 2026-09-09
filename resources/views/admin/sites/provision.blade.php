@@ -93,6 +93,12 @@
                         Klik tombol <strong>"Download login.html"</strong> di samping, lalu upload file tersebut ke folder <code class="bg-slate-100 text-brand px-1.5 py-0.5 rounded font-mono text-2xs">hotspot/login.html</code> pada menu <strong>Files</strong> di WinBox.
                     </div>
                 </li>
+                <li class="flex items-start gap-3">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-2xs shrink-0 mt-0.5">4</span>
+                    <div>
+                        <strong class="text-slate-900">Verifikasi Walled Garden:</strong> Script di bawah sudah otomatis menyertakan izin bypass domain <code class="bg-slate-100 text-brand px-1.5 py-0.5 rounded font-mono text-2xs">{{ $serverHost }}</code>. Pastikan langkah 2 berhasil dieksekusi agar HP tamu tidak diblokir saat membuka portal.
+                    </div>
+                </li>
             </ol>
         </div>
 

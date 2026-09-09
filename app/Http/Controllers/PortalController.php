@@ -20,7 +20,7 @@ class PortalController extends Controller
         $ip       = $request->query('ip', $request->getClientIp());
         $linkLogin= $request->query('link-login-only', '');
         $linkOrig = $request->query('link-orig', 'http://google.com');
-        $locationSlug = $request->query('location', $request->query('loc', ''));
+        $locationSlug = $request->query('location', $request->query('loc', $request->query('site', '')));
 
         // Resolve location from slug or first active location
         $location = null;

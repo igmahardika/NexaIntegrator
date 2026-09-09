@@ -643,6 +643,16 @@
                             <li>Selesai! Captive portal langsung aktif dengan aman.</li>
                         </ol>
                     </div>
+
+                    <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1.5">
+                        <div class="font-bold flex items-center gap-1.5 text-amber-800">
+                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span>PENTING: Walled Garden Domain</span>
+                        </div>
+                        <p class="text-2xs text-amber-800 leading-relaxed">
+                            Pastikan domain <code class="bg-white/80 px-1 py-0.5 rounded font-mono font-bold">{{ $serverHost }}</code> telah terdaftar di <strong>IP &rarr; Hotspot &rarr; Walled Garden</strong>. Jika router belum mengizinkan domain ini sebelum login, HP pengunjung akan gagal memuat portal dan menampilkan error koneksi.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

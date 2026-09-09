@@ -191,10 +191,13 @@ class Location extends Model
     /**
      * Generate unified MikroTik provisioning script tailored to the site's gateway mode.
      */
-    public function getProvisioningScript(string $serverHost, string $baseUrl = ''): string
+    public function getProvisioningScript(string $serverHost = '', string $baseUrl = ''): string
     {
-        $dnsHost = $serverHost ?: '127.0.0.1';
-        $baseUrl = $baseUrl ?: "http://{$dnsHost}:8000";
+        $canonicalHost = parse_url(config('app.url', 'https://lcps.nexa.net.id'), PHP_URL_HOST) ?: 'lcps.nexa.net.id';
+        $canonicalBaseUrl = rtrim(config('app.url', 'https://lcps.nexa.net.id'), '/');
+
+        $dnsHost = (!empty($serverHost) && !in_array($serverHost, ['127.0.0.1', 'localhost'])) ? $serverHost : $canonicalHost;
+        $baseUrl = (!empty($baseUrl) && !str_contains($baseUrl, '127.0.0.1') && !str_contains($baseUrl, 'localhost')) ? rtrim($baseUrl, '/') : $canonicalBaseUrl;
 
         if ($this->isRadius()) {
             return $this->getMikrotikRadiusScript($serverHost);
