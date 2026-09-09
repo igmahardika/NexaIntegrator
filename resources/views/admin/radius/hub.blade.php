@@ -11,12 +11,12 @@
         <div class="space-y-2 max-w-2xl">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold border border-blue-400/30">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Arsitektur MikroTik Zero-Burden Flash Protection</span>
+                <span>Arsitektur MikroTik Direct RouterOS API (Standar Tunggal)</span>
             </div>
-            <h2 class="text-xl font-extrabold tracking-tight">MikroTik Edge Gateway & AAA RADIUS Fleet Hub</h2>
+            <h2 class="text-xl font-extrabold tracking-tight">MikroTik Edge Gateway Fleet Hub</h2>
             <p class="text-xs text-blue-100/80 leading-relaxed">
                 Platform ini mengontrol sesi captive portal secara terpusat tanpa membebani memori flash router MikroTik (16MB). 
-                Router hanya menampung sesi aktif di RAM (<code class="bg-black/40 px-1 py-0.5 rounded text-amber-300 font-mono">/ip hotspot active</code>), sedangkan kredensial dan otentikasi diproses secara instan melalui Cloud RADIUS AAA (Port 1812/1813).
+                Router hanya menampung sesi aktif di RAM (<code class="bg-black/40 px-1 py-0.5 rounded text-amber-300 font-mono">/ip hotspot active</code>), sedangkan kredensial dan otentikasi diproses secara instan melalui Direct RouterOS API (Port 8728).
             </p>
         </div>
 
@@ -64,8 +64,8 @@
                 </svg>
             </div>
             <div>
-                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">RADIUS AAA Aktif</div>
-                <div class="text-2xl font-black text-purple-600">{{ $sites->where('radius_enabled', true)->count() }} Site</div>
+                <div class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Direct API Standar</div>
+                <div class="text-2xl font-black text-purple-600">{{ $sites->count() }} Site</div>
             </div>
         </div>
 

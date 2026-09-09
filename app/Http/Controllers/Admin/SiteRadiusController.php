@@ -37,99 +37,60 @@ class SiteRadiusController extends Controller
         $sectionsV6 = $radiusService->getRouterOsSections($serverHost, 'v6');
         $mikrotikScript = $scriptV7;
 
-        // Generate No-Tunnel Reverse Polling Script (1-Click for WinBox)
-        $syncKeyParam = $site->radius_secret ? "?key=" . urlencode($site->radius_secret) : "";
-        $syncUrl = "{$baseUrl}/api/router/{$site->slug}/sync-script{$syncKeyParam}";
-        $fetchMode = str_starts_with($syncUrl, 'https://') ? 'mode=https check-certificate=no' : 'mode=http';
-        $dnsHost = $serverHost;
-
-        $noTunnelScript = <<<RSC
-# =====================================================================
-# WiFiPads No-Tunnel Reverse Polling Provisioning Script
-# Site: {$site->name} ({$site->slug})
-# Arsitektur: Reverse Polling Scheduler (Aman di balik CGNAT/ISP Swasta)
-# =====================================================================
-
-# 1. Walled Garden (Mengizinkan akses ke Cloud Controller, DNS & CDN)
-/ip hotspot walled-garden ip
-:do { add dst-port=53 protocol=udp action=accept comment="WiFiPads DNS UDP" } on-error={ :nothing }
-:do { add dst-port=53 protocol=tcp action=accept comment="WiFiPads DNS TCP" } on-error={ :nothing }
-
-/ip hotspot walled-garden
-:do { add dst-host="*{$dnsHost}*" action=allow comment="WiFiPads Controller" } on-error={ :nothing }
-:do { add dst-host="*fonts.googleapis.com*" action=allow comment="Google Fonts" } on-error={ :nothing }
-:do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
-:do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
-
-# 2. Hotspot Server & User Profiles (Izinkan HTTP-PAP & QoS)
-/ip hotspot profile
-:do { set [find] login-by=http-pap,http-chap } on-error={ :nothing }
-
-/ip hotspot user profile
-:do { add name="survey-user" rate-limit="2M/5M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="voucher-user" rate-limit="5M/10M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="member-user" rate-limit="10M/20M" shared-users=2 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-
-# 3. Background Sync Script
-/system script
-:do { remove [find name="wifipads-sync"] } on-error={ :nothing }
-add name="wifipads-sync" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive source="
-    :do {
-        /tool fetch url=\"{$syncUrl}\" dst-path=\"wifipads_queue.rsc\" {$fetchMode} keep-result=yes
-        :delay 1s
-        /import file-name=\"wifipads_queue.rsc\"
-    } on-error={
-        :log debug \"WiFiPads: Sync check completed (no update or network wait)\"
-    }
-"
-
-# 4. Auto Scheduler (Setiap 5 Detik secara otomatis menarik user baru)
-/system scheduler
-:do { remove [find name="wifipads-auto-sync"] } on-error={ :nothing }
-add name="wifipads-auto-sync" interval=5s on-event="wifipads-sync" start-time=startup comment="WiFiPads Edge User Provisioning"
-
-:log info "WiFiPads No-Tunnel Auto Sync berhasil diaktifkan pada {$site->name}!"
-RSC;
-
+        // Direct RouterOS API Provisioning Script (Single Unified Standard)
+        $directApiScript = $site->getProvisioningScript($serverHost);
         $minimalLoginHtml = $radiusService->generateMinimalLoginHtml($baseUrl . '/portal');
 
         return view('admin.sites.radius', compact(
             'site',
+            'directApiScript',
             'scriptV7',
             'scriptV6',
             'sectionsV7',
             'sectionsV6',
             'mikrotikScript',
-            'noTunnelScript',
             'minimalLoginHtml',
-            'serverHost',
-            'syncUrl'
+            'serverHost'
         ));
     }
 
     /**
-     * Update RADIUS configuration for this site.
+     * Update router & RADIUS configuration for this site.
      */
     public function update(Request $request, Location $site)
     {
         $validated = $request->validate([
-            'radius_enabled'          => 'boolean',
+            'router_ip'               => 'nullable|string|max:100',
+            'router_port'             => 'nullable|integer|between:1,65535',
+            'router_user'             => 'nullable|string|max:100',
+            'router_password'         => 'nullable|string|max:255',
+            'dns_name'                => 'nullable|string|max:255',
+            'gateway_mode'            => 'nullable|string|in:direct_api,zero_tunnel,radius',
+            'radius_enabled'          => 'nullable|boolean',
             'radius_server_ip'        => 'nullable|string|max:100',
-            'radius_auth_port'        => 'required|integer|between:1,65535',
-            'radius_acct_port'        => 'required|integer|between:1,65535',
-            'radius_secret'           => 'required|string|max:100',
-            'radius_nas_id'           => 'required|string|max:50',
-            'radius_coa_port'         => 'required|integer|between:1,65535',
-            'default_rate_limit'      => 'required|string|max:50',
-            'default_session_timeout' => 'required|integer|min:60',
+            'radius_auth_port'        => 'nullable|integer|between:1,65535',
+            'radius_acct_port'        => 'nullable|integer|between:1,65535',
+            'radius_secret'           => 'nullable|string|max:100',
+            'radius_nas_id'           => 'nullable|string|max:50',
+            'radius_coa_port'         => 'nullable|integer|between:1,65535',
+            'default_rate_limit'      => 'nullable|string|max:50',
+            'default_session_timeout' => 'nullable|integer|min:60',
         ]);
+
+        if (empty($validated['router_password'])) {
+            unset($validated['router_password']);
+        }
+
+        if (empty($validated['gateway_mode'])) {
+            $validated['gateway_mode'] = 'direct_api';
+        }
 
         $validated['radius_enabled'] = (bool) $request->input('radius_enabled', 0);
 
         $site->update($validated);
 
         return redirect()->back()
-            ->with('success', 'Konfigurasi RADIUS berhasil diperbarui.');
+            ->with('success', 'Konfigurasi router & edge gateway berhasil disimpan.');
     }
 
     /**

@@ -69,69 +69,19 @@ class EdgeGatewayController extends Controller
         $sectionsV7 = $radiusService->getRouterOsSections($serverHost, 'v7');
         $sectionsV6 = $radiusService->getRouterOsSections($serverHost, 'v6');
 
-        // Generate No-Tunnel Reverse Polling Script (1-Click for WinBox)
-        $syncKeyParam = $site->radius_secret ? "?key=" . urlencode($site->radius_secret) : "";
-        $syncUrl = "{$baseUrl}/api/router/{$site->slug}/sync-script{$syncKeyParam}";
-        $fetchMode = str_starts_with($syncUrl, 'https://') ? 'mode=https check-certificate=no' : 'mode=http';
-        $dnsHost = $serverHost;
-
-        $noTunnelScript = <<<RSC
-# =====================================================================
-# WiFiPads Edge Provisioning Script (Tanpa VPN / Tanpa Tunnel)
-# Site: {$site->name} ({$site->slug})
-# Arsitektur: Reverse Polling Scheduler (Aman di balik CGNAT/ISP Swasta)
-# =====================================================================
-
-# 1. Walled Garden (Mengizinkan akses ke Cloud Controller, DNS & CDN)
-/ip hotspot walled-garden ip
-:do { add dst-port=53 protocol=udp action=accept comment="WiFiPads DNS UDP" } on-error={ :nothing }
-:do { add dst-port=53 protocol=tcp action=accept comment="WiFiPads DNS TCP" } on-error={ :nothing }
-
-/ip hotspot walled-garden
-:do { add dst-host="*{$dnsHost}*" action=allow comment="WiFiPads Controller" } on-error={ :nothing }
-:do { add dst-host="*fonts.googleapis.com*" action=allow comment="Google Fonts" } on-error={ :nothing }
-:do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
-:do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
-
-# 2. Hotspot User Profiles (QoS & Bandwidth Limiter)
-/ip hotspot user profile
-:do { add name="survey-user" rate-limit="2M/5M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="voucher-user" rate-limit="5M/10M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="member-user" rate-limit="10M/20M" shared-users=2 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-
-# 3. Background Sync Script
-/system script
-:do { remove [find name="wifipads-sync"] } on-error={ :nothing }
-add name="wifipads-sync" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive source="
-    :do {
-        /tool fetch url=\"{$syncUrl}\" dst-path=\"wifipads_queue.rsc\" {$fetchMode} keep-result=yes
-        :delay 1s
-        /import file-name=\"wifipads_queue.rsc\"
-    } on-error={
-        :log debug \"WiFiPads: Sync check completed (no update or network wait)\"
-    }
-"
-
-# 4. Auto Scheduler (Setiap 5 Detik secara otomatis menarik user baru)
-/system scheduler
-:do { remove [find name="wifipads-auto-sync"] } on-error={ :nothing }
-add name="wifipads-auto-sync" interval=5s on-event="wifipads-sync" start-time=startup comment="WiFiPads Edge User Provisioning"
-
-:log info "WiFiPads No-Tunnel Auto Sync berhasil diaktifkan pada {$site->name}!"
-RSC;
-
+        // Direct RouterOS API Provisioning Script (Single Unified Standard)
+        $directApiScript = $site->getProvisioningScript($serverHost);
         $minimalLoginHtml = $radiusService->generateMinimalLoginHtml($baseUrl . '/portal');
 
         return view('admin.sites.radius', compact(
             'site',
+            'directApiScript',
             'scriptV7',
             'scriptV6',
             'sectionsV7',
             'sectionsV6',
-            'noTunnelScript',
             'minimalLoginHtml',
-            'serverHost',
-            'syncUrl'
+            'serverHost'
         ));
     }
 
