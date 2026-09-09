@@ -122,12 +122,30 @@ class PortalAuthController extends Controller
             $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
             PortalSession::logLogin($location->id, $mac, $request->ip, 'member', $hotspotUser->identifier, $request->userAgent());
 
+            $profile = $hotspotUser->profile?->name ?? config('mikrotik.member_profile', 'member-user');
+            $comment = 'member|' . $hotspotUser->id;
+            $uptimeLimit = $hotspotUser->uptime_limit
+                ? sprintf('%02d:%02d:00', floor($hotspotUser->uptime_limit / 3600), floor(($hotspotUser->uptime_limit % 3600) / 60))
+                : '';
+
+            $routerResult = $this->authorize(
+                $location,
+                $hotspotUser->identifier,
+                $request->password,
+                $profile,
+                $mac,
+                $comment,
+                $uptimeLimit,
+                $request->ip
+            );
+
             return response()->json([
-                'success'  => true,
-                'username' => $hotspotUser->identifier,
-                'password' => $request->password,
-                'role'     => 'member',
-                'offline'  => false,
+                'success'   => true,
+                'username'  => $hotspotUser->identifier,
+                'password'  => $request->password,
+                'role'      => 'member',
+                'offline'   => !$routerResult['success'],
+                'activated' => $routerResult['activated'] ?? false,
             ]);
         }
 

@@ -332,45 +332,10 @@
                 <!-- 3 Gateway Architecture Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     
-                    <!-- Card 1: Zero-Tunnel (Recommended) -->
-                    <label class="relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200"
-                        :class="form.gateway_mode === 'zero_tunnel' 
-                            ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/20 shadow-xs' 
-                            : 'border-slate-200 hover:border-slate-300 bg-white'">
-                        <input type="radio" name="gateway_mode" value="zero_tunnel" x-model="form.gateway_mode" class="sr-only">
-                        
-                        <div class="flex items-center justify-between gap-2 mb-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                Sangat Direkomendasikan
-                            </span>
-                            <div class="w-4 h-4 rounded-full border flex items-center justify-center"
-                                :class="form.gateway_mode === 'zero_tunnel' ? 'border-emerald-600 bg-emerald-600' : 'border-slate-300'">
-                                <div class="w-1.5 h-1.5 rounded-full bg-white" x-show="form.gateway_mode === 'zero_tunnel'"></div>
-                            </div>
-                        </div>
-
-                        <h3 class="font-bold text-sm text-slate-900 mb-1">Zero-Tunnel / Reverse Polling</h3>
-                        <p class="text-2xs text-slate-600 mb-4 flex-1 leading-relaxed">
-                            Tanpa perlu IP Publik statis, tanpa VPN, tanpa port forward. Sangat aman di balik modem CGNAT Indihome, Biznet, MyRepublic, atau Starlink.
-                        </p>
-
-                        <div class="pt-3 border-t border-slate-200/60 text-2xs text-slate-500 space-y-1">
-                            <div class="flex items-center gap-1.5 text-emerald-700 font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>MikroTik Scheduler Auto-Sync</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 text-emerald-700 font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>Toleran Mati Listrik & Ganti IP</span>
-                            </div>
-                        </div>
-                    </label>
-
-                    <!-- Card 2: Direct RouterOS API -->
+                <!-- 3 Gateway Architecture Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    
+                    <!-- Card 1: Direct RouterOS API (Primary Standard) -->
                     <label class="relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200"
                         :class="form.gateway_mode === 'direct_api' 
                             ? 'border-brand bg-brand/5 ring-2 ring-brand/20 shadow-xs' 
@@ -379,7 +344,7 @@
                         
                         <div class="flex items-center justify-between gap-2 mb-3">
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold bg-blue-100 text-brand border border-blue-200">
-                                Port 8728 Direct
+                                Standar Tunggal (Rekomendasi)
                             </span>
                             <div class="w-4 h-4 rounded-full border flex items-center justify-center"
                                 :class="form.gateway_mode === 'direct_api' ? 'border-brand bg-brand' : 'border-slate-300'">
@@ -389,7 +354,7 @@
 
                         <h3 class="font-bold text-sm text-slate-900 mb-1">Direct RouterOS API</h3>
                         <p class="text-2xs text-slate-600 mb-4 flex-1 leading-relaxed">
-                            Koneksi real-time dua arah. Membutuhkan IP Publik Statis, port forward 8728, atau koneksi VPN Dedicated (WireGuard/ZeroTier).
+                            Integrasi instan dua arah. Sesi aktif langsung diotorisasi ke RAM router (0% flash wear). Mendukung IP Publik atau IP VPN Nexa.
                         </p>
 
                         <div class="pt-3 border-t border-slate-200/60 text-2xs text-slate-500 space-y-1">
@@ -397,19 +362,48 @@
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                <span>Live CPU & Traffic Telemetry</span>
+                                <span>Aktivasi Sesi Instan (0 ms)</span>
                             </div>
                             <div class="flex items-center gap-1.5 text-brand font-semibold">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                <span>Instant Kick & Disconnect</span>
+                                <span>Live Telemetri & Instant Kick</span>
                             </div>
                         </div>
                     </label>
 
-                    <!-- Card 3: True RADIUS AAA -->
-                    <label class="relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200"
+                    <!-- Card 2: Zero-Tunnel (Legacy Polling) -->
+                    <label class="relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 opacity-80"
+                        :class="form.gateway_mode === 'zero_tunnel' 
+                            ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/20 shadow-xs' 
+                            : 'border-slate-200 hover:border-slate-300 bg-white'">
+                        <input type="radio" name="gateway_mode" value="zero_tunnel" x-model="form.gateway_mode" class="sr-only">
+                        
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                Legacy Polling
+                            </span>
+                            <div class="w-4 h-4 rounded-full border flex items-center justify-center"
+                                :class="form.gateway_mode === 'zero_tunnel' ? 'border-emerald-600 bg-emerald-600' : 'border-slate-300'">
+                                <div class="w-1.5 h-1.5 rounded-full bg-white" x-show="form.gateway_mode === 'zero_tunnel'"></div>
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-sm text-slate-900 mb-1">Zero-Tunnel / Script Sync</h3>
+                        <p class="text-2xs text-slate-600 mb-4 flex-1 leading-relaxed">
+                            Menggunakan script cron scheduler MikroTik setiap 5 detik. Hanya untuk router tanpa IP statis/VPN.
+                        </p>
+
+                        <div class="pt-3 border-t border-slate-200/60 text-2xs text-slate-500 space-y-1">
+                            <div class="flex items-center gap-1.5 text-slate-600">
+                                <span>Reverse Polling Scheduler</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Card 3: True RADIUS AAA (Legacy) -->
+                    <label class="relative flex flex-col p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 opacity-80"
                         :class="form.gateway_mode === 'radius' 
                             ? 'border-purple-500 bg-purple-50/40 ring-2 ring-purple-500/20 shadow-xs' 
                             : 'border-slate-200 hover:border-slate-300 bg-white'">
@@ -417,7 +411,7 @@
                         
                         <div class="flex items-center justify-between gap-2 mb-3">
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
-                                Enterprise RFC 2865
+                                Legacy RADIUS
                             </span>
                             <div class="w-4 h-4 rounded-full border flex items-center justify-center"
                                 :class="form.gateway_mode === 'radius' ? 'border-purple-600 bg-purple-600' : 'border-slate-300'">
@@ -427,21 +421,12 @@
 
                         <h3 class="font-bold text-sm text-slate-900 mb-1">True Cloud RADIUS AAA</h3>
                         <p class="text-2xs text-slate-600 mb-4 flex-1 leading-relaxed">
-                            Otentikasi standar RFC 2865, Accounting UDP 1813, dan CoA Disconnect UDP 3799. Cocok untuk MikroTik besar atau AP UniFi/Ruckus.
+                            Otentikasi standar RFC 2865 via FreeRADIUS. Membutuhkan registrasi IP router pada clients.conf.
                         </p>
 
                         <div class="pt-3 border-t border-slate-200/60 text-2xs text-slate-500 space-y-1">
-                            <div class="flex items-center gap-1.5 text-purple-700 font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>Multi-Vendor Hardware Support</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 text-purple-700 font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>Standard RADIUS Accounting</span>
+                            <div class="flex items-center gap-1.5 text-purple-700">
+                                <span>FreeRADIUS Port 1812/1813</span>
                             </div>
                         </div>
                     </label>
@@ -835,12 +820,12 @@ function siteWizard() {
             contact_phone: '{{ old('contact_phone', '') }}',
             address: '{{ old('address', '') }}',
             active_template: '{{ old('active_template', 'modern-glass') }}',
-            gateway_mode: '{{ old('gateway_mode', 'zero_tunnel') }}',
-            dns_name: '{{ old('dns_name', 'wifi.login') }}',
+            gateway_mode: '{{ old('gateway_mode', 'direct_api') }}',
+            dns_name: '{{ old('dns_name', 'wifi.nexa.id') }}',
             max_active_devices: {{ old('max_active_devices', 100) }},
-            router_ip: '{{ old('router_ip', '192.168.88.1') }}',
+            router_ip: '{{ old('router_ip', '') }}',
             router_port: {{ old('router_port', 8728) }},
-            router_user: '{{ old('router_user', 'admin') }}',
+            router_user: '{{ old('router_user', 'wifipads') }}',
             router_password: '{{ old('router_password', '') }}',
             radius_server_ip: '{{ old('radius_server_ip', $serverHost) }}',
             radius_secret: '{{ old('radius_secret', '') }}',

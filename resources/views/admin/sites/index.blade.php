@@ -261,6 +261,7 @@
                 <template x-if="isEdit">
                     <input type="hidden" name="_method" value="PUT">
                 </template>
+                <input type="hidden" name="gateway_mode" x-model="form.gateway_mode">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -386,13 +387,14 @@ function sitesManager() {
             contact_email: '',
             contact_phone: '',
             address: '',
-            router_ip: '192.168.88.1',
+            router_ip: '',
             router_port: 8728,
-            router_user: 'admin',
+            router_user: 'wifipads',
             router_password: '',
-            dns_name: 'wifi.login',
-            active_template: 'username-password',
+            dns_name: 'wifi.nexa.id',
+            active_template: 'modern-glass',
             max_active_devices: 100,
+            gateway_mode: 'direct_api',
             is_active: true,
         },
         openModal(mode, site = null) {
@@ -406,13 +408,14 @@ function sitesManager() {
                     contact_email: site.contact_email || '',
                     contact_phone: site.contact_phone || '',
                     address: site.address || '',
-                    router_ip: site.router_ip || '192.168.88.1',
+                    router_ip: site.router_ip || '',
                     router_port: site.router_port || 8728,
-                    router_user: site.router_user || 'admin',
+                    router_user: site.router_user || 'wifipads',
                     router_password: '',
-                    dns_name: site.dns_name || 'wifi.login',
-                    active_template: site.active_template || 'username-password',
+                    dns_name: site.dns_name || 'wifi.nexa.id',
+                    active_template: site.active_template || 'modern-glass',
                     max_active_devices: site.max_active_devices || 100,
+                    gateway_mode: site.gateway_mode || 'direct_api',
                     is_active: Boolean(site.is_active),
                 };
             } else {
@@ -424,13 +427,14 @@ function sitesManager() {
                     contact_email: '',
                     contact_phone: '',
                     address: '',
-                    router_ip: '192.168.88.1',
+                    router_ip: '',
                     router_port: 8728,
-                    router_user: 'admin',
+                    router_user: 'wifipads',
                     router_password: '',
-                    dns_name: 'wifi.login',
-                    active_template: 'username-password',
+                    dns_name: 'wifi.nexa.id',
+                    active_template: 'modern-glass',
                     max_active_devices: 100,
+                    gateway_mode: 'direct_api',
                     is_active: true,
                 };
             }

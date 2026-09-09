@@ -154,15 +154,16 @@ class Location extends Model
 
     /**
      * Determine gateway architecture mode.
+     * Standard: Direct RouterOS API.
      */
     public function isZeroTunnel(): bool
     {
-        return empty($this->gateway_mode) || $this->gateway_mode === 'zero_tunnel';
+        return $this->gateway_mode === 'zero_tunnel';
     }
 
     public function isDirectApi(): bool
     {
-        return $this->gateway_mode === 'direct_api';
+        return empty($this->gateway_mode) || $this->gateway_mode === 'direct_api';
     }
 
     public function isRadius(): bool
@@ -173,9 +174,9 @@ class Location extends Model
     public function getGatewayModeLabelAttribute(): string
     {
         return match($this->gateway_mode) {
-            'direct_api' => 'RouterOS API',
-            'radius'     => 'RADIUS AAA',
-            default      => 'Zero-Tunnel',
+            'radius'      => 'RADIUS AAA (Legacy)',
+            'zero_tunnel' => 'Zero-Tunnel (Legacy)',
+            default       => 'RouterOS Direct API (Standar)',
         };
     }
 
@@ -189,7 +190,8 @@ class Location extends Model
     }
 
     /**
-     * Generate unified MikroTik provisioning script tailored to the site's gateway mode.
+     * Generate unified MikroTik provisioning script.
+     * Standard: Direct RouterOS API (Instant session activation, 0% flash wear, full bidirectional control).
      */
     public function getProvisioningScript(string $serverHost = '', string $baseUrl = ''): string
     {
@@ -199,27 +201,24 @@ class Location extends Model
         $dnsHost = (!empty($serverHost) && !in_array($serverHost, ['127.0.0.1', 'localhost'])) ? $serverHost : $canonicalHost;
         $baseUrl = (!empty($baseUrl) && !str_contains($baseUrl, '127.0.0.1') && !str_contains($baseUrl, 'localhost')) ? rtrim($baseUrl, '/') : $canonicalBaseUrl;
 
-        if ($this->isRadius()) {
-            return $this->getMikrotikRadiusScript($serverHost);
-        }
+        $user = $this->router_user ?: 'wifipads';
+        $pass = $this->router_password ?: 'password123';
+        $port = $this->router_port ?: 8728;
+        $siteName = addslashes($this->name);
 
-        if ($this->isDirectApi()) {
-            $user = $this->router_user ?: 'wifipads';
-            $pass = $this->router_password ?: 'password123';
-            $port = $this->router_port ?: 8728;
-
-            return <<<RSC
+        return <<<RSC
 # =====================================================================
-# WiFiPads Direct RouterOS API Provisioning Script
-# Site: {$this->name} ({$this->slug})
-# Mode: Direct RouterOS API (Port {$port})
+# WiFiPads - MikroTik Unified RouterOS API Provisioning Script
+# Site: {$siteName} ({$this->slug})
+# Standar Integrasi: Direct Controller API (Port {$port})
+# Keunggulan: Aktivasi Sesi Instan, 0% Flash Wear, Kontrol Penuh
 # =====================================================================
 
 # 1. Pastikan Service API RouterOS Aktif
 /ip service
 set api disabled=no port={$port}
 
-# 2. Buat User Operator Khusus WiFiPads Controller
+# 2. Buat Group & User Operator Khusus WiFiPads Controller
 /user group
 :do { add name="wifipads-group" policy=read,write,policy,test,api comment="WiFiPads NAC API Group" } on-error={ :nothing }
 
@@ -227,72 +226,32 @@ set api disabled=no port={$port}
 :do { remove [find name="{$user}"] } on-error={ :nothing }
 add name="{$user}" group="wifipads-group" password="{$pass}" comment="WiFiPads Controller API Access"
 
-# 3. Walled Garden Hotspot (Akses ke Cloud Controller, DNS & CDN)
-/ip hotspot walled-garden ip
-:do { add dst-port=53 protocol=udp action=accept comment="WiFiPads DNS UDP" } on-error={ :nothing }
-:do { add dst-port=53 protocol=tcp action=accept comment="WiFiPads DNS TCP" } on-error={ :nothing }
-
-/ip hotspot walled-garden
-:do { add dst-host="*{$dnsHost}*" action=allow comment="WiFiPads Controller" } on-error={ :nothing }
-:do { add dst-host="*fonts.googleapis.com*" action=allow comment="Google Fonts" } on-error={ :nothing }
-:do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
-:do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
-
-:log info "WiFiPads Direct API Provisioning selesai dikonfigurasi pada {$this->name}!"
-RSC;
-        }
-
-        // Default: Zero-Tunnel Reverse Polling (CGNAT / Tanpa VPN)
-        $syncKeyParam = $this->radius_secret ? "?key=" . urlencode($this->radius_secret) : "";
-        $syncUrl = "{$baseUrl}/api/router/{$this->slug}/sync-script{$syncKeyParam}";
-        $fetchMode = str_starts_with($syncUrl, 'https://') ? 'mode=https check-certificate=no' : 'mode=http';
-
-        return <<<RSC
-# =====================================================================
-# WiFiPads Zero-Tunnel Provisioning Script (Tanpa VPN / Tanpa Port Forward)
-# Site: {$this->name} ({$this->slug})
-# Arsitektur: Reverse Polling Scheduler (Aman di balik CGNAT / Indihome / Starlink)
-# =====================================================================
-
-# 1. Walled Garden (Mengizinkan akses ke Cloud Controller, DNS & CDN)
-/ip hotspot walled-garden ip
-:do { add dst-port=53 protocol=udp action=accept comment="WiFiPads DNS UDP" } on-error={ :nothing }
-:do { add dst-port=53 protocol=tcp action=accept comment="WiFiPads DNS TCP" } on-error={ :nothing }
-
-/ip hotspot walled-garden
-:do { add dst-host="*{$dnsHost}*" action=allow comment="WiFiPads Controller" } on-error={ :nothing }
-:do { add dst-host="*fonts.googleapis.com*" action=allow comment="Google Fonts" } on-error={ :nothing }
-:do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
-:do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
-
-# 2. Hotspot Server & User Profiles (Izinkan HTTP-PAP & QoS)
+# 3. Hotspot Server Profile: Izinkan HTTP PAP & Matikan RADIUS (Mencegah Timeout / Error CHAP)
 /ip hotspot profile
-:do { set [find] login-by=http-pap,http-chap } on-error={ :nothing }
+:do { set [find] login-by=http-pap,http-chap use-radius=no } on-error={ :nothing }
 
-/ip hotspot user profile
-:do { add name="survey-user" rate-limit="2M/5M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="voucher-user" rate-limit="5M/10M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="member-user" rate-limit="10M/20M" shared-users=2 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
+# 4. Pastikan RADIUS Mati pada Login Manajemen Router (Mencegah Winbox/Admin Timeout)
+/user aaa
+set use-radius=no
 
-# 3. Background Sync Script (Tarik Akun Hotspot Baru)
-/system script
-:do { remove [find name="wifipads-sync"] } on-error={ :nothing }
-add name="wifipads-sync" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive source="
-    :do {
-        /tool fetch url=\"{$syncUrl}\" dst-path=\"wifipads_queue.rsc\" {$fetchMode} keep-result=yes
-        :delay 1s
-        /import file-name=\"wifipads_queue.rsc\"
-    } on-error={
-        :log debug \"WiFiPads: Sync check completed (waiting for network or no update)\"
-    }
-"
+# 5. Walled Garden Hotspot (Akses ke Cloud Controller, DNS & CDN)
+/ip hotspot walled-garden ip
+:do { add dst-port=53 protocol=udp action=accept comment="WiFiPads DNS UDP" } on-error={ :nothing }
+:do { add dst-port=53 protocol=tcp action=accept comment="WiFiPads DNS TCP" } on-error={ :nothing }
 
-# 4. Auto Scheduler (Setiap 5 Detik secara otomatis menarik user baru)
-/system scheduler
-:do { remove [find name="wifipads-auto-sync"] } on-error={ :nothing }
-add name="wifipads-auto-sync" interval=5s on-event="wifipads-sync" start-time=startup comment="WiFiPads Edge User Provisioning"
+/ip hotspot walled-garden
+:do { add dst-host="*{$dnsHost}*" action=allow comment="WiFiPads Controller" } on-error={ :nothing }
+:do { add dst-host="*fonts.googleapis.com*" action=allow comment="Google Fonts" } on-error={ :nothing }
+:do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
+:do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
 
-:log info "WiFiPads Zero-Tunnel Auto Sync berhasil diaktifkan pada {$this->name}!"
+# 6. Bersihkan Sisa Script Sync Lama & RADIUS WiFiPads (Bebaskan Flash Router)
+/system scheduler :do { remove [find name~"wifipads"] } on-error={ :nothing }
+/system script :do { remove [find name~"wifipads"] } on-error={ :nothing }
+/radius :do { remove [find comment~"WiFiPads"] } on-error={ :nothing }
+
+:log info "WiFiPads Unified RouterOS API Provisioning selesai dikonfigurasi pada {$this->name}!"
+:put ">>> Konfigurasi WiFiPads RouterOS API untuk [{$siteName}] Berhasil Diterapkan! <<<"
 RSC;
     }
 }

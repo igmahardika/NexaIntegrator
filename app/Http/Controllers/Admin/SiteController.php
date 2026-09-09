@@ -64,7 +64,7 @@ class SiteController extends Controller
     {
         $validated = $request->validated();
         $validated['slug'] = Str::slug($validated['name']) . '-' . Str::random(4);
-        $validated['gateway_mode'] = $validated['gateway_mode'] ?? 'zero_tunnel';
+        $validated['gateway_mode'] = $validated['gateway_mode'] ?? 'direct_api';
         $validated['router_port'] = $validated['router_port'] ?? 8728;
         $validated['active_template'] = $validated['active_template'] ?? 'access-code';
         $validated['radius_nas_id'] = $validated['slug'];
