@@ -29,3 +29,7 @@ database/tenants/*.sqlite
 database/tenants/*.sqlite-journal
 !database/tenants/.gitignore
 /scratch
+.user.ini
+.well-known/
+.htaccess
+.agent/

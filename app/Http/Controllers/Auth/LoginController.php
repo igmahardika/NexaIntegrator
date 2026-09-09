@@ -24,6 +24,16 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            if (!Auth::user()->is_active) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'email' => 'Akun Anda telah dinonaktifkan. Hubungi administrator.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
             return redirect()->intended(route('admin.dashboard'));
         }

@@ -15,17 +15,19 @@ class RadiusService
     }
 
     /**
-     * Generate complete MikroTik RouterOS CLI setup script for this site (supports ROS v7 & v6).
+     * Get structured sections of the RouterOS RADIUS configuration script.
+     * Allows step-by-step copying or individual execution in WinBox.
      */
-    public function generateRouterOsScript(string $serverHost = '', string $version = 'v7'): string
+    public function getRouterOsSections(string $serverHost = '', string $version = 'v7'): array
     {
         $loc = $this->location;
+        $canonicalHost = parse_url(config('app.url', 'https://lcps.nexa.net.id'), PHP_URL_HOST) ?: 'lcps.nexa.net.id';
 
         $serverIp = !empty($loc->radius_server_ip)
             ? $loc->radius_server_ip
             : (!empty($serverHost) && !in_array($serverHost, ['127.0.0.1', 'localhost'])
                 ? $serverHost
-                : '192.168.11.228');
+                : $canonicalHost);
 
         $secret = $loc->radius_secret;
         if (empty($secret)) {
@@ -43,64 +45,109 @@ class RadiusService
             ? $loc->radius_server_ip
             : (!in_array(request()->getHost(), ['127.0.0.1', 'localhost', ''])
                 ? request()->getHost()
-                : '192.168.11.228');
+                : $canonicalHost);
         $targetRos = strtoupper($version) === 'V6' ? 'RouterOS v6 (Legacy)' : 'RouterOS v7 (Modern)';
 
-        return <<<ROUTEROS
-# =====================================================================
-# WiFiPads - MikroTik {$targetRos} Zero-Burden RADIUS & Hotspot Setup
-# Site: {$siteName} (ID: {$loc->id})
-# ARSITEKTUR ZERO-BURDEN:
-# - Router flash TIDAK menyimpan database user (/ip hotspot user = KOSONG).
-# - Seluruh autentikasi ditangani Cloud via RADIUS AAA (Port 1812/1813).
-# - Sesi tamu aktif berjalan HANYA di RAM (/ip hotspot active) tanpa flash wear.
-# =====================================================================
+        $isIpAddress = (bool) filter_var($serverIp, FILTER_VALIDATE_IP);
+        $ipWalledRule = $isIpAddress
+            ? "/ip hotspot walled-garden ip add dst-address={$serverIp} action=accept comment=\"WiFiPads-Server-IP\"\n"
+            : "";
 
-# 1. Bersihkan konfigurasi RADIUS & Walled Garden lama WiFiPads
-/radius remove [find comment~"WiFiPads"]
-/ip hotspot walled-garden ip remove [find comment~"WiFiPads"]
-/ip hotspot walled-garden remove [find comment~"WiFiPads"]
+        return [
+            [
+                'step'        => 1,
+                'id'          => 'clean',
+                'badge'       => 'Pembersihan',
+                'badge_color' => 'rose',
+                'title'       => 'Bersihkan Konfigurasi Lama',
+                'desc'        => 'Menghapus rule RADIUS dan Walled Garden lama WiFiPads agar konfigurasi baru tidak bentrok atau duplikat.',
+                'code'        => "/radius remove [find comment~\"WiFiPads\"]\n/ip hotspot walled-garden ip remove [find comment~\"WiFiPads\"]\n/ip hotspot walled-garden remove [find comment~\"WiFiPads\"]",
+            ],
+            [
+                'step'        => 2,
+                'id'          => 'radius_server',
+                'badge'       => 'AAA RADIUS',
+                'badge_color' => 'blue',
+                'title'       => 'Tambah RADIUS Server Hotspot',
+                'desc'        => "Menghubungkan layanan autentikasi & akuntansi Hotspot router ke Cloud Server ({$serverIp}).",
+                'code'        => "/radius add service=hotspot \\\n    address={$serverIp} \\\n    secret=\"{$secret}\" \\\n    authentication-port={$authPort} \\\n    accounting-port={$acctPort} \\\n    timeout=3000ms \\\n    comment=\"WiFiPads-RADIUS-{$nasId}\"",
+            ],
+            [
+                'step'        => 3,
+                'id'          => 'coa',
+                'badge'       => 'RFC 3576 CoA',
+                'badge_color' => 'purple',
+                'title'       => 'Aktifkan Incoming RADIUS (CoA / PoD)',
+                'desc'        => "Mengaktifkan port UDP {$coaPort} untuk menerima perintah Disconnect-Request instan dari dashboard saat tamu logout / kuota habis.",
+                'code'        => "/radius incoming set accept=yes port={$coaPort}",
+            ],
+            [
+                'step'        => 4,
+                'id'          => 'hotspot_profile',
+                'badge'       => 'Hotspot Server',
+                'badge_color' => 'indigo',
+                'title'       => 'Konfigurasi Hotspot Server Profile',
+                'desc'        => "Mengaktifkan opsi use-radius, radius-accounting, dan interim update (2m) pada server profile Hotspot.",
+                'code'        => "/ip hotspot profile set [find] \\\n    use-radius=yes \\\n    radius-accounting=yes \\\n    radius-interim-update=2m \\\n    radius-location-name=\"{$nasId}\" \\\n    nas-port-type=wireless-802.11",
+            ],
+            [
+                'step'        => 5,
+                'id'          => 'user_profile',
+                'badge'       => 'QoS & Rate Limit',
+                'badge_color' => 'amber',
+                'title'       => 'Konfigurasi User Profile Default',
+                'desc'        => "Mengatur rate-limit bawaan tamu ({$rateLimit}), single session per user, dan refresh interval status.",
+                'code'        => "/ip hotspot user profile set [find default=yes] \\\n    rate-limit=\"{$rateLimit}\" \\\n    shared-users=1 \\\n    keepalive-timeout=2m \\\n    status-autorefresh=1m",
+            ],
+            [
+                'step'        => 6,
+                'id'          => 'walled_garden',
+                'badge'       => 'Walled Garden',
+                'badge_color' => 'emerald',
+                'title'       => 'Walled Garden (Bypass Portal, DNS & CDN)',
+                'desc'        => 'Mengizinkan traffic DNS port 53 serta domain Portal Captive, Google Fonts, dan AlpineJS sebelum pengguna login.',
+                'code'        => "{$ipWalledRule}/ip hotspot walled-garden ip add dst-port=53 protocol=udp action=accept comment=\"WiFiPads-DNS-UDP\"\n/ip hotspot walled-garden ip add dst-port=53 protocol=tcp action=accept comment=\"WiFiPads-DNS-TCP\"\n/ip hotspot walled-garden add dst-host=\"*{$portalHost}*\" action=allow comment=\"WiFiPads-Portal-Domain\"\n/ip hotspot walled-garden add dst-host=\"*fonts.googleapis.com*\" action=allow comment=\"WiFiPads-GoogleFonts\"\n/ip hotspot walled-garden add dst-host=\"*fonts.gstatic.com*\" action=allow comment=\"WiFiPads-GStatic\"\n/ip hotspot walled-garden add dst-host=\"*unpkg.com*\" action=allow comment=\"WiFiPads-AlpineJS\"",
+            ],
+            [
+                'step'        => 7,
+                'id'          => 'verify',
+                'badge'       => 'Verifikasi',
+                'badge_color' => 'teal',
+                'title'       => 'Verifikasi Status Koneksi RADIUS',
+                'desc'        => 'Menjalankan probe status koneksi ke server RADIUS dan mencetak konfirmasi sukses pada Terminal MikroTik.',
+                'code'        => "/radius monitor [find comment~\"WiFiPads\"] once\n:put \">>> Konfigurasi Zero-Burden ({$targetRos}) untuk Site [{$siteName}] Berhasil Diterapkan! <<<\"",
+            ],
+        ];
+    }
 
-# 2. Tambah RADIUS Server untuk Hotspot Authentication & Accounting
-/radius add service=hotspot \\
-    address={$serverIp} \\
-    secret="{$secret}" \\
-    authentication-port={$authPort} \\
-    accounting-port={$acctPort} \\
-    timeout=3000ms \\
-    comment="WiFiPads-RADIUS-{$nasId}"
+    /**
+     * Generate complete MikroTik RouterOS CLI setup script for this site (supports ROS v7 & v6).
+     */
+    public function generateRouterOsScript(string $serverHost = '', string $version = 'v7'): string
+    {
+        $loc = $this->location;
+        $siteName = addslashes($loc->name);
+        $targetRos = strtoupper($version) === 'V6' ? 'RouterOS v6 (Legacy)' : 'RouterOS v7 (Modern)';
+        $sections = $this->getRouterOsSections($serverHost, $version);
 
-# 3. Aktifkan Incoming RADIUS Requests (RFC 3576 Packet of Disconnect / PoD)
-/radius incoming set accept=yes port={$coaPort}
+        $out = [];
+        $out[] = "# =====================================================================";
+        $out[] = "# WiFiPads - MikroTik {$targetRos} Zero-Burden RADIUS & Hotspot Setup";
+        $out[] = "# Site: {$siteName} (ID: {$loc->id})";
+        $out[] = "# ARSITEKTUR ZERO-BURDEN:";
+        $out[] = "# - Router flash TIDAK menyimpan database user (/ip hotspot user = KOSONG).";
+        $out[] = "# - Seluruh autentikasi ditangani Cloud via RADIUS AAA (Port 1812/1813).";
+        $out[] = "# - Sesi tamu aktif berjalan HANYA di RAM (/ip hotspot active) tanpa flash wear.";
+        $out[] = "# =====================================================================";
+        $out[] = "";
 
-# 4. Konfigurasikan Hotspot Server Profile menggunakan RADIUS
-/ip hotspot profile set [find] \\
-    use-radius=yes \\
-    radius-accounting=yes \\
-    radius-interim-update=2m \\
-    radius-location-name="{$nasId}" \\
-    nas-port-type=wireless-802.11
+        foreach ($sections as $sec) {
+            $out[] = "# " . $sec['title'];
+            $out[] = $sec['code'];
+            $out[] = "";
+        }
 
-# 5. Konfigurasi User Profile Default dengan Rate Limit Dinamis
-/ip hotspot user profile set [find default=yes] \\
-    rate-limit="{$rateLimit}" \\
-    shared-users=1 \\
-    keepalive-timeout=2m \\
-    status-autorefresh=1m
-
-# 6. Walled Garden: Izinkan Akses ke Server Captive Portal, DNS & CDN
-/ip hotspot walled-garden ip add dst-address={$serverIp} action=accept comment="WiFiPads-Server-IP"
-/ip hotspot walled-garden ip add dst-port=53 protocol=udp action=accept comment="WiFiPads-DNS-UDP"
-/ip hotspot walled-garden ip add dst-port=53 protocol=tcp action=accept comment="WiFiPads-DNS-TCP"
-/ip hotspot walled-garden add dst-host="*{$portalHost}*" action=allow comment="WiFiPads-Portal-Domain"
-/ip hotspot walled-garden add dst-host="*fonts.googleapis.com*" action=allow comment="WiFiPads-GoogleFonts"
-/ip hotspot walled-garden add dst-host="*fonts.gstatic.com*" action=allow comment="WiFiPads-GStatic"
-/ip hotspot walled-garden add dst-host="*unpkg.com*" action=allow comment="WiFiPads-AlpineJS"
-
-# 7. Verifikasi Status Koneksi RADIUS
-/radius monitor [find comment~"WiFiPads"] once
-:put ">>> Konfigurasi Zero-Burden ({$targetRos}) untuk Site [{$siteName}] Berhasil Diterapkan! <<<"
-ROUTEROS;
+        return trim(implode("\r\n", $out)) . "\r\n";
     }
 
     /**

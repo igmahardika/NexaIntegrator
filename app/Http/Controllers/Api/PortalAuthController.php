@@ -244,22 +244,27 @@ class PortalAuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Lokasi tidak ditemukan.'], 404);
         }
 
-        $username = 'btn-' . strtolower(Str::random(8));
+        $cleanMac = strtolower(str_replace([':', '-'], '', $mac));
+        $username = 'btn-' . $cleanMac;
         $password = Str::random(10);
-        $comment  = '1click|free-access';
+        $comment  = '1click|free-access|' . $cleanMac;
         $profile  = $location->template_config['survey_profile'] ?? config('mikrotik.survey_profile', 'survey-user');
 
         // Record in Tenant Isolated Database
         TenantManager::switchConnection($location);
-        $hotspotUser = HotspotUser::create([
-            'identifier'   => $username,
-            'auth_method'  => HotspotUser::AUTH_QUICK,
-            'status'       => HotspotUser::STATUS_ACTIVE,
-            'uptime_limit' => 7200,
-            'guest_metadata' => [
-                'type' => 'free_one_click',
-            ],
-        ]);
+        $hotspotUser = HotspotUser::firstOrCreate(
+            ['identifier' => $username],
+            [
+                'auth_method'    => HotspotUser::AUTH_QUICK,
+                'status'         => HotspotUser::STATUS_ACTIVE,
+                'uptime_limit'   => 7200,
+                'bound_mac'      => $mac,
+                'guest_metadata' => [
+                    'type' => 'free_one_click',
+                    'mac'  => $mac,
+                ],
+            ]
+        );
         $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
 
         $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
@@ -307,7 +312,7 @@ class PortalAuthController extends Controller
         $hotspotUser = HotspotUser::firstOrCreate(
             ['identifier' => $request->email],
             [
-                'auth_method'    => 'email',
+                'auth_method'    => HotspotUser::AUTH_EMAIL,
                 'status'         => HotspotUser::STATUS_ACTIVE,
                 'uptime_limit'   => 7200,
                 'guest_metadata' => [
@@ -384,7 +389,7 @@ class PortalAuthController extends Controller
             $hotspotUser = HotspotUser::updateOrCreate(
                 ['identifier' => $identifier],
                 [
-                    'auth_method'    => 'pms',
+                    'auth_method'    => HotspotUser::AUTH_PMS,
                     'status'         => HotspotUser::STATUS_ACTIVE,
                     'bound_mac'      => $mac,
                     'uptime_limit'   => 86400, // 24 hours standard hotel session

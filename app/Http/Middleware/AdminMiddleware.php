@@ -15,8 +15,9 @@ class AdminMiddleware
         }
 
         $user = Auth::user();
-        if (!in_array($user->role, ['superadmin', 'advertiser'])) {
-            abort(403, 'Unauthorized');
+        $allowedRoles = ['superadmin', 'site_admin', 'operator', 'cashier', 'advertiser'];
+        if (!in_array($user->role, $allowedRoles, true)) {
+            abort(403, 'Akses dashboard tidak diizinkan untuk peran ini.');
         }
 
         return $next($request);

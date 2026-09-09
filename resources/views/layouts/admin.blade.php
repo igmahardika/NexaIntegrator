@@ -495,7 +495,7 @@
             <!-- SECTION 1: SITE OPERATIONS -->
             <div class="px-2 pt-1.5 pb-1 text-2xs font-extrabold uppercase tracking-wider text-slate-500">Site Operations</div>
 
-            <!-- Item 1: Overview & Status -->
+            <!-- Item 1: Overview & Status (All Roles) -->
             <a href="{{ route('admin.dashboard') }}" class="sidebar-item {{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
@@ -503,7 +503,8 @@
                 <span class="truncate">Overview & Health</span>
             </a>
 
-            <!-- Item 2: Captive Portal Studio -->
+            <!-- Item 2: Captive Portal Studio (Site Admin & Superadmin) -->
+            @if(auth()->user()?->isSuperAdmin() || auth()->user()?->isSiteAdmin())
             @if($activeSite)
             <a href="{{ route('admin.sites.template.customizer', $activeSite) }}" class="sidebar-item {{ request()->routeIs('admin.sites.template*') || request()->routeIs('admin.templates*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -520,37 +521,56 @@
             </a>
             @endif
 
-            <!-- Item 3: Bandwidth & QoS Profiles -->
+            <!-- Item 3: Bandwidth & QoS Profiles (Site Admin & Superadmin) -->
             <a href="{{ route('admin.profiles.index') }}" class="sidebar-item {{ request()->routeIs('admin.profiles*') || request()->routeIs('admin.policy.bindings*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/>
                 </svg>
                 <span class="truncate">Bandwidth Profiles</span>
             </a>
+            @endif
 
-            <!-- Item 4: Hotspot Users & Vouchers -->
+            <!-- Item 4: Hotspot Users & Vouchers (Cashier, Operator, Site Admin, Superadmin) -->
+            @if(in_array(auth()->user()?->role, ['superadmin', 'site_admin', 'operator', 'cashier']))
             <a href="{{ route('admin.hotspot-users.index') }}" class="sidebar-item {{ request()->routeIs('admin.hotspot-users*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/>
                 </svg>
-                <span class="truncate">Hotspot Users</span>
+                <span class="truncate">{{ auth()->user()?->isCashier() ? 'Voucher Desk' : 'Hotspot Users' }}</span>
             </a>
+            @endif
 
-            <!-- Item 5: Edge Gateway & RADIUS -->
+            <!-- Item 5: Edge Gateway & RADIUS (Site Admin & Superadmin) -->
+            @if(auth()->user()?->isSuperAdmin() || auth()->user()?->isSiteAdmin())
             <a href="{{ route('admin.radius.index') }}" class="sidebar-item {{ request()->routeIs('admin.radius*') || request()->routeIs('admin.sites.radius*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.75 5.1a1.5 1.5 0 011.2-.6h10.1a1.5 1.5 0 011.2.6l2.1 3.45a4.5 4.5 0 01.9 2.7M6.75 17.25h.008v.008H6.75v-.008zm3 0h.008v.008H9.75v-.008z"/>
                 </svg>
                 <span class="truncate">Gateway & RADIUS</span>
             </a>
+            @endif
 
-            <!-- Item 6: Live Sessions & Monitoring -->
+            <!-- Item 6: Live Sessions & Monitoring (Operator, Site Admin, Superadmin) -->
+            @if(in_array(auth()->user()?->role, ['superadmin', 'site_admin', 'operator']))
             <a href="{{ route('admin.devices.index') }}" class="sidebar-item {{ request()->routeIs('admin.devices*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/>
                 </svg>
                 <span class="truncate">Live Sessions</span>
             </a>
+            @endif
+
+            <!-- SECTION: CAMPAIGNS & MARKETING -->
+            @if(auth()->user()?->isSuperAdmin() || auth()->user()?->isAdvertiser())
+            <div class="px-2 pt-4 pb-1 text-2xs font-extrabold uppercase tracking-wider text-slate-500">Marketing & Ads</div>
+
+            <a href="{{ route('admin.campaigns.index') }}" class="sidebar-item {{ request()->routeIs('admin.campaigns*') ? 'active' : '' }}">
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.455a20.01 20.01 0 01-1.378-3.929m3.04-9.47c.253-.962.584-1.892.985-2.783.247-.55.06-1.21-.463-1.511l-.657-.38c-.551-.318-1.26-.117-1.527.455a20.01 20.01 0 00-1.378 3.929m12.39 4.887a1.5 1.5 0 000-2.828M15 7.5v9"/>
+                </svg>
+                <span class="truncate">Campaigns & Surveys</span>
+            </a>
+            @endif
 
             <!-- SECTION 2: GLOBAL MANAGEMENT (NOC) -->
             @if(auth()->user()?->isSuperadmin())

@@ -47,7 +47,7 @@ class User extends Authenticatable
 
     // ---- Role & Access Helpers ----
 
-    public function isSuperadmin(): bool
+    public function isSuperAdmin(): bool
     {
         return $this->role === 'superadmin';
     }
@@ -74,10 +74,12 @@ class User extends Authenticatable
 
     /**
      * Determine if user is authorized to manage or view a specific site.
+     *
+     * @param \App\Models\Location|string|null $site
      */
-    public function canAccessSite(Location|string|null $site): bool
+    public function canAccessSite($site): bool
     {
-        if ($this->isSuperadmin()) {
+        if ($this->isSuperAdmin()) {
             return true;
         }
 

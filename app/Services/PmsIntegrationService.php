@@ -78,6 +78,7 @@ class PmsIntegrationService
         }
 
         // 2. Check in Local Tenant Database (HotspotUser with auth_method = pms)
+        $previousSite = TenantManager::getActiveSite();
         try {
             TenantManager::switchConnection($location);
 
@@ -112,28 +113,16 @@ class PmsIntegrationService
                 ];
             }
         } catch (Throwable $e) {
-            // Non-fatal
+            Log::warning("Tenant DB PMS query error for site {$location->slug}: " . $e->getMessage());
+        } finally {
+            TenantManager::switchConnection($previousSite);
         }
 
-        // 3. Graceful Standard Hospitality Resolution
-        // For hotels without live PMS integration, room verification passes if room number format is valid (1-4 digits/alphanumeric)
-        // and last name length >= 2 characters. It auto-provisions the guest record.
-        if (strlen($name) >= 2 && preg_match('/^[a-zA-Z0-9\-]+$/', $room)) {
-            return [
-                'success' => true,
-                'message' => 'Verifikasi tamu kamar hotel berhasil.',
-                'guest'   => [
-                    'room'     => $room,
-                    'name'     => ucfirst($name),
-                    'check_in' => now()->toIso8601String(),
-                    'pms_mode' => 'hospitality_auto',
-                ],
-            ];
-        }
-
+        // 3. Strict PMS Verification Enforcement (CWE-306 Hardening)
+        // Access denied if guest is not verified via External PMS API or Tenant Database
         return [
             'success' => false,
-            'message' => 'Format nomor kamar atau nama belakang tidak valid.',
+            'message' => 'Data reservasi kamar ' . $room . ' atas nama ' . $name . ' tidak ditemukan di sistem hotel. Hubungi resepsionis / frontdesk.',
             'guest'   => null,
         ];
     }

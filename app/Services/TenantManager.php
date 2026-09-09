@@ -35,8 +35,10 @@ class TenantManager
 
     /**
      * Get the database name for MySQL or absolute file path for SQLite.
+     *
+     * @param \App\Models\Location|string $site
      */
-    public static function getDatabaseIdentifier(Location|string $site): string
+    public static function getDatabaseIdentifier($site): string
     {
         $siteId = $site instanceof Location ? $site->id : $site;
 
@@ -50,16 +52,20 @@ class TenantManager
 
     /**
      * Legacy helper for SQLite path.
+     *
+     * @param \App\Models\Location|string $site
      */
-    public static function getDatabasePath(Location|string $site): string
+    public static function getDatabasePath($site): string
     {
         return self::getDatabaseIdentifier($site);
     }
 
     /**
      * Ensure the tenant database exists and run tenant migrations if newly created.
+     *
+     * @param \App\Models\Location|string $site
      */
-    public static function ensureDatabase(Location|string $site): string
+    public static function ensureDatabase($site): string
     {
         $identifier = self::getDatabaseIdentifier($site);
 
@@ -146,8 +152,10 @@ class TenantManager
 
     /**
      * Switch the active tenant database connection dynamically.
+     *
+     * @param \App\Models\Location|string|null $site
      */
-    public static function switchConnection(Location|string|null $site): void
+    public static function switchConnection($site): void
     {
         if (empty($site)) {
             self::$activeSite = null;

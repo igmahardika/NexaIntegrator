@@ -15,34 +15,51 @@ class SiteRadiusController extends Controller
     public function show(Location $site)
     {
         $radiusService = new RadiusService($site);
+        $fallbackHost = parse_url(config('app.url', 'https://lcps.nexa.net.id'), PHP_URL_HOST) ?: 'lcps.nexa.net.id';
+        
         $serverHost = request()->getHost();
-        if (in_array($serverHost, ['localhost', '127.0.0.1']) && !empty($site->radius_server_ip)) {
-            $serverHost = $site->radius_server_ip;
+        if (in_array($serverHost, ['localhost', '127.0.0.1', '']) || empty($serverHost)) {
+            $serverHost = !empty($site->radius_server_ip) ? $site->radius_server_ip : $fallbackHost;
+            $baseUrl = rtrim(config('app.url', 'https://lcps.nexa.net.id'), '/');
+        } else {
+            if (!empty($site->radius_server_ip) && in_array($serverHost, ['localhost', '127.0.0.1'])) {
+                $serverHost = $site->radius_server_ip;
+            }
+            $scheme = request()->getScheme();
+            $port = request()->getPort();
+            $portSuffix = ($port && !in_array($port, [80, 443])) ? ":{$port}" : "";
+            $baseUrl = "{$scheme}://{$serverHost}{$portSuffix}";
         }
-        $scheme = request()->getScheme();
-        $port = request()->getPort();
-        $portSuffix = ($port && !in_array($port, [80, 443])) ? ":{$port}" : "";
-        $baseUrl = "{$scheme}://{$serverHost}{$portSuffix}";
 
-        $mikrotikScript = $radiusService->generateRouterOsScript($serverHost);
+        $scriptV7 = $radiusService->generateRouterOsScript($serverHost, 'v7');
+        $scriptV6 = $radiusService->generateRouterOsScript($serverHost, 'v6');
+        $sectionsV7 = $radiusService->getRouterOsSections($serverHost, 'v7');
+        $sectionsV6 = $radiusService->getRouterOsSections($serverHost, 'v6');
+        $mikrotikScript = $scriptV7;
 
         // Generate No-Tunnel Reverse Polling Script (1-Click for WinBox)
-        $syncUrl = "{$baseUrl}/api/router/{$site->slug}/sync-script" . ($site->radius_secret ? "?key=" . urlencode($site->radius_secret) : "");
+        $syncKeyParam = $site->radius_secret ? "?key=" . urlencode($site->radius_secret) : "";
+        $syncUrl = "{$baseUrl}/api/router/{$site->slug}/sync-script{$syncKeyParam}";
+        $fetchMode = str_starts_with($syncUrl, 'https://') ? 'mode=https check-certificate=no' : 'mode=http';
         $dnsHost = $serverHost;
 
         $noTunnelScript = <<<RSC
 # =====================================================================
-# WiFiPads Edge Provisioning Script (Tanpa VPN / Tanpa Tunnel)
+# WiFiPads No-Tunnel Reverse Polling Provisioning Script
 # Site: {$site->name} ({$site->slug})
 # Arsitektur: Reverse Polling Scheduler (Aman di balik CGNAT/ISP Swasta)
 # =====================================================================
 
-# 1. Walled Garden (Mengizinkan akses ke Cloud Controller & Web Fonts)
+# 1. Walled Garden (Mengizinkan akses ke Cloud Controller, DNS & CDN)
 /ip hotspot walled-garden ip
-:do { add dst-host="{$dnsHost}" action=accept comment="WiFiPads Controller" } on-error={ :nothing }
-:do { add dst-host="fonts.googleapis.com" action=accept comment="Google Fonts" } on-error={ :nothing }
-:do { add dst-host="fonts.gstatic.com" action=accept comment="Google Fonts Static" } on-error={ :nothing }
-:do { add dst-host="unpkg.com" action=accept comment="Alpine.js CDN" } on-error={ :nothing }
+:do { add dst-port=53 protocol=udp action=accept comment="WiFiPads DNS UDP" } on-error={ :nothing }
+:do { add dst-port=53 protocol=tcp action=accept comment="WiFiPads DNS TCP" } on-error={ :nothing }
+
+/ip hotspot walled-garden
+:do { add dst-host="*{$dnsHost}*" action=allow comment="WiFiPads Controller" } on-error={ :nothing }
+:do { add dst-host="*fonts.googleapis.com*" action=allow comment="Google Fonts" } on-error={ :nothing }
+:do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
+:do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
 
 # 2. Hotspot User Profiles (QoS & Bandwidth Limiter)
 /ip hotspot user profile
@@ -55,7 +72,7 @@ class SiteRadiusController extends Controller
 :do { remove [find name="wifipads-sync"] } on-error={ :nothing }
 add name="wifipads-sync" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive source="
     :do {
-        /tool fetch url=\"{$syncUrl}\" dst-path=\"wifipads_queue.rsc\" mode=http keep-result=yes
+        /tool fetch url=\"{$syncUrl}\" dst-path=\"wifipads_queue.rsc\" {$fetchMode} keep-result=yes
         :delay 1s
         /import file-name=\"wifipads_queue.rsc\"
     } on-error={
@@ -73,7 +90,18 @@ RSC;
 
         $minimalLoginHtml = $radiusService->generateMinimalLoginHtml($baseUrl . '/portal');
 
-        return view('admin.sites.radius', compact('site', 'mikrotikScript', 'noTunnelScript', 'minimalLoginHtml', 'serverHost', 'syncUrl'));
+        return view('admin.sites.radius', compact(
+            'site',
+            'scriptV7',
+            'scriptV6',
+            'sectionsV7',
+            'sectionsV6',
+            'mikrotikScript',
+            'noTunnelScript',
+            'minimalLoginHtml',
+            'serverHost',
+            'syncUrl'
+        ));
     }
 
     /**

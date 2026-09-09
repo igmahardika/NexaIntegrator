@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\PortalController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\SuperadminMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/portal', [PortalController::class, 'index'])->name('portal');
 Route::get('/', fn() => redirect()->route('portal'));
+
+// ============================================================
+// LEGACY COMPATIBILITY PERMANENT REDIRECTS (HTTP 301)
+// ============================================================
+Route::redirect('/locations', '/admin/sites', 301);
+Route::redirect('/vouchers', '/admin/hotspot-users', 301);
+Route::redirect('/members', '/admin/hotspot-users?tab=member', 301);
 
 // ============================================================
 // AUTH (Protected by rate limiting)
@@ -42,7 +50,7 @@ Route::post('/login', [LoginController::class, 'login'])
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ============================================================
-// ADMIN PANEL (requires authenticated admin/advertiser user)
+// ADMIN PANEL (requires authenticated dashboard user)
 // ============================================================
 
 Route::prefix('admin')
@@ -53,37 +61,61 @@ Route::prefix('admin')
         // Default redirect
         Route::get('/', fn() => redirect()->route('admin.dashboard'));
 
-        // Dashboard & Overview
+        // Dashboard & Overview (All Authenticated Dashboard Users)
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/active-users', [DashboardController::class, 'getActiveUsers'])->name('dashboard.active-users');
 
         // Tenant Context Switcher
         Route::post('/context/switch', [TenantContextController::class, 'switch'])->name('context.switch');
 
-        // Campaigns & Survey Builder (Authorized per advertiser via Policy)
-        Route::resource('campaigns', CampaignController::class)->except(['show']);
-
-        // Analytics & Reports (Scoped to advertiser or global for superadmin)
-        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
-        Route::get('/analytics/export', [AnalyticsController::class, 'exportCsv'])->name('analytics.export');
-        Route::get('/analytics/duration-log', [AnalyticsController::class, 'durationLogs'])->name('analytics.duration');
-        Route::get('/analytics/duration-log/export', [AnalyticsController::class, 'exportDurationLogsCsv'])->name('analytics.duration.export');
+        // Legacy Internal Admin Redirects (301 Permanent)
+        Route::redirect('locations', '/admin/sites', 301);
+        Route::redirect('vouchers', '/admin/hotspot-users', 301);
+        Route::redirect('members', '/admin/hotspot-users?tab=member', 301);
 
         // ========================================================
-        // SUPERADMIN ONLY INFRASTRUCTURE & NETWORK OPERATIONS
+        // 1. CAMPAIGNS & MARKETING (Superadmin & Advertiser)
         // ========================================================
-        Route::middleware(SuperadminMiddleware::class)->group(function () {
+        Route::middleware('role:superadmin,advertiser')->group(function () {
+            Route::resource('campaigns', CampaignController::class)->except(['show']);
+        });
 
-            // Active Device Disconnect from Dashboard
-            Route::post('/dashboard/kick', [DashboardController::class, 'kickUser'])->name('dashboard.kick');
+        // ========================================================
+        // 2. CASHIER / VOUCHER DESK (Cashier, Operator, Site Admin, Superadmin)
+        // ========================================================
+        Route::middleware('role:superadmin,site_admin,operator,cashier')->group(function () {
+            Route::get('/hotspot-users', [HotspotUserController::class, 'index'])->name('hotspot-users.index');
+            Route::post('/hotspot-users/access-code', [HotspotUserController::class, 'storeAccessCode'])->name('hotspot-users.access-code');
+            Route::post('/hotspot-users/generate', [HotspotUserController::class, 'generateVouchers'])->name('hotspot-users.generate');
+            Route::get('/hotspot-users/print/{batchName}', [HotspotUserController::class, 'printBatch'])->name('hotspot-users.print');
+        });
 
-            // Sites & Customer Management
-            Route::resource('sites', SiteController::class)->except(['show']);
-            Route::get('/sites/{site}/provision', [SiteController::class, 'provision'])->name('sites.provision');
-            Route::post('/sites/test-draft', [SiteController::class, 'testDraftConnection'])->name('sites.test-draft');
-            Route::post('/sites/{site}/toggle', [SiteController::class, 'toggle'])->name('sites.toggle');
-            Route::post('/sites/{site}/test', [SiteController::class, 'testConnection'])->name('sites.test');
+        // ========================================================
+        // 3. OPERATOR DESK (Operator, Site Admin, Superadmin)
+        // ========================================================
+        Route::middleware('role:superadmin,site_admin,operator')->group(function () {
+            // Connected Devices & Monitoring
+            Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
+            Route::post('/devices/kick', [DeviceController::class, 'kick'])->name('devices.kick');
+            Route::post('/devices/block', [DeviceController::class, 'block'])->name('devices.block');
+            Route::delete('/devices/blacklist/{blacklistedDevice}', [DeviceController::class, 'unblock'])->name('devices.unblock');
+            Route::get('/monitoring', [DeviceController::class, 'monitoring'])->name('devices.monitoring');
 
+            // Advanced Hotspot User Operations (Member, WA, MAC Bypass, Hotel Room, Toggle, Kick)
+            Route::post('/hotspot-users/member', [HotspotUserController::class, 'storeMember'])->name('hotspot-users.member');
+            Route::post('/hotspot-users/whatsapp', [HotspotUserController::class, 'storeWhatsapp'])->name('hotspot-users.whatsapp');
+            Route::post('/hotspot-users/mac-bypass', [HotspotUserController::class, 'storeMacBypass'])->name('hotspot-users.mac-bypass');
+            Route::post('/hotspot-users/hotel-room', [HotspotUserController::class, 'storeHotelRoom'])->name('hotspot-users.hotel-room');
+            Route::post('/hotspot-users/{user}/toggle', [HotspotUserController::class, 'toggleStatus'])->name('hotspot-users.toggle');
+            Route::delete('/hotspot-users/{user}', [HotspotUserController::class, 'destroy'])->name('hotspot-users.destroy');
+            Route::delete('/hotspot-users/batch/destroy', [HotspotUserController::class, 'destroyBatch'])->name('hotspot-users.destroyBatch');
+            Route::post('/hotspot-users/kick/{sessionId}', [HotspotUserController::class, 'kickSession'])->name('hotspot-users.kick');
+        });
+
+        // ========================================================
+        // 4. SITE MANAGEMENT (Site Admin & Superadmin)
+        // ========================================================
+        Route::middleware('role:superadmin,site_admin')->group(function () {
             // Site Template Management & Customizer
             Route::get('/templates', [SiteTemplateController::class, 'index'])->name('templates.index');
             Route::get('/sites/{site}/template', [SiteTemplateController::class, 'gallery'])->name('sites.template.gallery');
@@ -100,73 +132,51 @@ Route::prefix('admin')
             Route::post('/radius/toggle-hotspot/{site}', [EdgeGatewayController::class, 'toggleHotspot'])->name('radius.toggle-hotspot');
             Route::get('/radius/traffic/{site}', [EdgeGatewayController::class, 'traffic'])->name('radius.traffic');
 
-            // Dashboard Operator & User Access Management
-            Route::resource('users', UserController::class)->except(['show']);
-            Route::post('/users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
-
-            // Site RADIUS & Router Integration (Legacy Direct Route)
+            // Site RADIUS & Router Integration (Direct Route)
             Route::get('/sites/{site}/radius', [SiteRadiusController::class, 'show'])->name('sites.radius.show');
             Route::post('/sites/{site}/radius', [SiteRadiusController::class, 'update'])->name('sites.radius.update');
             Route::post('/sites/{site}/radius/test-coa', [SiteRadiusController::class, 'testCoa'])->name('sites.radius.test-coa');
-
-            // Layer-2 Policy Engine (Bypass Whitelist & Block Blacklist)
-            Route::get('/policy/bindings', [IpBindingController::class, 'index'])->name('policy.bindings');
-            Route::post('/policy/bindings', [IpBindingController::class, 'store'])->name('policy.bindings.store');
-            Route::delete('/policy/bindings/{ipBinding}', [IpBindingController::class, 'destroy'])->name('policy.bindings.destroy');
-            Route::post('/policy/bindings/sync/{site}', [IpBindingController::class, 'sync'])->name('policy.bindings.sync');
 
             // Hotspot Profiles & QoS Engine
             Route::post('/profiles/sync-all', [HotspotProfileController::class, 'syncAll'])->name('profiles.sync-all');
             Route::post('/profiles/import', [HotspotProfileController::class, 'importFromRouter'])->name('profiles.import');
             Route::resource('profiles', HotspotProfileController::class)->except(['create', 'show', 'edit']);
 
+            // Layer-2 Policy Engine (Bypass Whitelist & Block Blacklist)
+            Route::get('/policy/bindings', [IpBindingController::class, 'index'])->name('policy.bindings');
+            Route::post('/policy/bindings', [IpBindingController::class, 'store'])->name('policy.bindings.store');
+            Route::delete('/policy/bindings/{ipBinding}', [IpBindingController::class, 'destroy'])->name('policy.bindings.destroy');
+            Route::post('/policy/bindings/sync/{site}', [IpBindingController::class, 'sync'])->name('policy.bindings.sync');
+        });
+
+        // ========================================================
+        // 5. GLOBAL / NOC MANAGEMENT (Superadmin Only)
+        // ========================================================
+        Route::middleware('role:superadmin')->group(function () {
+            // Dashboard Emergency Kick
+            Route::post('/dashboard/kick', [DashboardController::class, 'kickUser'])->name('dashboard.kick');
+
+            // Sites & Customer Management
+            Route::resource('sites', SiteController::class)->except(['show']);
+            Route::get('/sites/{site}/provision', [SiteController::class, 'provision'])->name('sites.provision');
+            Route::post('/sites/test-draft', [SiteController::class, 'testDraftConnection'])->name('sites.test-draft');
+            Route::post('/sites/{site}/toggle', [SiteController::class, 'toggle'])->name('sites.toggle');
+            Route::post('/sites/{site}/test', [SiteController::class, 'testConnection'])->name('sites.test');
+
+            // Dashboard Operator & User Access Management
+            Route::resource('users', UserController::class)->except(['show']);
+            Route::post('/users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+
+            // Global Analytics & Reports
+            Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+            Route::get('/analytics/export', [AnalyticsController::class, 'exportCsv'])->name('analytics.export');
+            Route::get('/analytics/duration-log', [AnalyticsController::class, 'durationLogs'])->name('analytics.duration');
+            Route::get('/analytics/duration-log/export', [AnalyticsController::class, 'exportDurationLogsCsv'])->name('analytics.duration.export');
+
             // Access Point Watchdog
             Route::resource('ap', AccessPointController::class)->except(['create', 'show', 'edit']);
             Route::post('/ap/{accessPoint}/ping', [AccessPointController::class, 'ping'])->name('ap.ping');
             Route::post('/ap/ping-all', [AccessPointController::class, 'pingAll'])->name('ap.ping-all');
-
-            // Connected Devices Management
-            Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
-            Route::post('/devices/kick', [DeviceController::class, 'kick'])->name('devices.kick');
-            Route::post('/devices/block', [DeviceController::class, 'block'])->name('devices.block');
-            Route::delete('/devices/blacklist/{blacklistedDevice}', [DeviceController::class, 'unblock'])->name('devices.unblock');
-            Route::get('/monitoring', [DeviceController::class, 'monitoring'])->name('devices.monitoring');
-
-            // Unified Hotspot Users (Vouchers, Members, Leads)
-            Route::get('/hotspot-users', [HotspotUserController::class, 'index'])->name('hotspot-users.index');
-            Route::post('/hotspot-users/access-code', [HotspotUserController::class, 'storeAccessCode'])->name('hotspot-users.access-code');
-            Route::post('/hotspot-users/generate', [HotspotUserController::class, 'generateVouchers'])->name('hotspot-users.generate');
-            Route::post('/hotspot-users/member', [HotspotUserController::class, 'storeMember'])->name('hotspot-users.member');
-            Route::post('/hotspot-users/whatsapp', [HotspotUserController::class, 'storeWhatsapp'])->name('hotspot-users.whatsapp');
-            Route::post('/hotspot-users/mac-bypass', [HotspotUserController::class, 'storeMacBypass'])->name('hotspot-users.mac-bypass');
-            Route::post('/hotspot-users/hotel-room', [HotspotUserController::class, 'storeHotelRoom'])->name('hotspot-users.hotel-room');
-            Route::post('/hotspot-users/{user}/toggle', [HotspotUserController::class, 'toggleStatus'])->name('hotspot-users.toggle');
-            Route::delete('/hotspot-users/{user}', [HotspotUserController::class, 'destroy'])->name('hotspot-users.destroy');
-            Route::delete('/hotspot-users/batch/destroy', [HotspotUserController::class, 'destroyBatch'])->name('hotspot-users.destroyBatch');
-            Route::get('/hotspot-users/print/{batchName}', [HotspotUserController::class, 'printBatch'])->name('hotspot-users.print');
-            Route::post('/hotspot-users/kick/{sessionId}', [HotspotUserController::class, 'kickSession'])->name('hotspot-users.kick');
-
-            // Vouchers (legacy compatibility)
-            Route::get('/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
-            Route::post('/vouchers/generate', [VoucherController::class, 'generate'])->name('vouchers.generate');
-            Route::get('/vouchers/print/{batchName}', [VoucherController::class, 'printBatch'])->name('vouchers.print');
-            Route::delete('/vouchers/{voucher}', [VoucherController::class, 'destroy'])->name('vouchers.destroy');
-            Route::delete('/vouchers/batch/destroy', [VoucherController::class, 'destroyBatch'])->name('vouchers.destroyBatch');
-
-            // Locations / Routers (legacy compatibility)
-            Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
-            Route::post('/locations', [LocationController::class, 'store'])->name('locations.store');
-            Route::put('/locations/{location}', [LocationController::class, 'update'])->name('locations.update');
-            Route::delete('/locations/{location}', [LocationController::class, 'destroy'])->name('locations.destroy');
-            Route::post('/locations/{location}/test', [LocationController::class, 'testConnection'])->name('locations.test');
-            Route::get('/locations/{location}/health', [LocationController::class, 'health'])->name('locations.health');
-
-            // Members / Staff
-            Route::get('/members', [MemberController::class, 'index'])->name('members.index');
-            Route::post('/members', [MemberController::class, 'store'])->name('members.store');
-            Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
-            Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy');
-            Route::post('/members/{member}/toggle', [MemberController::class, 'toggle'])->name('members.toggle');
 
             // Integration Documentation & Developer Hub
             Route::get('/docs', [DocumentationController::class, 'index'])->name('docs.index');

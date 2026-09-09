@@ -224,12 +224,16 @@ set api disabled=no port={$port}
 :do { remove [find name="{$user}"] } on-error={ :nothing }
 add name="{$user}" group="wifipads-group" password="{$pass}" comment="WiFiPads Controller API Access"
 
-# 3. Walled Garden Hotspot (Akses ke Cloud Controller & Web Assets)
+# 3. Walled Garden Hotspot (Akses ke Cloud Controller, DNS & CDN)
 /ip hotspot walled-garden ip
-:do { add dst-host="{$dnsHost}" action=accept comment="WiFiPads Controller" } on-error={ :nothing }
-:do { add dst-host="fonts.googleapis.com" action=accept comment="Google Fonts" } on-error={ :nothing }
-:do { add dst-host="fonts.gstatic.com" action=accept comment="Google Fonts Static" } on-error={ :nothing }
-:do { add dst-host="unpkg.com" action=accept comment="Alpine.js CDN" } on-error={ :nothing }
+:do { add dst-port=53 protocol=udp action=accept comment="WiFiPads DNS UDP" } on-error={ :nothing }
+:do { add dst-port=53 protocol=tcp action=accept comment="WiFiPads DNS TCP" } on-error={ :nothing }
+
+/ip hotspot walled-garden
+:do { add dst-host="*{$dnsHost}*" action=allow comment="WiFiPads Controller" } on-error={ :nothing }
+:do { add dst-host="*fonts.googleapis.com*" action=allow comment="Google Fonts" } on-error={ :nothing }
+:do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
+:do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
 
 :log info "WiFiPads Direct API Provisioning selesai dikonfigurasi pada {$this->name}!"
 RSC;
@@ -238,6 +242,7 @@ RSC;
         // Default: Zero-Tunnel Reverse Polling (CGNAT / Tanpa VPN)
         $syncKeyParam = $this->radius_secret ? "?key=" . urlencode($this->radius_secret) : "";
         $syncUrl = "{$baseUrl}/api/router/{$this->slug}/sync-script{$syncKeyParam}";
+        $fetchMode = str_starts_with($syncUrl, 'https://') ? 'mode=https check-certificate=no' : 'mode=http';
 
         return <<<RSC
 # =====================================================================
@@ -246,19 +251,29 @@ RSC;
 # Arsitektur: Reverse Polling Scheduler (Aman di balik CGNAT / Indihome / Starlink)
 # =====================================================================
 
-# 1. Walled Garden (Mengizinkan akses ke Cloud Controller & Web Fonts)
+# 1. Walled Garden (Mengizinkan akses ke Cloud Controller, DNS & CDN)
 /ip hotspot walled-garden ip
-:do { add dst-host="{$dnsHost}" action=accept comment="WiFiPads Controller" } on-error={ :nothing }
-:do { add dst-host="fonts.googleapis.com" action=accept comment="Google Fonts" } on-error={ :nothing }
-:do { add dst-host="fonts.gstatic.com" action=accept comment="Google Fonts Static" } on-error={ :nothing }
-:do { add dst-host="unpkg.com" action=accept comment="Alpine.js CDN" } on-error={ :nothing }
+:do { add dst-port=53 protocol=udp action=accept comment="WiFiPads DNS UDP" } on-error={ :nothing }
+:do { add dst-port=53 protocol=tcp action=accept comment="WiFiPads DNS TCP" } on-error={ :nothing }
 
-# 2. Background Sync Script (Tarik Akun Hotspot Baru)
+/ip hotspot walled-garden
+:do { add dst-host="*{$dnsHost}*" action=allow comment="WiFiPads Controller" } on-error={ :nothing }
+:do { add dst-host="*fonts.googleapis.com*" action=allow comment="Google Fonts" } on-error={ :nothing }
+:do { add dst-host="*fonts.gstatic.com*" action=allow comment="Google Fonts Static" } on-error={ :nothing }
+:do { add dst-host="*unpkg.com*" action=allow comment="Alpine.js CDN" } on-error={ :nothing }
+
+# 2. Hotspot User Profiles (QoS & Bandwidth Limiter)
+/ip hotspot user profile
+:do { add name="survey-user" rate-limit="2M/5M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
+:do { add name="voucher-user" rate-limit="5M/10M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
+:do { add name="member-user" rate-limit="10M/20M" shared-users=2 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
+
+# 3. Background Sync Script (Tarik Akun Hotspot Baru)
 /system script
 :do { remove [find name="wifipads-sync"] } on-error={ :nothing }
 add name="wifipads-sync" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive source="
     :do {
-        /tool fetch url=\"{$syncUrl}\" dst-path=\"wifipads_queue.rsc\" mode=http keep-result=yes
+        /tool fetch url=\"{$syncUrl}\" dst-path=\"wifipads_queue.rsc\" {$fetchMode} keep-result=yes
         :delay 1s
         /import file-name=\"wifipads_queue.rsc\"
     } on-error={
