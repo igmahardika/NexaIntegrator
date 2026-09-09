@@ -15,6 +15,8 @@ class HotspotUser extends TenantModel
     public const AUTH_SURVEY     = 'survey';
     public const AUTH_QUICK      = 'quick_click';
     public const AUTH_MAC        = 'mac_bypass';
+    public const AUTH_PMS        = 'pms';
+    public const AUTH_EMAIL      = 'email';
 
     public const STATUS_READY    = 'ready';
     public const STATUS_ACTIVE   = 'active';
@@ -66,6 +68,21 @@ class HotspotUser extends TenantModel
     public function sessions(): HasMany
     {
         return $this->hasMany(HotspotSession::class, 'hotspot_user_id');
+    }
+
+    public function getMethodLabelAttribute(): string
+    {
+        return match ($this->auth_method) {
+            self::AUTH_VOUCHER  => ($this->batch_name === 'Access Code' ? 'Access Code' : 'Voucher'),
+            self::AUTH_MEMBER   => 'Member / Staff',
+            self::AUTH_WHATSAPP => 'WhatsApp Guest',
+            self::AUTH_MAC      => 'MAC Whitelist',
+            self::AUTH_PMS      => 'Hotel Room',
+            self::AUTH_QUICK    => '1-Click Free',
+            self::AUTH_SURVEY   => 'Survey Lead',
+            self::AUTH_EMAIL    => 'Email Lead',
+            default             => ucfirst($this->auth_method ?? 'voucher'),
+        };
     }
 
     /**

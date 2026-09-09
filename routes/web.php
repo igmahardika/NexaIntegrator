@@ -137,6 +137,9 @@ Route::prefix('admin')
             Route::post('/hotspot-users/access-code', [HotspotUserController::class, 'storeAccessCode'])->name('hotspot-users.access-code');
             Route::post('/hotspot-users/generate', [HotspotUserController::class, 'generateVouchers'])->name('hotspot-users.generate');
             Route::post('/hotspot-users/member', [HotspotUserController::class, 'storeMember'])->name('hotspot-users.member');
+            Route::post('/hotspot-users/whatsapp', [HotspotUserController::class, 'storeWhatsapp'])->name('hotspot-users.whatsapp');
+            Route::post('/hotspot-users/mac-bypass', [HotspotUserController::class, 'storeMacBypass'])->name('hotspot-users.mac-bypass');
+            Route::post('/hotspot-users/hotel-room', [HotspotUserController::class, 'storeHotelRoom'])->name('hotspot-users.hotel-room');
             Route::post('/hotspot-users/{user}/toggle', [HotspotUserController::class, 'toggleStatus'])->name('hotspot-users.toggle');
             Route::delete('/hotspot-users/{user}', [HotspotUserController::class, 'destroy'])->name('hotspot-users.destroy');
             Route::delete('/hotspot-users/batch/destroy', [HotspotUserController::class, 'destroyBatch'])->name('hotspot-users.destroyBatch');

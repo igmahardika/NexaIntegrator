@@ -3,7 +3,11 @@
 @section('title', 'Hotspot Users - ' . ($currentSite->name ?? 'Site'))
 
 @section('content')
-<div class="space-y-6" x-data="{ accessCodeModal: false, generateModal: false, memberModal: false, printModal: false }">
+<div class="space-y-6" x-data="{
+    createModal: false,
+    activeMethod: 'access_code',
+    printModal: false
+}">
 
     <!-- Header & Breadcrumbs -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -14,42 +18,31 @@
                 <span class="text-brand">Hotspot Users</span>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen User Hotspot & Access Code</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Kelola Access Code untuk tamu kantor, voucher massal, akun member, dan data leads login.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Kelola Access Code tamu kantor, voucher massal, akun member, tamu WhatsApp, dan MAC whitelist.</p>
         </div>
 
         <!-- Adaptive Actions -->
         <div class="flex items-center gap-2.5 flex-wrap">
-            <button @click="accessCodeModal = true" class="btn-primary">
+            <button @click="createModal = true; activeMethod = 'access_code'" class="btn-primary flex items-center gap-2 font-bold shadow-sm">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                </svg>
-                + Tambah Access Code
-            </button>
-
-            @if(in_array('voucher', $enabledMethods))
-            <button @click="generateModal = true" class="btn-secondary">
-                <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
-                Generate Voucher Massal
+                <span>+ Buat User Hotspot</span>
             </button>
-            @endif
 
-            @if(in_array('member', $enabledMethods))
-            <button @click="memberModal = true" class="btn-secondary">
+            <button @click="createModal = true; activeMethod = 'voucher_batch'" class="btn-secondary flex items-center gap-2 font-semibold">
                 <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                 </svg>
-                Buat Akun Member
+                <span>Generate Massal</span>
             </button>
-            @endif
 
             @if($batches->isNotEmpty())
-            <button @click="printModal = true" class="btn-secondary">
+            <button @click="printModal = true" class="btn-secondary flex items-center gap-2 font-semibold">
                 <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
-                Cetak Voucher
+                <span>Cetak Voucher</span>
             </button>
             @endif
         </div>
@@ -98,7 +91,7 @@
     @endif
 
     <!-- KPI Metric Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         <div class="kpi-card">
             <div>
                 <p class="text-2xs font-bold uppercase tracking-wider text-slate-500">Total User</p>
@@ -111,7 +104,7 @@
 
         <div class="kpi-card">
             <div>
-                <p class="text-2xs font-bold uppercase tracking-wider text-slate-500">Vouchers</p>
+                <p class="text-2xs font-bold uppercase tracking-wider text-slate-500">Voucher / Code</p>
                 <p class="text-xl font-extrabold text-brand mt-1">{{ number_format($stats['vouchers']) }}</p>
             </div>
             <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -131,21 +124,21 @@
 
         <div class="kpi-card">
             <div>
-                <p class="text-2xs font-bold uppercase tracking-wider text-slate-500">Guest Leads</p>
-                <p class="text-xl font-extrabold text-emerald-600 mt-1">{{ number_format($stats['leads']) }}</p>
+                <p class="text-2xs font-bold uppercase tracking-wider text-slate-500">WhatsApp</p>
+                <p class="text-xl font-extrabold text-emerald-600 mt-1">{{ number_format($stats['whatsapp']) }}</p>
             </div>
             <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
             </div>
         </div>
 
         <div class="kpi-card">
             <div>
-                <p class="text-2xs font-bold uppercase tracking-wider text-slate-500">Ready / Siap</p>
-                <p class="text-xl font-extrabold text-amber-600 mt-1">{{ number_format($stats['ready']) }}</p>
+                <p class="text-2xs font-bold uppercase tracking-wider text-slate-500">MAC Whitelist</p>
+                <p class="text-xl font-extrabold text-amber-600 mt-1">{{ number_format($stats['mac']) }}</p>
             </div>
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
             </div>
         </div>
 
@@ -164,23 +157,35 @@
     <div class="card p-4">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             
-            <!-- Segmented Tabs -->
+            <!-- Segmented Tabs for all Login Methods -->
             <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-full md:w-auto overflow-x-auto">
                 <a href="{{ route('admin.hotspot-users.index', ['tab' => 'all']) }}"
-                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition {{ $tab === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
-                    Semua User ({{ $stats['total'] }})
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap {{ $tab === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    Semua ({{ $stats['total'] }})
                 </a>
                 <a href="{{ route('admin.hotspot-users.index', ['tab' => 'voucher']) }}"
-                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition {{ $tab === 'voucher' ? 'bg-white text-brand shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
-                    Access Code / Vouchers ({{ $stats['vouchers'] }})
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap {{ $tab === 'voucher' ? 'bg-white text-brand shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    Voucher / Code ({{ $stats['vouchers'] }})
                 </a>
                 <a href="{{ route('admin.hotspot-users.index', ['tab' => 'member']) }}"
-                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition {{ $tab === 'member' ? 'bg-white text-cyan-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
-                    Members ({{ $stats['members'] }})
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap {{ $tab === 'member' ? 'bg-white text-cyan-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    Member ({{ $stats['members'] }})
+                </a>
+                <a href="{{ route('admin.hotspot-users.index', ['tab' => 'whatsapp']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap {{ $tab === 'whatsapp' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    WhatsApp ({{ $stats['whatsapp'] }})
+                </a>
+                <a href="{{ route('admin.hotspot-users.index', ['tab' => 'mac']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap {{ $tab === 'mac' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    MAC Bypass ({{ $stats['mac'] }})
+                </a>
+                <a href="{{ route('admin.hotspot-users.index', ['tab' => 'hotel']) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap {{ $tab === 'hotel' ? 'bg-white text-rose-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    Hotel Room ({{ $stats['hotel'] }})
                 </a>
                 <a href="{{ route('admin.hotspot-users.index', ['tab' => 'leads']) }}"
-                   class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition {{ $tab === 'leads' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
-                    Guest Leads ({{ $stats['leads'] }})
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap {{ $tab === 'leads' ? 'bg-white text-purple-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
+                    Leads / Free ({{ $stats['leads'] }})
                 </a>
             </div>
 
@@ -207,7 +212,7 @@
                 </select>
 
                 <div class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode/user/nama..."
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari user/MAC/nama..."
                            class="input py-1.5 pl-8 pr-3 text-xs w-48">
                     <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -221,70 +226,90 @@
                 @endif
             </form>
         </div>
+    </div>
 
-        <!-- Users Table -->
-        <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
-            <table class="w-full text-left text-xs border-collapse">
-                <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="table-th">Identitas / Kode</th>
-                        <th class="table-th">Metode Login</th>
-                        <th class="table-th">Profil QoS</th>
-                        <th class="table-th">Status</th>
-                        <th class="table-th">Waktu / Kuota</th>
-                        <th class="table-th">Info Tamu</th>
-                        <th class="table-th text-right">Aksi</th>
+    <!-- Hotspot Users Data Table -->
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table w-full text-left text-xs">
+                <thead class="bg-slate-50/80 text-slate-600 uppercase text-2xs font-extrabold border-b border-slate-200">
+                    <tr>
+                        <th class="py-3.5 px-4">User / Identifier</th>
+                        <th class="py-3.5 px-3">Metode Login</th>
+                        <th class="py-3.5 px-3">Profil QoS</th>
+                        <th class="py-3.5 px-3">Status & Perangkat</th>
+                        <th class="py-3.5 px-3">Durasi & Kuota (MikroTik)</th>
+                        <th class="py-3.5 px-3">Info Tamu / Catatan</th>
+                        <th class="py-3.5 px-4 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 bg-white">
+                <tbody class="divide-y divide-slate-100 font-medium">
                     @forelse($users as $user)
-                    <tr class="table-row">
-                        <!-- Identitas -->
+                    <tr class="hover:bg-slate-50/60 transition">
+                        
+                        <!-- Identifier -->
                         <td class="py-3 px-4">
                             <div class="flex items-center gap-2">
-                                <span class="font-mono font-bold text-slate-900 select-all">{{ $user->identifier }}</span>
-                                <button type="button" @click="navigator.clipboard.writeText('{{ $user->identifier }}'); alert('Tersalin: {{ $user->identifier }}')"
-                                        class="text-slate-400 hover:text-brand" title="Salin Kode">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                </button>
+                                <span class="font-mono font-bold text-slate-900 text-xs">{{ $user->identifier }}</span>
+                                @if($user->batch_name)
+                                <span class="text-2xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold">
+                                    {{ $user->batch_name }}
+                                </span>
+                                @endif
                             </div>
-                            @if($user->batch_name)
-                            <span class="text-2xs text-slate-500 block mt-0.5">Batch: {{ $user->batch_name }}</span>
+                            @if($user->expires_at)
+                            <div class="text-2xs text-slate-400 mt-0.5">
+                                Exp: {{ $user->expires_at->format('d/m/Y H:i') }}
+                            </div>
                             @endif
                         </td>
 
-                        <!-- Metode Login -->
+                        <!-- Metode Login Badge -->
                         <td class="py-3 px-3">
                             @if($user->auth_method === 'voucher')
-                                @if(($user->guest_metadata['type'] ?? '') === 'custom_access_code' || $user->batch_name === 'Access Code')
-                                    <span class="badge bg-amber-50 text-amber-800 border border-amber-200 font-bold">Access Code</span>
+                                @if($user->batch_name === 'Access Code')
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-extrabold bg-blue-50 text-brand border border-blue-200">
+                                    Access Code
+                                </span>
                                 @else
-                                    <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200">Voucher</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                    Voucher
+                                </span>
                                 @endif
                             @elseif($user->auth_method === 'member')
-                                <span class="badge bg-cyan-50 text-cyan-700 border border-cyan-200">Member</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-extrabold bg-cyan-50 text-cyan-700 border border-cyan-200">
+                                    Member
+                                </span>
                             @elseif($user->auth_method === 'whatsapp')
-                                <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">WhatsApp</span>
-                            @elseif($user->auth_method === 'survey')
-                                <span class="badge bg-purple-50 text-purple-700 border border-purple-200">Survei</span>
-                            @elseif($user->auth_method === 'quick_click')
-                                <span class="badge bg-amber-50 text-amber-700 border border-amber-200">1-Click</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    WhatsApp
+                                </span>
+                            @elseif($user->auth_method === 'mac_bypass')
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200">
+                                    MAC Bypass
+                                </span>
+                            @elseif($user->auth_method === 'pms')
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-extrabold bg-rose-50 text-rose-700 border border-rose-200">
+                                    Hotel Room
+                                </span>
                             @else
-                                <span class="badge bg-slate-100 text-slate-700">{{ $user->auth_method }}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
+                                    {{ ucfirst($user->auth_method) }}
+                                </span>
                             @endif
                         </td>
 
                         <!-- Profil QoS -->
                         <td class="py-3 px-3">
                             @if($user->profile)
-                            <div class="font-semibold text-slate-800">{{ $user->profile->name }}</div>
+                            <div class="font-bold text-slate-800">{{ $user->profile->name }}</div>
                             <div class="text-2xs text-slate-500 font-mono">{{ $user->profile->rate_limit }}</div>
                             @else
                             <span class="text-slate-400 italic">Default</span>
                             @endif
                         </td>
 
-                        <!-- Status -->
+                        <!-- Status & Perangkat -->
                         <td class="py-3 px-3">
                             @if($user->status === 'active')
                                 <span class="badge bg-emerald-100 text-emerald-800 animate-pulse">Online</span>
@@ -310,10 +335,10 @@
                             @endif
                         </td>
 
-                        <!-- Waktu / Kuota -->
+                        <!-- Durasi & Kuota (MikroTik) -->
                         <td class="py-3 px-3 text-slate-700">
                             <div>
-                                <span class="font-semibold">{{ gmdate('H:i:s', $user->used_uptime) }}</span>
+                                <span class="font-bold">{{ gmdate('H:i:s', $user->used_uptime) }}</span>
                                 @if($user->uptime_limit)
                                 <span class="text-slate-500 text-2xs">/ {{ gmdate('H:i:s', $user->uptime_limit) }}</span>
                                 @else
@@ -322,26 +347,32 @@
                             </div>
                             <div class="text-2xs text-slate-500">
                                 {{ round(($user->bytes_in + $user->bytes_out) / 1048576, 1) }} MB
+                                @if($user->data_limit_bytes)
+                                / {{ round($user->data_limit_bytes / 1048576) }} MB
+                                @endif
                             </div>
                         </td>
 
                         <!-- Info Tamu / Metadata -->
                         <td class="py-3 px-3">
                             @if(!empty($user->guest_metadata))
-                                @if(isset($user->guest_metadata['notes']))
-                                <div class="font-semibold text-slate-800 text-xs">{{ $user->guest_metadata['notes'] }}</div>
+                                @if(isset($user->guest_metadata['device_name']))
+                                <div class="font-bold text-slate-900 text-xs">{{ $user->guest_metadata['device_name'] }}</div>
                                 @endif
                                 @if(isset($user->guest_metadata['full_name']))
-                                <div class="font-semibold text-slate-800">{{ $user->guest_metadata['full_name'] }}</div>
+                                <div class="font-bold text-slate-900 text-xs">{{ $user->guest_metadata['full_name'] }}</div>
+                                @endif
+                                @if(isset($user->guest_metadata['guest_last_name']))
+                                <div class="font-bold text-slate-900 text-xs">Tamu: {{ $user->guest_metadata['guest_last_name'] }}</div>
                                 @endif
                                 @if(isset($user->guest_metadata['phone']))
                                 <div class="text-2xs text-slate-500 font-mono">{{ $user->guest_metadata['phone'] }}</div>
                                 @endif
-                                @if(isset($user->guest_metadata['created_by']))
-                                <div class="text-2xs text-slate-500">Oleh: {{ $user->guest_metadata['created_by'] }}</div>
+                                @if(isset($user->guest_metadata['notes']))
+                                <div class="text-2xs text-slate-600">{{ $user->guest_metadata['notes'] }}</div>
                                 @endif
                             @else
-                            <span class="text-slate-500 italic text-2xs">-</span>
+                            <span class="text-slate-400 italic text-2xs">-</span>
                             @endif
                         </td>
 
@@ -380,8 +411,8 @@
                             <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                             </div>
-                            <p class="font-bold text-slate-700 text-sm">Belum ada user hotspot</p>
-                            <p class="text-xs text-slate-500 mt-0.5">Generate voucher atau buat akun member pertama untuk site ini.</p>
+                            <p class="font-bold text-slate-700 text-sm">Belum ada user hotspot pada filter ini</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Klik tombol "+ Buat User Hotspot" di atas untuk membuat user baru.</p>
                         </td>
                     </tr>
                     @endforelse
@@ -390,206 +421,465 @@
         </div>
 
         <!-- Pagination -->
-        <div class="mt-4">
+        <div class="p-4 border-t border-slate-100">
             {{ $users->links() }}
         </div>
     </div>
 
-    <!-- ==================== MODAL TAMBAH ACCESS CODE ==================== -->
-    <div x-show="accessCodeModal" x-cloak @keydown.escape.window="accessCodeModal = false" role="dialog" aria-modal="true" aria-labelledby="access-code-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-        <div @click.outside="accessCodeModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+    <!-- ==================== UNIFIED MULTI-METHOD CREATE MODAL ==================== -->
+    <div x-show="createModal" x-cloak @keydown.escape.window="createModal = false" role="dialog" aria-modal="true" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div @click.outside="createModal = false" class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-brand flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 id="access-code-modal-title" class="text-base font-extrabold text-slate-900">Tambah Access Code</h3>
-                        <p class="text-2xs text-slate-500">Kode akses khusus login tamu / kantor</p>
+                        <h3 class="text-lg font-extrabold text-slate-900">Buat User Hotspot Baru</h3>
+                        <p class="text-xs text-slate-500">Pilih metode login sesuai skenario autentikasi dan variabel MikroTik.</p>
                     </div>
                 </div>
-                <button type="button" @click="accessCodeModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
+                <button type="button" @click="createModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <form action="{{ route('admin.hotspot-users.access-code') }}" method="POST" class="mt-4 space-y-4">
-                @csrf
-                <div>
-                    <label class="label">Kode Akses (Access Code)</label>
-                    <input type="text" name="code" placeholder="Contoh: KANTOR2026 atau TAMU-VIP" required autofocus
-                           class="input uppercase font-mono tracking-wider font-bold"
-                           oninput="this.value = this.value.toUpperCase()">
-                    <p class="text-2xs text-slate-500 mt-1">Kode yang akan diinputkan pengguna pada captive portal (Template Access Code).</p>
-                </div>
+            <!-- Login Method Selector Tabs -->
+            <div class="mt-4">
+                <label class="label">Pilih Metode Login:</label>
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-1.5">
+                    
+                    <!-- Access Code -->
+                    <button type="button" @click="activeMethod = 'access_code'"
+                            :class="activeMethod === 'access_code' ? 'border-brand bg-blue-50 text-brand ring-2 ring-brand/15' : 'border-slate-200 hover:bg-slate-50 text-slate-700'"
+                            class="p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1.5">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                        </svg>
+                        <span class="text-2xs font-extrabold leading-tight">Access Code</span>
+                    </button>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="label">Batas Waktu (Durasi)</label>
-                        <select name="uptime_limit_hrs" class="input">
-                            <option value="">Unlimited (Tanpa Batas)</option>
-                            <option value="1">1 Jam</option>
-                            <option value="2" selected>2 Jam</option>
-                            <option value="4">4 Jam</option>
-                            <option value="8">8 Jam (1 Hari Kerja)</option>
-                            <option value="24">24 Jam (1 Hari)</option>
-                            <option value="168">7 Hari</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="label">Maksimal Perangkat</label>
-                        <select name="simultaneous_use" class="input">
-                            <option value="1" selected>1 Perangkat (Personal)</option>
-                            <option value="2">2 Perangkat</option>
-                            <option value="5">5 Perangkat</option>
-                            <option value="10">10 Perangkat (Rapat)</option>
-                            <option value="25">25 Perangkat (Workshop)</option>
-                            <option value="50">50 Perangkat (Event/Kantor)</option>
-                            <option value="100">100 Perangkat</option>
-                        </select>
-                    </div>
-                </div>
+                    <!-- Voucher Massal -->
+                    <button type="button" @click="activeMethod = 'voucher_batch'"
+                            :class="activeMethod === 'voucher_batch' ? 'border-brand bg-blue-50 text-brand ring-2 ring-brand/15' : 'border-slate-200 hover:bg-slate-50 text-slate-700'"
+                            class="p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1.5">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span class="text-2xs font-extrabold leading-tight">Voucher Batch</span>
+                    </button>
 
-                <div>
-                    <label class="label">Profil Bandwidth (Speed Limit)</label>
-                    <select name="profile_id" class="input">
-                        <option value="">Default Site Profile</option>
-                        @foreach($profiles as $p)
-                        <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <!-- Member / Staff -->
+                    <button type="button" @click="activeMethod = 'member'"
+                            :class="activeMethod === 'member' ? 'border-brand bg-blue-50 text-brand ring-2 ring-brand/15' : 'border-slate-200 hover:bg-slate-50 text-slate-700'"
+                            class="p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1.5">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <span class="text-2xs font-extrabold leading-tight">Member / Staff</span>
+                    </button>
 
-                <div>
-                    <label class="label">Catatan / Keterangan (Opsional)</label>
-                    <input type="text" name="notes" placeholder="Contoh: Tamu Ruang Rapat / Acara Seminar" class="input text-xs">
-                </div>
+                    <!-- WhatsApp Guest -->
+                    <button type="button" @click="activeMethod = 'whatsapp'"
+                            :class="activeMethod === 'whatsapp' ? 'border-brand bg-blue-50 text-brand ring-2 ring-brand/15' : 'border-slate-200 hover:bg-slate-50 text-slate-700'"
+                            class="p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1.5">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                        <span class="text-2xs font-extrabold leading-tight">WhatsApp</span>
+                    </button>
 
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" @click="accessCodeModal = false" class="btn-secondary">Batal</button>
-                    <button type="submit" class="btn-primary">Simpan Access Code</button>
-                </div>
-            </form>
-        </div>
-    </div>
+                    <!-- MAC Whitelist -->
+                    <button type="button" @click="activeMethod = 'mac_bypass'"
+                            :class="activeMethod === 'mac_bypass' ? 'border-brand bg-blue-50 text-brand ring-2 ring-brand/15' : 'border-slate-200 hover:bg-slate-50 text-slate-700'"
+                            class="p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1.5">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                        </svg>
+                        <span class="text-2xs font-extrabold leading-tight">MAC Bypass</span>
+                    </button>
 
-    <!-- ==================== MODAL GENERATE VOUCHERS ==================== -->
-    <div x-show="generateModal" x-cloak @keydown.escape.window="generateModal = false" role="dialog" aria-modal="true" aria-labelledby="generate-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-        <div @click.outside="generateModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 id="generate-modal-title" class="text-base font-extrabold text-slate-900">Generate Voucher Massal</h3>
-                <button type="button" @click="generateModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+                    <!-- Hotel Room -->
+                    <button type="button" @click="activeMethod = 'hotel_room'"
+                            :class="activeMethod === 'hotel_room' ? 'border-brand bg-blue-50 text-brand ring-2 ring-brand/15' : 'border-slate-200 hover:bg-slate-50 text-slate-700'"
+                            class="p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1.5">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        <span class="text-2xs font-extrabold leading-tight">Hotel Room</span>
+                    </button>
+
+                </div>
             </div>
 
-            <form action="{{ route('admin.hotspot-users.generate') }}" method="POST" class="mt-4 space-y-4">
-                @csrf
-                <div>
-                    <label class="label">Jumlah Voucher</label>
-                    <input type="number" name="quantity" value="20" min="1" max="500" required class="input">
-                </div>
+            <div class="mt-5 border-t border-slate-100 pt-4">
 
-                <div class="grid grid-cols-2 gap-3">
+                <!-- 1. FORM: ACCESS CODE -->
+                <form x-show="activeMethod === 'access_code'" action="{{ route('admin.hotspot-users.access-code') }}" method="POST" class="space-y-4">
+                    @csrf
                     <div>
-                        <label class="label">Panjang Kode</label>
-                        <input type="number" name="code_length" value="6" min="4" max="10" required class="input">
+                        <label class="label">Kode Akses (name MikroTik)</label>
+                        <input type="text" name="code" placeholder="Contoh: KANTOR2026 atau TAMU-VIP" required
+                               class="input uppercase font-mono tracking-wider font-bold"
+                               oninput="this.value = this.value.toUpperCase()">
+                        <p class="text-2xs text-slate-500 mt-1">Kode yang diinputkan pengguna pada portal login.</p>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Password / PIN (Opsional)</label>
+                            <input type="text" name="password" placeholder="Kosongkan untuk auto-token" class="input font-mono">
+                        </div>
+                        <div>
+                            <label class="label">Profil Bandwidth (QoS)</label>
+                            <select name="profile_id" class="input">
+                                <option value="">Default Site Profile</option>
+                                @foreach($profiles as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Batas Waktu (limit-uptime)</label>
+                            <select name="uptime_limit_hrs" class="input">
+                                <option value="">Unlimited (Tanpa Batas)</option>
+                                <option value="1">1 Jam</option>
+                                <option value="2" selected>2 Jam</option>
+                                <option value="4">4 Jam</option>
+                                <option value="8">8 Jam (1 Hari Kerja)</option>
+                                <option value="24">24 Jam (1 Hari)</option>
+                                <option value="168">7 Hari</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="label">Maksimal Perangkat (shared-users)</label>
+                            <select name="simultaneous_use" class="input">
+                                <option value="1" selected>1 Perangkat (Personal)</option>
+                                <option value="2">2 Perangkat</option>
+                                <option value="5">5 Perangkat</option>
+                                <option value="10">10 Perangkat (Rapat)</option>
+                                <option value="25">25 Perangkat (Workshop)</option>
+                                <option value="50">50 Perangkat (Event)</option>
+                                <option value="100">100 Perangkat</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Batas Kuota Data (MB)</label>
+                            <input type="number" name="data_limit_mb" placeholder="misal: 1000 (Kosongkan = Unlimited)" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Kunci MAC Address (Opsional)</label>
+                            <input type="text" name="bound_mac" placeholder="XX:XX:XX:XX:XX:XX" class="input uppercase font-mono">
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="label">Prefix (Opsional)</label>
-                        <input type="text" name="prefix" placeholder="misal: VIP" class="input uppercase">
+                        <label class="label">Catatan / Keterangan (comment)</label>
+                        <input type="text" name="notes" placeholder="misal: Tamu Ruang Rapat Lt. 2 / Event Seminar" class="input">
                     </div>
-                </div>
 
-                <div>
-                    <label class="label">Profil Bandwidth (QoS)</label>
-                    <select name="profile_id" class="input">
-                        <option value="">Default Site Profile</option>
-                        @foreach($profiles as $p)
-                        <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                        <button type="button" @click="createModal = false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary font-bold">Simpan Access Code</button>
+                    </div>
+                </form>
 
-                <div class="grid grid-cols-2 gap-3">
+                <!-- 2. FORM: VOUCHER BATCH -->
+                <form x-show="activeMethod === 'voucher_batch'" action="{{ route('admin.hotspot-users.generate') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Jumlah Voucher</label>
+                            <input type="number" name="quantity" value="20" min="1" max="500" required class="input">
+                        </div>
+                        <div>
+                            <label class="label">Panjang Kode</label>
+                            <input type="number" name="code_length" value="6" min="4" max="10" required class="input">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Prefix Kode (Opsional)</label>
+                            <input type="text" name="prefix" placeholder="misal: VIP" class="input uppercase">
+                        </div>
+                        <div>
+                            <label class="label">Profil Bandwidth (QoS)</label>
+                            <select name="profile_id" class="input">
+                                <option value="">Default Site Profile</option>
+                                @foreach($profiles as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Batas Waktu / Jam (limit-uptime)</label>
+                            <input type="number" step="0.5" name="uptime_limit_hrs" placeholder="2.0" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Batas Kuota / MB (limit-bytes)</label>
+                            <input type="number" name="data_limit_mb" placeholder="1000" class="input">
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="label">Batas Waktu (Jam)</label>
-                        <input type="number" step="0.5" name="uptime_limit_hrs" placeholder="2.0" class="input">
+                        <label class="label">Nama Batch (comment grouping)</label>
+                        <input type="text" name="batch_name" value="Batch-{{ date('Ymd-Hi') }}" class="input font-mono">
                     </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                        <button type="button" @click="createModal = false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary font-bold">Generate Sekarang</button>
+                    </div>
+                </form>
+
+                <!-- 3. FORM: MEMBER / STAFF -->
+                <form x-show="activeMethod === 'member'" action="{{ route('admin.hotspot-users.member') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Username Login (name MikroTik)</label>
+                            <input type="text" name="username" required placeholder="misal: budi_kantor" class="input font-mono">
+                        </div>
+                        <div>
+                            <label class="label">Password Login</label>
+                            <input type="password" name="password" required placeholder="Minimal 4 karakter" class="input">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Nama Lengkap Karyawan/Member</label>
+                            <input type="text" name="name" placeholder="Budi Santoso" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Profil Bandwidth (QoS)</label>
+                            <select name="profile_id" class="input">
+                                <option value="">Default Site Profile</option>
+                                @foreach($profiles as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Maksimal Perangkat (shared-users)</label>
+                            <input type="number" name="simultaneous_use" value="1" min="1" max="10" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Kunci MAC Address (Opsional)</label>
+                            <input type="text" name="bound_mac" placeholder="XX:XX:XX:XX:XX:XX" class="input uppercase font-mono">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Berlaku Sampai (Opsional)</label>
+                            <input type="date" name="expires_at" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Catatan / Divisi</label>
+                            <input type="text" name="notes" placeholder="Staff IT / Tamu VIP" class="input">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                        <button type="button" @click="createModal = false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary font-bold">Simpan Akun Member</button>
+                    </div>
+                </form>
+
+                <!-- 4. FORM: WHATSAPP GUEST -->
+                <form x-show="activeMethod === 'whatsapp'" action="{{ route('admin.hotspot-users.whatsapp') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Nomor WhatsApp (name MikroTik)</label>
+                            <input type="text" name="phone" required placeholder="081234567890" class="input font-mono">
+                            <p class="text-2xs text-slate-500 mt-1">Nomor HP yang akan digunakan saat login portal.</p>
+                        </div>
+                        <div>
+                            <label class="label">Nama Lengkap Tamu</label>
+                            <input type="text" name="name" required placeholder="Andi Wijaya" class="input">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Profil Bandwidth (QoS)</label>
+                            <select name="profile_id" class="input">
+                                <option value="">Default Site Profile</option>
+                                @foreach($profiles as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="label">PIN Verifikasi (Opsional)</label>
+                            <input type="text" name="password" placeholder="Kosongkan untuk PIN otomatis" class="input font-mono">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Batas Waktu (limit-uptime)</label>
+                            <select name="uptime_limit_hrs" class="input">
+                                <option value="1">1 Jam</option>
+                                <option value="2" selected>2 Jam</option>
+                                <option value="4">4 Jam</option>
+                                <option value="8">8 Jam</option>
+                                <option value="24">24 Jam</option>
+                                <option value="">Unlimited</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="label">Kuota Data (MB)</label>
+                            <input type="number" name="data_limit_mb" placeholder="1000" class="input">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Maksimal Perangkat</label>
+                            <input type="number" name="simultaneous_use" value="1" min="1" max="10" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Catatan Tamu</label>
+                            <input type="text" name="notes" placeholder="Tamu PT ABC / Meja 12" class="input">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                        <button type="button" @click="createModal = false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary font-bold">Daftarkan Tamu WhatsApp</button>
+                    </div>
+                </form>
+
+                <!-- 5. FORM: MAC WHITELIST / BYPASS -->
+                <form x-show="activeMethod === 'mac_bypass'" action="{{ route('admin.hotspot-users.mac-bypass') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Hardware MAC Address (name & mac)</label>
+                            <input type="text" name="mac_address" required placeholder="AA:BB:CC:DD:EE:FF" class="input uppercase font-mono font-bold">
+                            <p class="text-2xs text-slate-500 mt-1">Perangkat langsung online tanpa halaman login.</p>
+                        </div>
+                        <div>
+                            <label class="label">Nama Perangkat / Lokasi</label>
+                            <input type="text" name="device_name" required placeholder="Smart TV Lobby / POS Kasir" class="input">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Kategori Perangkat</label>
+                            <select name="device_category" class="input">
+                                <option value="smart_tv">Smart TV / Android Box</option>
+                                <option value="pos_cashier">Mesin Kasir POS / EDC</option>
+                                <option value="printer">Printer Jaringan</option>
+                                <option value="cctv">Kamera CCTV / NVR</option>
+                                <option value="iot">Perangkat IoT / Sensor</option>
+                                <option value="game_console">Konsol Game / PS5</option>
+                                <option value="other">Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="label">Profil Bandwidth (QoS)</label>
+                            <select name="profile_id" class="input">
+                                <option value="">Default Site Profile</option>
+                                @foreach($profiles as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Durasi Aktif (Jam, Opsional)</label>
+                            <input type="number" name="uptime_limit_hrs" placeholder="Kosongkan = Selamanya" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Catatan Tambahan</label>
+                            <input type="text" name="notes" placeholder="IP Static 192.168.88.50" class="input">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                        <button type="button" @click="createModal = false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary font-bold">Simpan MAC Whitelist</button>
+                    </div>
+                </form>
+
+                <!-- 6. FORM: HOTEL ROOM -->
+                <form x-show="activeMethod === 'hotel_room'" action="{{ route('admin.hotspot-users.hotel-room') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Nomor Kamar (name MikroTik)</label>
+                            <input type="text" name="room_number" required placeholder="misal: 301 atau Deluxe-02" class="input font-mono font-bold">
+                        </div>
+                        <div>
+                            <label class="label">Nama Belakang Tamu (password)</label>
+                            <input type="text" name="last_name" required placeholder="misal: Santoso atau Smith" class="input uppercase font-bold">
+                            <p class="text-2xs text-slate-500 mt-1">Digunakan tamu sebagai password login portal hotel.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Nama Lengkap Tamu (Opsional)</label>
+                            <input type="text" name="full_name" placeholder="Budi Santoso" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Profil Bandwidth (QoS)</label>
+                            <select name="profile_id" class="input">
+                                <option value="">Default Site Profile</option>
+                                @foreach($profiles as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="label">Maksimal Perangkat Kamar</label>
+                            <input type="number" name="simultaneous_use" value="4" min="1" max="10" class="input">
+                        </div>
+                        <div>
+                            <label class="label">Tanggal Check-out</label>
+                            <input type="date" name="checkout_date" class="input">
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="label">Kuota Data (MB)</label>
-                        <input type="number" name="data_limit_mb" placeholder="misal: 1000" class="input">
+                        <label class="label">Catatan Reservasi</label>
+                        <input type="text" name="notes" placeholder="Booking via Agoda / Extra Bed" class="input">
                     </div>
-                </div>
 
-                <div>
-                    <label class="label">Nama Batch</label>
-                    <input type="text" name="batch_name" value="Batch-{{ date('Ymd-Hi') }}" class="input">
-                </div>
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                        <button type="button" @click="createModal = false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary font-bold">Simpan Akun Kamar</button>
+                    </div>
+                </form>
 
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" @click="generateModal = false" class="btn-secondary">Batal</button>
-                    <button type="submit" class="btn-primary">Generate Sekarang</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==================== MODAL BUAT AKUN MEMBER ==================== -->
-    <div x-show="memberModal" x-cloak @keydown.escape.window="memberModal = false" role="dialog" aria-modal="true" aria-labelledby="member-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-        <div @click.outside="memberModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 id="member-modal-title" class="text-base font-extrabold text-slate-900">Buat Akun Member / Staff</h3>
-                <button type="button" @click="memberModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
             </div>
-
-            <form action="{{ route('admin.hotspot-users.member') }}" method="POST" class="mt-4 space-y-4">
-                @csrf
-                <div>
-                    <label class="label">Nama Lengkap Tamu/Karyawan</label>
-                    <input type="text" name="name" placeholder="misal: Budi Santoso" class="input">
-                </div>
-
-                <div>
-                    <label class="label">Username Login</label>
-                    <input type="text" name="username" required placeholder="misal: budi_hotel" class="input">
-                </div>
-
-                <div>
-                    <label class="label">Password</label>
-                    <input type="password" name="password" required placeholder="Minimal 4 karakter" class="input">
-                </div>
-
-                <div>
-                    <label class="label">Profil Bandwidth (QoS)</label>
-                    <select name="profile_id" class="input">
-                        <option value="">Default Site Profile</option>
-                        @foreach($profiles as $p)
-                        <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="label">Maksimal Perangkat</label>
-                        <input type="number" name="simultaneous_use" value="1" min="1" max="10" class="input">
-                    </div>
-                    <div>
-                        <label class="label">Berlaku Sampai (Opsional)</label>
-                        <input type="date" name="expires_at" class="input">
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" @click="memberModal = false" class="btn-secondary">Batal</button>
-                    <button type="submit" class="btn-primary">Simpan Akun</button>
-                </div>
-            </form>
         </div>
     </div>
 
@@ -598,7 +888,7 @@
         <div @click.outside="printModal = false" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h3 id="print-modal-title" class="text-base font-extrabold text-slate-900">Pilih Batch Voucher untuk Dicetak</h3>
-                <button type="button" @click="printModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
+                <button type="button" @click="printModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
