@@ -23,11 +23,21 @@ class RadiusService
         $loc = $this->location;
         $canonicalHost = parse_url(config('app.url', 'https://lcps.nexa.net.id'), PHP_URL_HOST) ?: 'lcps.nexa.net.id';
 
-        $serverIp = !empty($loc->radius_server_ip)
+        $rawHost = !empty($loc->radius_server_ip)
             ? $loc->radius_server_ip
             : (!empty($serverHost) && !in_array($serverHost, ['127.0.0.1', 'localhost'])
                 ? $serverHost
                 : $canonicalHost);
+
+        // MikroTik RouterOS /radius strictly requires an IPv4/IPv6 address and does NOT accept domain names / FQDNs.
+        if (filter_var($rawHost, FILTER_VALIDATE_IP)) {
+            $serverIp = $rawHost;
+        } else {
+            $resolved = gethostbyname($rawHost);
+            $serverIp = filter_var($resolved, FILTER_VALIDATE_IP)
+                ? $resolved
+                : (request()->server('SERVER_ADDR') ?: '103.147.157.116');
+        }
 
         $secret = $loc->radius_secret;
         if (empty($secret)) {
