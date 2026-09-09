@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PortalTemplateTest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * Test that the captive portal page renders with HTTP 200 and has no blue topbar.
      */
