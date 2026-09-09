@@ -84,6 +84,15 @@ class DeviceController extends Controller
         ]);
 
         $location = Location::findOrFail($request->location_id);
+
+        // Kick directly via RouterOS API
+        try {
+            $mikrotik = new \App\Services\MikrotikService($location);
+            $mikrotik->kickUser($request->mac);
+        } catch (\Throwable $e) {
+            // Ignore if router is offline
+        }
+
         $radiusService = new RadiusService($location);
         $result = $radiusService->sendDisconnect($request->mac);
 
@@ -123,6 +132,9 @@ class DeviceController extends Controller
         if ($request->filled('location_id')) {
             $location = Location::find($request->location_id);
             if ($location) {
+                try {
+                    (new \App\Services\MikrotikService($location))->kickUser($mac);
+                } catch (\Throwable $e) {}
                 (new RadiusService($location))->sendDisconnect($mac);
             }
         }

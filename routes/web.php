@@ -129,8 +129,9 @@ Route::prefix('admin')
             Route::post('/radius/test-coa/{site}', [EdgeGatewayController::class, 'testCoa'])->name('radius.test-coa');
             Route::get('/radius/download-login-html/{site}', [EdgeGatewayController::class, 'downloadLoginHtml'])->name('radius.download-login-html');
             Route::post('/radius/failsafe-bypass/{site}', [EdgeGatewayController::class, 'toggleEmergencyBypass'])->name('radius.failsafe-bypass');
-            Route::post('/radius/toggle-hotspot/{site}', [EdgeGatewayController::class, 'toggleHotspot'])->name('radius.toggle-hotspot');
             Route::get('/radius/traffic/{site}', [EdgeGatewayController::class, 'traffic'])->name('radius.traffic');
+            Route::get('/radius/active-users/{site}', [EdgeGatewayController::class, 'activeUsers'])->name('radius.active-users');
+            Route::post('/radius/kick-user/{site}', [EdgeGatewayController::class, 'kickUser'])->name('radius.kick-user');
 
             // Site RADIUS & Router Integration (Direct Route)
             Route::get('/sites/{site}/radius', [SiteRadiusController::class, 'show'])->name('sites.radius.show');

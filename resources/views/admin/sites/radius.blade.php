@@ -71,20 +71,33 @@
     <!-- Hardware & API Telemetry Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
         <!-- Metric 1: Connection & Latency -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div class="bg-white rounded-2xl p-5 border shadow-xs flex flex-col justify-between transition-colors"
+            :class="apiResult ? (apiResult.connected ? 'border-emerald-200/80' : 'border-rose-200 bg-rose-50/20') : 'border-slate-200/80'">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Direct API Connection</span>
-                <span class="w-8 h-8 rounded-lg bg-blue-50 text-brand flex items-center justify-center font-bold text-xs">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-colors"
+                    :class="apiResult ? (apiResult.connected ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-100 text-rose-700') : 'bg-blue-50 text-brand'">
+                    <template x-if="apiResult && apiResult.connected">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </template>
+                    <template x-if="apiResult && !apiResult.connected">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </template>
+                    <template x-if="!apiResult">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </template>
                 </span>
             </div>
             <div>
-                <div class="text-xl font-black font-mono text-slate-900" x-text="apiResult ? (apiResult.connected ? 'Connected' : 'Offline') : 'Checking...'">...</div>
+                <div class="text-xl font-black font-mono"
+                    :class="apiResult ? (apiResult.connected ? 'text-emerald-600' : 'text-rose-600') : 'text-slate-900'"
+                    x-text="apiResult ? (apiResult.connected ? 'Connected (' + apiResult.latency_ms + ' ms)' : 'Offline / Terputus') : (testingApi ? 'Memeriksa...' : 'Standby')">...</div>
                 <p class="text-2xs text-slate-500 mt-1 font-mono">
-                    Endpoint: {{ $site->router_ip ?: 'None' }}:{{ $site->router_port ?: 8728 }}
+                    Endpoint: {{ $site->router_ip ?: 'Belum disetel' }}:{{ $site->router_port ?: 8728 }}
                 </p>
+                <template x-if="apiResult && !apiResult.connected && apiResult.error">
+                    <div class="mt-1.5 text-2xs text-rose-700 bg-rose-100/60 px-2 py-1 rounded font-mono truncate" :title="apiResult.error" x-text="'Error: ' + apiResult.error"></div>
+                </template>
             </div>
             <div class="pt-3 mt-2 border-t border-slate-100">
                 <button @click="testApi()" :disabled="testingApi" class="w-full py-1.5 px-3 text-2xs font-bold text-brand bg-blue-50 hover:bg-blue-100 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
@@ -95,10 +108,12 @@
         </div>
 
         <!-- Metric 2: Live Hardware Diagnostics -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+        <div class="bg-white rounded-2xl p-5 border shadow-xs flex flex-col justify-between"
+            :class="apiResult && !apiResult.connected ? 'border-slate-200/80 bg-slate-50/40' : 'border-slate-200/80'">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Hardware Telemetry</span>
-                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs"
+                    :class="apiResult && apiResult.connected ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
                 </span>
             </div>
@@ -111,33 +126,52 @@
                 </div>
             </template>
             <template x-if="!apiResult || !apiResult.connected">
-                <div class="text-xs text-slate-400 py-2 italic leading-relaxed">
-                    Telemetri hardware akan ditampilkan otomatis saat router terhubung via API port {{ $site->router_port ?: 8728 }}.
+                <div class="py-4 px-3 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 my-auto">
+                    <div class="text-xs font-bold text-slate-500 flex items-center justify-center gap-1.5 mb-1">
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        <span>Data Hardware Disembunyikan</span>
+                    </div>
+                    <p class="text-2xs text-slate-400 leading-relaxed">
+                        Router / user API tidak terkoneksi. Data telemetri tidak ditampilkan saat offline.
+                    </p>
                 </div>
             </template>
         </div>
 
-        <!-- Metric 3: Architecture Standard Benefits -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <!-- Metric 3: Active Hotspot Users -->
+        <div class="bg-white rounded-2xl p-5 border shadow-xs flex flex-col justify-between"
+            :class="apiResult && !apiResult.connected ? 'border-slate-200/80 bg-slate-50/40' : 'border-slate-200/80'">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Karakteristik Arsitektur</span>
-                <span class="px-2 py-0.5 rounded text-2xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                    RAM-Only (Safe)
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Hotspot Users</span>
+                <span class="px-2 py-0.5 rounded text-2xs font-bold"
+                    :class="apiResult && apiResult.connected ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'">
+                    <span x-text="apiResult && apiResult.connected ? 'Router RAM' : 'Standby'"></span>
                 </span>
             </div>
-            <div class="space-y-2 text-2xs text-slate-600">
-                <div class="flex items-center gap-1.5 text-emerald-700 font-semibold">
-                    <span>✓</span> <span>0% Flash Wear (Nol penulisan disk pada router)</span>
+            <template x-if="apiResult && apiResult.connected">
+                <div>
+                    <div class="text-2xl font-black font-mono text-emerald-600">
+                        <span x-text="activeUsersCount">0</span> <span class="text-xs font-sans text-slate-600 font-semibold">User Aktif</span>
+                    </div>
+                    <p class="text-2xs text-slate-500 mt-1">
+                        Sesi tamu aktif di <code class="font-mono bg-slate-100 px-1 rounded">/ip hotspot active</code>.
+                    </p>
                 </div>
-                <div class="flex items-center gap-1.5 text-brand font-semibold">
-                    <span>✓</span> <span>Aktivasi Sesi Real-Time (/ip/hotspot/active/login)</span>
+            </template>
+            <template x-if="!apiResult || !apiResult.connected">
+                <div class="py-4 px-3 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 my-auto">
+                    <div class="text-xs font-bold text-slate-500 flex items-center justify-center gap-1.5 mb-1">
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        <span>Tidak Ada Sesi Terdeteksi</span>
+                    </div>
+                    <p class="text-2xs text-slate-400 leading-relaxed">
+                        Router offline. Tidak ada data sesi pengguna aktif yang ditampilkan.
+                    </p>
                 </div>
-                <div class="flex items-center gap-1.5 text-purple-700 font-semibold">
-                    <span>✓</span> <span>Bebas Timeout RADIUS & Mixed Content Free</span>
-                </div>
-            </div>
-            <div class="pt-2 text-2xs text-slate-400 border-t border-slate-100">
-                Metode integrasi resmi & tunggal untuk seluruh cabang venue Nexa.
+            </template>
+            <div class="pt-2 text-2xs text-slate-400 border-t border-slate-100 flex items-center justify-between">
+                <span>Aktivasi Sesi Instan</span>
+                <span class="text-emerald-600 font-semibold" x-show="apiResult && apiResult.connected">● Auto-sync</span>
             </div>
         </div>
     </div>
@@ -359,9 +393,105 @@
     </div>
 
     <!-- ================================================================= -->
-    <!-- TAB 3: REAL-TIME TRAFFIC & MRTG -->
+    <!-- TAB 3: REAL-TIME TRAFFIC & LIVE ACTIVE USERS -->
     <!-- ================================================================= -->
     <div x-show="activeTab === 'traffic'" class="space-y-6" x-transition x-cloak>
+        <!-- Real-time Active Hotspot Users Table -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-100">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <span>Live Hotspot Active Sessions (Router RAM)</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Menampilkan pengguna yang saat ini sedang aktif terhubung di <code class="font-mono bg-slate-100 px-1 rounded">/ip hotspot active</code>. Jika pengguna logout atau disconnect, data otomatis hilang dari daftar ini.
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button @click="loadActiveUsers()" :disabled="loadingUsers || (!apiResult || !apiResult.connected)" class="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-3.5 h-3.5" :class="loadingUsers ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Refresh User Aktif</span>
+                    </button>
+                </div>
+            </div>
+
+            <template x-if="!apiResult || !apiResult.connected">
+                <div class="py-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414M3 3l18 18"/></svg>
+                    </div>
+                    <div class="text-xs font-bold text-slate-700">Router Tidak Terhubung</div>
+                    <p class="text-2xs text-slate-400 mt-1 max-w-sm mx-auto">
+                        Data pengguna aktif tidak dapat dimuat karena koneksi RouterOS API offline.
+                    </p>
+                </div>
+            </template>
+
+            <template x-if="apiResult && apiResult.connected">
+                <div>
+                    <template x-if="activeUsersList.length === 0">
+                        <div class="py-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <div class="text-xs font-bold text-slate-700">Tidak Ada Pengguna Aktif Saat Ini</div>
+                            <p class="text-2xs text-slate-400 mt-1">
+                                Saat tamu login ke hotspot, data pengguna akan muncul di tabel ini secara otomatis.
+                            </p>
+                        </div>
+                    </template>
+
+                    <template x-if="activeUsersList.length > 0">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 border-b border-slate-200">
+                                        <th class="py-2.5 px-3 font-semibold uppercase text-2xs">Username / Akun</th>
+                                        <th class="py-2.5 px-3 font-semibold uppercase text-2xs">IP Address</th>
+                                        <th class="py-2.5 px-3 font-semibold uppercase text-2xs">MAC Address</th>
+                                        <th class="py-2.5 px-3 font-semibold uppercase text-2xs">Uptime</th>
+                                        <th class="py-2.5 px-3 font-semibold uppercase text-2xs">Traffic (In / Out)</th>
+                                        <th class="py-2.5 px-3 font-semibold uppercase text-2xs text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 font-mono">
+                                    <template x-for="user in activeUsersList" :key="user.id || user.mac">
+                                        <tr class="hover:bg-slate-50/60 transition">
+                                            <td class="py-2.5 px-3">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                    <strong class="text-slate-900" x-text="user.user || '-'"></strong>
+                                                </div>
+                                            </td>
+                                            <td class="py-2.5 px-3 text-slate-700" x-text="user.ip || '-'"></td>
+                                            <td class="py-2.5 px-3 text-slate-600 uppercase" x-text="user.mac || '-'"></td>
+                                            <td class="py-2.5 px-3 text-brand font-semibold" x-text="user.uptime || '-'"></td>
+                                            <td class="py-2.5 px-3 text-slate-500 text-2xs">
+                                                <span x-text="formatBytes(user.bytes_in)"></span> &darr; / 
+                                                <span x-text="formatBytes(user.bytes_out)"></span> &uarr;
+                                            </td>
+                                            <td class="py-2.5 px-3 text-right">
+                                                <button @click="kickUser(user.mac)" class="px-2.5 py-1 text-2xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition border border-rose-200 cursor-pointer">
+                                                    Kick
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <!-- WAN Traffic Chart -->
         <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-100">
                 <div>
@@ -377,13 +507,20 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 text-xs font-mono">
-                        <span class="text-emerald-600 font-bold">RX: <span x-text="trafficData.rx_human || '0 bps'"></span></span>
-                        <span class="text-slate-300">|</span>
-                        <span class="text-purple-600 font-bold">TX: <span x-text="trafficData.tx_human || '0 bps'"></span></span>
-                    </div>
+                    <template x-if="apiResult && apiResult.connected">
+                        <div class="flex items-center gap-2 text-xs font-mono">
+                            <span class="text-emerald-600 font-bold">RX: <span x-text="trafficData.rx_human || '0 bps'"></span></span>
+                            <span class="text-slate-300">|</span>
+                            <span class="text-purple-600 font-bold">TX: <span x-text="trafficData.tx_human || '0 bps'"></span></span>
+                        </div>
+                    </template>
+                    <template x-if="!apiResult || !apiResult.connected">
+                        <div class="text-xs font-mono text-slate-400 italic">
+                            Traffic Disembunyikan (Offline)
+                        </div>
+                    </template>
 
-                    <button @click="toggleTrafficPolling()" class="px-3 py-1.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                    <button @click="toggleTrafficPolling()" :disabled="!apiResult || !apiResult.connected" class="px-3 py-1.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="trafficPolling ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'">
                         <span class="w-2 h-2 rounded-full" :class="trafficPolling ? 'bg-rose-500 animate-ping' : 'bg-emerald-500'"></span>
                         <span x-text="trafficPolling ? 'Pause Polling' : 'Start Polling'"></span>
@@ -392,7 +529,18 @@
             </div>
 
             <!-- Chart Canvas Container -->
-            <div class="relative h-72 w-full">
+            <template x-if="!apiResult || !apiResult.connected">
+                <div class="py-16 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414M3 3l18 18"/></svg>
+                    </div>
+                    <div class="text-xs font-bold text-slate-700">Grafik Traffic Disembunyikan</div>
+                    <p class="text-2xs text-slate-400 mt-1 max-w-sm mx-auto">
+                        Router / user API tidak terkoneksi. Data throughput real-time tidak ditampilkan saat router offline.
+                    </p>
+                </div>
+            </template>
+            <div x-show="apiResult && apiResult.connected" class="relative h-72 w-full">
                 <canvas id="wanTrafficChart"></canvas>
             </div>
         </div>
@@ -475,6 +623,9 @@ function routerIntegrationManager() {
         copiedLoginHtml: false,
         testingApi: false,
         apiResult: null,
+        activeUsersList: [],
+        activeUsersCount: 0,
+        loadingUsers: false,
         trafficPolling: false,
         trafficTimer: null,
         trafficChart: null,
@@ -489,6 +640,13 @@ function routerIntegrationManager() {
         init() {
             // Otomatis verifikasi API saat halaman dimuat
             this.testApi();
+
+            // Background Watchdog: Sinkronisasi daftar user aktif setiap 3 detik saat tab traffic dibuka
+            setInterval(() => {
+                if (this.activeTab === 'traffic' && this.apiResult && this.apiResult.connected && !this.loadingUsers) {
+                    this.loadActiveUsers();
+                }
+            }, 3000);
         },
 
         copyDirectApiScript() {
@@ -519,6 +677,18 @@ function routerIntegrationManager() {
         testApi() {
             this.testingApi = true;
             this.apiResult = null;
+            this.activeUsersList = [];
+            this.activeUsersCount = 0;
+            this.trafficData = {
+                interface: 'ether1',
+                rx_bps: 0,
+                tx_bps: 0,
+                rx_human: '0 bps',
+                tx_human: '0 bps'
+            };
+            if (this.trafficPolling) {
+                this.toggleTrafficPolling();
+            }
 
             fetch('{{ route('admin.radius.test-api', $site) }}', {
                 method: 'POST',
@@ -530,13 +700,115 @@ function routerIntegrationManager() {
             })
             .then(res => res.json())
             .then(data => {
-                this.apiResult = data;
                 this.testingApi = false;
+                if (data.connected) {
+                    this.apiResult = data;
+                    this.activeUsersCount = data.active_users || 0;
+                    this.loadActiveUsers();
+                } else {
+                    // Ketika router/user tidak konek, pastikan data tidak muncul
+                    this.apiResult = { connected: false, error: data.error };
+                    this.activeUsersList = [];
+                    this.activeUsersCount = 0;
+                    this.trafficData = {
+                        interface: 'ether1',
+                        rx_bps: 0,
+                        tx_bps: 0,
+                        rx_human: '0 bps',
+                        tx_human: '0 bps'
+                    };
+                    if (this.trafficPolling) {
+                        this.toggleTrafficPolling();
+                    }
+                }
             })
             .catch(err => {
-                this.apiResult = { connected: false, error: err.message };
                 this.testingApi = false;
+                this.apiResult = { connected: false, error: err.message };
+                this.activeUsersList = [];
+                this.activeUsersCount = 0;
+                this.trafficData = {
+                    interface: 'ether1',
+                    rx_bps: 0,
+                    tx_bps: 0,
+                    rx_human: '0 bps',
+                    tx_human: '0 bps'
+                };
+                if (this.trafficPolling) {
+                    this.toggleTrafficPolling();
+                }
             });
+        },
+
+        loadActiveUsers() {
+            if (!this.apiResult || !this.apiResult.connected) {
+                this.activeUsersList = [];
+                this.activeUsersCount = 0;
+                return;
+            }
+
+            this.loadingUsers = true;
+            fetch('{{ route('admin.radius.active-users', $site) }}', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.loadingUsers = false;
+                if (data.online && Array.isArray(data.users)) {
+                    this.activeUsersList = data.users;
+                    this.activeUsersCount = data.count || data.users.length;
+                } else {
+                    // Router offline / user tidak konek -> pastikan data tidak muncul sama sekali
+                    this.activeUsersList = [];
+                    this.activeUsersCount = 0;
+                }
+            })
+            .catch(() => {
+                this.loadingUsers = false;
+                this.activeUsersList = [];
+                this.activeUsersCount = 0;
+            });
+        },
+
+        kickUser(mac) {
+            if (!confirm('Putuskan sesi pengguna dengan MAC ' + mac + '?')) return;
+
+            fetch('{{ route('admin.radius.kick-user', $site) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ mac: mac })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Langsung hapus user dari list agar data tidak muncul lagi seketika
+                    this.activeUsersList = this.activeUsersList.filter(u => (u.mac || '').toUpperCase() !== mac.toUpperCase());
+                    this.activeUsersCount = this.activeUsersList.length;
+                    // Verifikasi ulang dari router
+                    setTimeout(() => this.loadActiveUsers(), 800);
+                } else {
+                    alert('Gagal memutuskan user: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                alert('Error: ' + err.message);
+            });
+        },
+
+        formatBytes(bytes) {
+            bytes = parseInt(bytes) || 0;
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         },
 
         startTrafficMonitoring() {
@@ -545,7 +817,7 @@ function routerIntegrationManager() {
                     this.initTrafficChart();
                 });
             }
-            if (!this.trafficPolling) {
+            if (!this.trafficPolling && this.apiResult && this.apiResult.connected) {
                 this.toggleTrafficPolling();
             }
         },
@@ -566,6 +838,17 @@ function routerIntegrationManager() {
         },
 
         fetchTrafficData() {
+            if (!this.apiResult || !this.apiResult.connected) {
+                this.trafficData = {
+                    interface: 'ether1',
+                    rx_bps: 0,
+                    tx_bps: 0,
+                    rx_human: '0 bps',
+                    tx_human: '0 bps'
+                };
+                return;
+            }
+
             fetch('{{ route('admin.radius.traffic', $site) }}', {
                 headers: {
                     'Accept': 'application/json',
@@ -574,26 +857,45 @@ function routerIntegrationManager() {
             })
             .then(res => res.json())
             .then(data => {
-                this.trafficData = data;
-                if (this.trafficChart && data.online) {
-                    const timeLabel = data.timestamp || new Date().toLocaleTimeString();
-                    const rxMbps = (data.rx_bps / 1000000).toFixed(2);
-                    const txMbps = (data.tx_bps / 1000000).toFixed(2);
+                if (data.online) {
+                    this.trafficData = data;
+                    if (this.trafficChart) {
+                        const timeLabel = data.timestamp || new Date().toLocaleTimeString();
+                        const rxMbps = (data.rx_bps / 1000000).toFixed(2);
+                        const txMbps = (data.tx_bps / 1000000).toFixed(2);
 
-                    const chart = this.trafficChart;
-                    chart.data.labels.push(timeLabel);
-                    chart.data.datasets[0].data.push(rxMbps);
-                    chart.data.datasets[1].data.push(txMbps);
+                        const chart = this.trafficChart;
+                        chart.data.labels.push(timeLabel);
+                        chart.data.datasets[0].data.push(rxMbps);
+                        chart.data.datasets[1].data.push(txMbps);
 
-                    if (chart.data.labels.length > 20) {
-                        chart.data.labels.shift();
-                        chart.data.datasets[0].data.shift();
-                        chart.data.datasets[1].data.shift();
+                        if (chart.data.labels.length > 20) {
+                            chart.data.labels.shift();
+                            chart.data.datasets[0].data.shift();
+                            chart.data.datasets[1].data.shift();
+                        }
+                        chart.update('none');
                     }
-                    chart.update('none');
+                } else {
+                    // Router offline / unreachable
+                    this.trafficData = {
+                        interface: data.interface || 'ether1',
+                        rx_bps: 0,
+                        tx_bps: 0,
+                        rx_human: '0 bps',
+                        tx_human: '0 bps'
+                    };
                 }
             })
-            .catch(() => {});
+            .catch(() => {
+                this.trafficData = {
+                    interface: 'ether1',
+                    rx_bps: 0,
+                    tx_bps: 0,
+                    rx_human: '0 bps',
+                    tx_human: '0 bps'
+                };
+            });
         },
 
         initTrafficChart() {

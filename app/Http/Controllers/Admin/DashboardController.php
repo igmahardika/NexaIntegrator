@@ -24,6 +24,43 @@ class DashboardController extends Controller
         $activeSiteId = session('active_site_id');
         $siteScope = $activeSiteId ? Location::find($activeSiteId) : null;
 
+        // ---- Active users & Hardware Telemetry from Router ----
+        $routerLocation = $siteScope ?: Location::where('is_active', true)->whereNotNull('router_ip')->first();
+        $activeUsers = [];
+        $routerError = null;
+        $hardwareTelemetry = null;
+
+        if ($routerLocation) {
+            $mikrotik = new MikrotikService($routerLocation);
+
+            try {
+                $activeUsers = $mikrotik->getActiveUsers();
+
+                // Live Sync: If a user is not in router active list, mark disconnected in DB so activeSessions is accurate
+                $activeMacs = array_values(array_filter(array_map(function ($u) {
+                    return !empty($u['mac']) ? strtoupper($u['mac']) : null;
+                }, $activeUsers)));
+
+                PortalSession::where('location_id', $routerLocation->id)
+                    ->where('status', 'active')
+                    ->whereNotIn('client_mac', $activeMacs)
+                    ->update([
+                        'status'      => 'disconnected',
+                        'logout_time' => now(),
+                    ]);
+            } catch (\Throwable $e) {
+                $routerError = 'Router API offline: ' . $e->getMessage();
+                $activeUsers = [];
+            }
+
+            $telemetry = $mikrotik->getSystemResources();
+            if ($telemetry['online']) {
+                $hardwareTelemetry = $telemetry;
+            } else {
+                $hardwareTelemetry = null;
+            }
+        }
+
         // ---- KPI Cards (scoped) ----
         $sessionsQuery = PortalSession::query();
         $impressionsQuery = SurveyResponse::query();
@@ -62,47 +99,6 @@ class DashboardController extends Controller
             ->whereDate('login_time', '>=', now()->subDays(30))
             ->groupBy('method')
             ->pluck('total', 'method');
-
-        // ---- Active users & Hardware Telemetry from Router ----
-        $routerLocation = $siteScope ?: Location::where('is_active', true)->whereNotNull('router_ip')->first();
-        $activeUsers = [];
-        $routerError = null;
-        $hardwareTelemetry = null;
-
-        if ($routerLocation) {
-            $mikrotik = new MikrotikService($routerLocation);
-
-            try {
-                $activeUsers = $mikrotik->getActiveUsers();
-            } catch (\Throwable $e) {
-                $routerError = 'Router API offline: ' . $e->getMessage();
-            }
-
-            $telemetry = $mikrotik->getSystemResources();
-            if ($telemetry['online']) {
-                $hardwareTelemetry = $telemetry;
-            } else {
-                // Standby / simulated telemetry for preview/onboarding
-                $hardwareTelemetry = [
-                    'online'            => false,
-                    'simulated'         => true,
-                    'cpu_load'          => 8,
-                    'cpu_count'         => 4,
-                    'cpu_frequency'     => '880 MHz (MT7621A)',
-                    'uptime'            => '18d 04:12:08',
-                    'version'           => 'RouterOS v7.14.3 (stable)',
-                    'board_name'        => 'RB750Gr3 (hEX)',
-                    'architecture'      => 'MMIPS',
-                    'bad_blocks'        => '0.0%',
-                    'memory_total'      => 268435456,
-                    'memory_used'       => 72876032,
-                    'memory_percent'    => 27.1,
-                    'hdd_total'         => 16777216,
-                    'hdd_used'          => 8388608,
-                    'hdd_percent'       => 50.0,
-                ];
-            }
-        }
 
         // ---- Demographic data from answers (age + gender - cached) ----
         $demographics = $this->extractDemographics($siteScope);
@@ -155,7 +151,26 @@ class DashboardController extends Controller
 
         try {
             $mikrotik = new MikrotikService($location);
+            $conn = $mikrotik->testConnection();
+            if (empty($conn['connected'])) {
+                return response()->json(['users' => [], 'error' => $conn['error'] ?? 'Router offline']);
+            }
+
             $users    = $mikrotik->getActiveUsers();
+
+            // Sync: mark users not in $users as disconnected
+            $activeMacs = array_values(array_filter(array_map(function ($u) {
+                return !empty($u['mac']) ? strtoupper($u['mac']) : null;
+            }, $users)));
+
+            PortalSession::where('location_id', $location->id)
+                ->where('status', 'active')
+                ->whereNotIn('client_mac', $activeMacs)
+                ->update([
+                    'status'      => 'disconnected',
+                    'logout_time' => now(),
+                ]);
+
             return response()->json(['users' => $users, 'location' => $location->name]);
         } catch (\Throwable $e) {
             return response()->json(['users' => [], 'error' => $e->getMessage()]);

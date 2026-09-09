@@ -81,11 +81,19 @@
                 <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
                     <div>
                         <div class="text-xs text-slate-500 font-semibold">Usage</div>
-                        <div class="text-xs font-extrabold text-slate-900 mt-0.5">{{ number_format(($hardwareTelemetry['memory_used'] ?? 78643200) / 1048576, 1) }} MB</div>
+                        @if($hardwareTelemetry && !empty($hardwareTelemetry['online']))
+                        <div class="text-xs font-extrabold text-slate-900 mt-0.5">{{ number_format(($hardwareTelemetry['memory_used'] ?? 0) / 1048576, 1) }} MB</div>
+                        @else
+                        <div class="text-xs font-extrabold text-slate-400 mt-0.5">-</div>
+                        @endif
                     </div>
                     <div class="text-right">
                         <div class="text-xs text-slate-500 font-semibold">Capacity</div>
-                        <div class="text-xs font-extrabold text-slate-900 mt-0.5">{{ number_format(($hardwareTelemetry['memory_total'] ?? 268435456) / 1048576, 0) }} MB</div>
+                        @if($hardwareTelemetry && !empty($hardwareTelemetry['online']))
+                        <div class="text-xs font-extrabold text-slate-900 mt-0.5">{{ number_format(($hardwareTelemetry['memory_total'] ?? 0) / 1048576, 0) }} MB</div>
+                        @else
+                        <div class="text-xs font-extrabold text-slate-400 mt-0.5">-</div>
+                        @endif
                     </div>
                 </div>
             </div>

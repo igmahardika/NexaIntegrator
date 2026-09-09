@@ -93,10 +93,30 @@ class EdgeGatewayController extends Controller
         $mikrotik = new MikrotikService($site);
         $result = $mikrotik->testConnection();
 
+        $activeCount = 0;
+        if (!empty($result['connected'])) {
+            $users = $mikrotik->getActiveUsers();
+            $activeCount = count($users);
+
+            // Synchronize database sessions: mark disconnected users as disconnected
+            $activeMacs = array_values(array_filter(array_map(function ($u) {
+                return !empty($u['mac']) ? strtoupper($u['mac']) : null;
+            }, $users)));
+
+            \App\Models\PortalSession::where('location_id', $site->id)
+                ->where('status', 'active')
+                ->whereNotIn('client_mac', $activeMacs)
+                ->update([
+                    'status'      => 'disconnected',
+                    'logout_time' => now(),
+                ]);
+        }
+
         return response()->json([
-            'site' => $site->name,
-            'ip'   => $site->router_ip,
-            'port' => $site->router_port,
+            'site'         => $site->name,
+            'ip'           => $site->router_ip,
+            'port'         => $site->router_port,
+            'active_users' => $activeCount,
             ...$result,
         ]);
     }
@@ -144,18 +164,6 @@ class EdgeGatewayController extends Controller
     }
 
     /**
-     * AJAX: Toggle entire MikroTik Hotspot server (Enable / Disable Hotspot).
-     */
-    public function toggleHotspot(Request $request, Location $site): JsonResponse
-    {
-        $enable = filter_var($request->input('enable', true), FILTER_VALIDATE_BOOLEAN);
-        $mikrotik = new MikrotikService($site);
-        $result = $mikrotik->toggleHotspotService($enable);
-
-        return response()->json($result);
-    }
-
-    /**
      * AJAX: Live WAN Traffic Telemetry Stream.
      */
     public function traffic(Request $request, Location $site): JsonResponse
@@ -163,6 +171,67 @@ class EdgeGatewayController extends Controller
         $interface = $request->input('interface', '');
         $mikrotik = new MikrotikService($site);
         $result = $mikrotik->getWanTraffic($interface);
+
+        return response()->json($result);
+    }
+
+    /**
+     * AJAX: Get real-time active hotspot users directly from router RAM.
+     * When user is disconnected, they are NOT returned.
+     */
+    public function activeUsers(Location $site): JsonResponse
+    {
+        $mikrotik = new MikrotikService($site);
+        $conn = $mikrotik->testConnection();
+        if (empty($conn['connected'])) {
+            return response()->json([
+                'online' => false,
+                'count'  => 0,
+                'users'  => [],
+                'error'  => $conn['error'] ?? 'Router unreachable',
+            ]);
+        }
+
+        $users = $mikrotik->getActiveUsers();
+
+        // Synchronize database sessions: Any session marked active whose MAC is not in active router list is disconnected!
+        $activeMacs = array_values(array_filter(array_map(function ($u) {
+            return !empty($u['mac']) ? strtoupper($u['mac']) : null;
+        }, $users)));
+
+        \App\Models\PortalSession::where('location_id', $site->id)
+            ->where('status', 'active')
+            ->whereNotIn('client_mac', $activeMacs)
+            ->update([
+                'status'      => 'disconnected',
+                'logout_time' => now(),
+            ]);
+
+        return response()->json([
+            'online' => true,
+            'count'  => count($users),
+            'users'  => $users,
+        ]);
+    }
+
+    /**
+     * AJAX: Force disconnect an active user from the router.
+     */
+    public function kickUser(Request $request, Location $site): JsonResponse
+    {
+        $mac = $request->input('mac');
+        if (empty($mac)) {
+            return response()->json(['success' => false, 'error' => 'MAC address is required.'], 422);
+        }
+
+        $mikrotik = new MikrotikService($site);
+        $result = $mikrotik->kickUser($mac);
+
+        // Update database session status so it does not appear active
+        \App\Models\PortalSession::where('client_mac', strtoupper($mac))
+            ->where('location_id', $site->id)
+            ->where('status', 'active')
+            ->update(['status' => 'disconnected', 'logout_time' => now()]);
 
         return response()->json($result);
     }
