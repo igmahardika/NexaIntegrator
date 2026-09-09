@@ -728,4 +728,22 @@ class MikrotikService
         }
         return $bps . ' bps';
     }
+
+    // ============================================================
+    // Hotspot User Profile Retrieval
+    // ============================================================
+
+    /**
+     * Retrieve all hotspot user profiles directly from MikroTik RouterOS.
+     */
+    public function getHotspotProfilesFromRouter(): array
+    {
+        try {
+            $client = $this->connect();
+            $profiles = $client->query(new Query('/ip/hotspot/user/profile/print'))->read();
+            return ['success' => true, 'profiles' => $profiles];
+        } catch (Throwable $e) {
+            return ['success' => false, 'error' => $e->getMessage(), 'profiles' => []];
+        }
+    }
 }

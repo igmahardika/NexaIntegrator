@@ -48,17 +48,43 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2.5">
+        <div class="flex flex-wrap items-center gap-2.5">
             <!-- Site Context Selector -->
             @if($locations->count() > 1)
             <form method="GET" action="{{ route('admin.profiles.index') }}" class="flex items-center gap-2">
                 <select name="location_id" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 font-semibold focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15">
                     @foreach($locations as $loc)
                     <option value="{{ $loc->id }}" {{ $currentLocation && $currentLocation->id === $loc->id ? 'selected' : '' }}>
-                        📍 {{ $loc->name }}
+                        Site: {{ $loc->name }}
                     </option>
                     @endforeach
                 </select>
+            </form>
+            @endif
+
+            @if($currentLocation && $currentLocation->router_ip)
+            <!-- Sync All ke Router -->
+            <form method="POST" action="{{ route('admin.profiles.sync-all') }}" onsubmit="return confirm('Kirim seluruh profil QoS ke router {{ $currentLocation->name }} ({{ $currentLocation->router_ip }})?')" class="inline">
+                @csrf
+                <input type="hidden" name="location_id" value="{{ $currentLocation->id }}">
+                <button type="submit" class="btn-secondary flex items-center gap-2 text-xs py-2 px-3.5 shadow-xs font-semibold hover:border-brand/40 hover:text-brand transition-colors" title="Sinkronkan seluruh profil ke MikroTik RouterOS">
+                    <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Sync All ke Router</span>
+                </button>
+            </form>
+
+            <!-- Import dari Router -->
+            <form method="POST" action="{{ route('admin.profiles.import') }}" onsubmit="return confirm('Import daftar profil dari router {{ $currentLocation->name }} ke WiFiPads?')" class="inline">
+                @csrf
+                <input type="hidden" name="location_id" value="{{ $currentLocation->id }}">
+                <button type="submit" class="btn-secondary flex items-center gap-2 text-xs py-2 px-3.5 shadow-xs font-semibold hover:border-emerald-500/40 hover:text-emerald-700 transition-colors" title="Baca profil yang ada di MikroTik RouterOS">
+                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    <span>Import dari Router</span>
+                </button>
             </form>
             @endif
 
@@ -156,8 +182,11 @@
                         <p class="text-slate-500 text-xs mt-0.5">{{ $profile->display_name ?: 'Hotspot QoS Profile' }}</p>
                     </div>
 
-                    <div class="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-100 text-brand font-mono font-extrabold text-xs tracking-wider">
-                        ⚡ {{ $profile->rate_limit }}
+                    <div class="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-100 text-brand font-mono font-extrabold text-xs tracking-wider flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span>{{ $profile->rate_limit }}</span>
                     </div>
                 </div>
 
@@ -231,8 +260,11 @@
             <p class="text-slate-500 text-xs mt-1 max-w-md mx-auto">
                 Create your first QoS profile to regulate speeds, concurrency, and sessions for guests, staff, or VIP visitors.
             </p>
-            <button @click="showAddModal = true" class="btn-primary text-xs mt-4 shadow-sm font-semibold">
-                + Create QoS Profile Now
+            <button @click="showAddModal = true" class="btn-primary inline-flex items-center gap-2 text-xs mt-4 shadow-sm font-semibold px-4 py-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Create QoS Profile Now</span>
             </button>
         </div>
         @endforelse

@@ -116,6 +116,8 @@ Route::prefix('admin')
             Route::post('/policy/bindings/sync/{site}', [IpBindingController::class, 'sync'])->name('policy.bindings.sync');
 
             // Hotspot Profiles & QoS Engine
+            Route::post('/profiles/sync-all', [HotspotProfileController::class, 'syncAll'])->name('profiles.sync-all');
+            Route::post('/profiles/import', [HotspotProfileController::class, 'importFromRouter'])->name('profiles.import');
             Route::resource('profiles', HotspotProfileController::class)->except(['create', 'show', 'edit']);
 
             // Access Point Watchdog

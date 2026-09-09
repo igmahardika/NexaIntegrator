@@ -231,12 +231,6 @@ add name="{$user}" group="wifipads-group" password="{$pass}" comment="WiFiPads C
 :do { add dst-host="fonts.gstatic.com" action=accept comment="Google Fonts Static" } on-error={ :nothing }
 :do { add dst-host="unpkg.com" action=accept comment="Alpine.js CDN" } on-error={ :nothing }
 
-# 4. Hotspot User Profiles (QoS)
-/ip hotspot user profile
-:do { add name="survey-user" rate-limit="2M/5M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="voucher-user" rate-limit="5M/10M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="member-user" rate-limit="10M/20M" shared-users=2 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-
 :log info "WiFiPads Direct API Provisioning selesai dikonfigurasi pada {$this->name}!"
 RSC;
         }
@@ -259,13 +253,7 @@ RSC;
 :do { add dst-host="fonts.gstatic.com" action=accept comment="Google Fonts Static" } on-error={ :nothing }
 :do { add dst-host="unpkg.com" action=accept comment="Alpine.js CDN" } on-error={ :nothing }
 
-# 2. Hotspot User Profiles (QoS & Bandwidth Limiter)
-/ip hotspot user profile
-:do { add name="survey-user" rate-limit="2M/5M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="voucher-user" rate-limit="5M/10M" shared-users=1 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-:do { add name="member-user" rate-limit="10M/20M" shared-users=2 status-autorefresh=1m transparent-proxy=no } on-error={ :nothing }
-
-# 3. Background Sync Script (Tarik Akun Hotspot Baru)
+# 2. Background Sync Script (Tarik Akun Hotspot Baru)
 /system script
 :do { remove [find name="wifipads-sync"] } on-error={ :nothing }
 add name="wifipads-sync" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive source="

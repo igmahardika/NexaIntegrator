@@ -81,58 +81,9 @@ class SiteController extends Controller
 
         $site = Location::create($validated);
 
-        // 1. Inisialisasi Database Tenant Terisolasi
+        // Inisialisasi Database Tenant Terisolasi
         if ($request->input('auto_init_tenant', true)) {
             TenantManager::ensureDatabase($site);
-        }
-
-        // 2. Auto-seed Default QoS Hotspot Profiles
-        if ($request->input('auto_seed_profiles', true)) {
-            $defaultProfiles = [
-                [
-                    'name' => 'survey-user',
-                    'display_name' => 'Survey / Lead-Gen Access',
-                    'rate_limit' => '2M/5M',
-                    'shared_users' => 1,
-                    'session_timeout' => 7200,
-                    'idle_timeout' => 900,
-                    'keepalive_timeout' => 120,
-                    'status_autorefresh' => '1m',
-                    'transparent_proxy' => false,
-                    'synced_to_router' => false,
-                ],
-                [
-                    'name' => 'voucher-user',
-                    'display_name' => 'Standard Voucher User',
-                    'rate_limit' => '5M/10M',
-                    'shared_users' => 1,
-                    'session_timeout' => 7200,
-                    'idle_timeout' => 1200,
-                    'keepalive_timeout' => 120,
-                    'status_autorefresh' => '1m',
-                    'transparent_proxy' => false,
-                    'synced_to_router' => false,
-                ],
-                [
-                    'name' => 'member-user',
-                    'display_name' => 'VIP / Staff Member Access',
-                    'rate_limit' => '10M/20M',
-                    'shared_users' => 2,
-                    'session_timeout' => 86400,
-                    'idle_timeout' => 3600,
-                    'keepalive_timeout' => 300,
-                    'status_autorefresh' => '1m',
-                    'transparent_proxy' => false,
-                    'synced_to_router' => false,
-                ],
-            ];
-
-            foreach ($defaultProfiles as $profileData) {
-                HotspotProfile::firstOrCreate(
-                    ['location_id' => $site->id, 'name' => $profileData['name']],
-                    $profileData
-                );
-            }
         }
 
         return redirect()->route('admin.sites.provision', $site)

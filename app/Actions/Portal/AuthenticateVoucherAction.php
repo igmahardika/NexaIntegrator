@@ -58,7 +58,7 @@ class AuthenticateVoucherAction
             // Record login session in tenant database
             $session = $hotspotUser->recordLogin($mac, $ip, $userAgent);
 
-            $profileName = $hotspotUser->profile?->rate_limit ?? ($location->template_config['voucher_profile'] ?? '5M/10M');
+            $profileName = $hotspotUser->profile?->name ?? ($location->template_config['voucher_profile'] ?? 'default');
             $password = $hotspotUser->secret ?: $hotspotUser->identifier;
             $comment = 'voucher|' . $hotspotUser->id;
 

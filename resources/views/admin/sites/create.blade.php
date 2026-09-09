@@ -6,16 +6,18 @@
 @section('content')
 <div x-data="siteWizard()" class="max-w-5xl mx-auto">
 
-    <!-- Top Stepper Navigation -->
-    <div class="card p-4 sm:p-6 mb-6 bg-white border border-slate-200/80 shadow-xs">
+    <!-- Top Stepper Navigation (Accessible & Responsive) -->
+    <div class="card p-4 sm:p-6 mb-6 bg-white border border-slate-200/80 shadow-xs" role="tablist" aria-label="Site Provisioning Steps">
         <div class="flex items-center justify-between relative">
-            <!-- Connecting Line -->
+            <!-- Background Connecting Line -->
             <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-slate-100 w-full z-0 rounded-full"></div>
+            <!-- Progress Fill Line -->
             <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-brand transition-all duration-300 z-0 rounded-full"
                 :style="`width: ${((currentStep - 1) / 2) * 100}%`"></div>
 
             <!-- Step 1 Button -->
-            <button type="button" @click="goToStep(1)" class="relative z-10 flex flex-col items-center group cursor-pointer focus:outline-hidden">
+            <button type="button" @click="goToStep(1)" role="tab" :aria-selected="currentStep === 1"
+                class="relative z-10 flex flex-col items-center group cursor-pointer focus:outline-hidden">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200 border-2"
                     :class="currentStep === 1 
                         ? 'bg-brand text-white border-brand ring-4 ring-brand/20 shadow-sm' 
@@ -29,14 +31,16 @@
                         <span>1</span>
                     </template>
                 </div>
-                <span class="text-xs font-semibold mt-2 transition-colors"
+                <span class="text-xs font-semibold mt-2 transition-colors text-center"
                     :class="currentStep === 1 ? 'text-brand font-bold' : 'text-slate-600'">
-                    Identitas Site
+                    <span class="sm:hidden">Step 1</span>
+                    <span class="hidden sm:inline">Identitas Site</span>
                 </span>
             </button>
 
             <!-- Step 2 Button -->
-            <button type="button" @click="goToStep(2)" class="relative z-10 flex flex-col items-center group cursor-pointer focus:outline-hidden">
+            <button type="button" @click="goToStep(2)" role="tab" :aria-selected="currentStep === 2"
+                class="relative z-10 flex flex-col items-center group cursor-pointer focus:outline-hidden">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200 border-2"
                     :class="currentStep === 2 
                         ? 'bg-brand text-white border-brand ring-4 ring-brand/20 shadow-sm' 
@@ -50,23 +54,26 @@
                         <span>2</span>
                     </template>
                 </div>
-                <span class="text-xs font-semibold mt-2 transition-colors"
+                <span class="text-xs font-semibold mt-2 transition-colors text-center"
                     :class="currentStep === 2 ? 'text-brand font-bold' : 'text-slate-600'">
-                    Arsitektur Gateway
+                    <span class="sm:hidden">Step 2</span>
+                    <span class="hidden sm:inline">Arsitektur Gateway</span>
                 </span>
             </button>
 
             <!-- Step 3 Button -->
-            <button type="button" @click="goToStep(3)" class="relative z-10 flex flex-col items-center group cursor-pointer focus:outline-hidden">
+            <button type="button" @click="goToStep(3)" role="tab" :aria-selected="currentStep === 3"
+                class="relative z-10 flex flex-col items-center group cursor-pointer focus:outline-hidden">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200 border-2"
                     :class="currentStep === 3 
                         ? 'bg-brand text-white border-brand ring-4 ring-brand/20 shadow-sm' 
                         : 'bg-white text-slate-500 border-slate-300'">
                     <span>3</span>
                 </div>
-                <span class="text-xs font-semibold mt-2 transition-colors"
+                <span class="text-xs font-semibold mt-2 transition-colors text-center"
                     :class="currentStep === 3 ? 'text-brand font-bold' : 'text-slate-600'">
-                    Review & Deploy
+                    <span class="sm:hidden">Step 3</span>
+                    <span class="hidden sm:inline">Review & Deploy</span>
                 </span>
             </button>
         </div>
@@ -111,89 +118,146 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <!-- Site Name -->
-                    <div class="md:col-span-2">
-                        <label class="label">Nama Site / Lokasi <span class="text-rose-500 font-bold">*</span></label>
-                        <input
-                            type="text"
-                            name="name"
-                            x-model="form.name"
-                            required
-                            placeholder="Contoh: Kopi Kenangan Mall Bali Galeria"
-                            class="input w-full font-medium"
-                            :class="errors.name ? 'border-rose-400 focus:ring-rose-200' : ''"
-                        >
-                        <p class="text-2xs text-slate-500 mt-1">Nama ini akan menjadi pengenal utama lokasi pada dashboard dan URL captive portal.</p>
-                        <p x-show="errors.name" class="text-2xs text-rose-600 font-semibold mt-1" x-text="errors.name"></p>
+                <div class="space-y-5">
+                    <!-- Site Name & Customer Name Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="label">Nama Site / Lokasi <span class="text-rose-500 font-bold">*</span></label>
+                            <input
+                                type="text"
+                                name="name"
+                                x-model="form.name"
+                                @input="if(form.name.trim()) errors.name = ''"
+                                @blur="if(!form.name.trim()) errors.name = 'Nama Site wajib diisi.'"
+                                required
+                                placeholder="Contoh: Kopi Kenangan Mall Bali Galeria"
+                                class="input w-full font-medium"
+                                :class="errors.name ? 'border-rose-400 focus:ring-rose-200' : ''"
+                            >
+                            <p class="text-2xs text-slate-500 mt-1">Nama ini akan menjadi pengenal utama lokasi pada dashboard dan URL portal.</p>
+                            <p x-show="errors.name" class="text-2xs text-rose-600 font-semibold mt-1" x-text="errors.name"></p>
+                        </div>
+
+                        <div>
+                            <label class="label">Nama Pelanggan / Entitas Bisnis</label>
+                            <input
+                                type="text"
+                                name="customer_name"
+                                x-model="form.customer_name"
+                                placeholder="Contoh: PT Kenangan Abadi Nusantara"
+                                class="input w-full"
+                            >
+                            <p class="text-2xs text-slate-500 mt-1">Nama perusahaan atau pemilik venue untuk keperluan laporan & billing.</p>
+                        </div>
                     </div>
 
-                    <!-- Customer / Company Name -->
+                    <!-- Business Type Selector (Interactive Cards UI/UX Pro Max) -->
                     <div>
-                        <label class="label">Nama Pelanggan / Entitas Bisnis</label>
-                        <input
-                            type="text"
-                            name="customer_name"
-                            x-model="form.customer_name"
-                            placeholder="Contoh: PT Kenangan Abadi Nusantara"
-                            class="input w-full"
-                        >
-                        <p class="text-2xs text-slate-500 mt-1">Nama perusahaan atau pemilik venue untuk keperluan laporan.</p>
+                        <label class="label mb-2">Kategori Venue / Jenis Usaha <span class="text-rose-500 font-bold">*</span></label>
+                        <input type="hidden" name="business_type" :value="form.business_type">
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                            <!-- Cafe / Resto -->
+                            <button type="button" @click="form.business_type = 'cafe'"
+                                class="p-3.5 rounded-xl border-2 text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer"
+                                :class="form.business_type === 'cafe' ? 'border-brand bg-brand/5 text-brand ring-2 ring-brand/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z M6 1v3M10 1v3M14 1v3"/>
+                                </svg>
+                                <span class="text-xs font-bold leading-tight">Cafe / F&B</span>
+                            </button>
+
+                            <!-- Hotel / Resort -->
+                            <button type="button" @click="form.business_type = 'hotel'"
+                                class="p-3.5 rounded-xl border-2 text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer"
+                                :class="form.business_type === 'hotel' ? 'border-brand bg-brand/5 text-brand ring-2 ring-brand/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                <span class="text-xs font-bold leading-tight">Hotel / Villa</span>
+                            </button>
+
+                            <!-- Retail / Store -->
+                            <button type="button" @click="form.business_type = 'retail'"
+                                class="p-3.5 rounded-xl border-2 text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer"
+                                :class="form.business_type === 'retail' ? 'border-brand bg-brand/5 text-brand ring-2 ring-brand/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                                <span class="text-xs font-bold leading-tight">Retail / Toko</span>
+                            </button>
+
+                            <!-- Coworking -->
+                            <button type="button" @click="form.business_type = 'coworking'"
+                                class="p-3.5 rounded-xl border-2 text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer"
+                                :class="form.business_type === 'coworking' ? 'border-brand bg-brand/5 text-brand ring-2 ring-brand/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <span class="text-xs font-bold leading-tight">Co-Working</span>
+                            </button>
+
+                            <!-- Office / Corporate -->
+                            <button type="button" @click="form.business_type = 'office'"
+                                class="p-3.5 rounded-xl border-2 text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer"
+                                :class="form.business_type === 'office' ? 'border-brand bg-brand/5 text-brand ring-2 ring-brand/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <span class="text-xs font-bold leading-tight">Corporate</span>
+                            </button>
+
+                            <!-- Other -->
+                            <button type="button" @click="form.business_type = 'other'"
+                                class="p-3.5 rounded-xl border-2 text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer"
+                                :class="form.business_type === 'other' ? 'border-brand bg-brand/5 text-brand ring-2 ring-brand/20 shadow-xs' : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                                </svg>
+                                <span class="text-xs font-bold leading-tight">Lainnya</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Business Type Selector -->
-                    <div>
-                        <label class="label">Kategori Venue / Usaha <span class="text-rose-500 font-bold">*</span></label>
-                        <select name="business_type" x-model="form.business_type" class="input w-full font-medium" required>
-                            <option value="cafe">Cafe / Restoran / F&B</option>
-                            <option value="hotel">Hotel / Villa / Resort</option>
-                            <option value="retail">Retail / Minimarket / Store</option>
-                            <option value="coworking">Co-Working Space</option>
-                            <option value="office">Corporate Office / Enterprise</option>
-                            <option value="other">Lainnya / Venue Publik</option>
-                        </select>
-                        <p class="text-2xs text-slate-500 mt-1">Menentukan rekomendasi QoS dan template captive portal awal.</p>
-                    </div>
+                    <!-- Contact Person & Physical Address -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
+                        <div>
+                            <label class="label">Email PIC / Admin Venue</label>
+                            <input
+                                type="email"
+                                name="contact_email"
+                                x-model="form.contact_email"
+                                placeholder="admin@venue.com"
+                                class="input w-full"
+                            >
+                        </div>
 
-                    <!-- Contact Email -->
-                    <div>
-                        <label class="label">Email PIC / Admin Venue</label>
-                        <input
-                            type="email"
-                            name="contact_email"
-                            x-model="form.contact_email"
-                            placeholder="admin@venue.com"
-                            class="input w-full"
-                        >
-                    </div>
+                        <div>
+                            <label class="label">Nomor WhatsApp / Kontak</label>
+                            <input
+                                type="text"
+                                name="contact_phone"
+                                x-model="form.contact_phone"
+                                placeholder="081234567890"
+                                class="input w-full"
+                            >
+                        </div>
 
-                    <!-- Contact Phone -->
-                    <div>
-                        <label class="label">Nomor WhatsApp / Kontak</label>
-                        <input
-                            type="text"
-                            name="contact_phone"
-                            x-model="form.contact_phone"
-                            placeholder="081234567890"
-                            class="input w-full"
-                        >
-                    </div>
-
-                    <!-- Physical Address -->
-                    <div class="md:col-span-2">
-                        <label class="label">Alamat Fisik Lokasi</label>
-                        <textarea
-                            name="address"
-                            x-model="form.address"
-                            rows="2"
-                            placeholder="Jl. Bypass Ngurah Rai No. 123, Kuta, Bali"
-                            class="input w-full text-xs"
-                        ></textarea>
+                        <div class="md:col-span-2">
+                            <label class="label">Alamat Fisik Lokasi</label>
+                            <textarea
+                                name="address"
+                                x-model="form.address"
+                                rows="2"
+                                placeholder="Jl. Bypass Ngurah Rai No. 123, Kuta, Bali"
+                                class="input w-full text-xs"
+                            ></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Portal Login Method Template -->
+            <!-- Portal Login Method Template Picker -->
             <div class="card p-6 bg-white border border-slate-200/80 shadow-xs">
                 <div class="flex items-center gap-3 pb-4 mb-5 border-b border-slate-100">
                     <div class="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
@@ -286,8 +350,8 @@
                         </div>
 
                         <h3 class="font-bold text-sm text-slate-900 mb-1">Zero-Tunnel / Reverse Polling</h3>
-                        <p class="text-2xs text-slate-600 mb-4 flex-1">
-                            Tanpa perlu IP Publik, tanpa VPN, tanpa port forward. Sangat aman di balik CGNAT modem Indihome, Biznet, MyRepublic, atau Starlink.
+                        <p class="text-2xs text-slate-600 mb-4 flex-1 leading-relaxed">
+                            Tanpa perlu IP Publik statis, tanpa VPN, tanpa port forward. Sangat aman di balik modem CGNAT Indihome, Biznet, MyRepublic, atau Starlink.
                         </p>
 
                         <div class="pt-3 border-t border-slate-200/60 text-2xs text-slate-500 space-y-1">
@@ -324,7 +388,7 @@
                         </div>
 
                         <h3 class="font-bold text-sm text-slate-900 mb-1">Direct RouterOS API</h3>
-                        <p class="text-2xs text-slate-600 mb-4 flex-1">
+                        <p class="text-2xs text-slate-600 mb-4 flex-1 leading-relaxed">
                             Koneksi real-time dua arah. Membutuhkan IP Publik Statis, port forward 8728, atau koneksi VPN Dedicated (WireGuard/ZeroTier).
                         </p>
 
@@ -362,7 +426,7 @@
                         </div>
 
                         <h3 class="font-bold text-sm text-slate-900 mb-1">True Cloud RADIUS AAA</h3>
-                        <p class="text-2xs text-slate-600 mb-4 flex-1">
+                        <p class="text-2xs text-slate-600 mb-4 flex-1 leading-relaxed">
                             Otentikasi standar RFC 2865, Accounting UDP 1813, dan CoA Disconnect UDP 3799. Cocok untuk MikroTik besar atau AP UniFi/Ruckus.
                         </p>
 
@@ -452,7 +516,7 @@
                             type="button"
                             @click="testDirectApiConnection"
                             :disabled="testingApi"
-                            class="btn-secondary text-xs font-semibold shrink-0 flex items-center gap-1.5 shadow-xs"
+                            class="btn-secondary text-xs font-semibold shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer"
                         >
                             <template x-if="testingApi">
                                 <svg class="animate-spin w-3.5 h-3.5 text-brand" fill="none" viewBox="0 0 24 24">
@@ -612,13 +676,13 @@
 
             <!-- Step 2 Footer -->
             <div class="flex justify-between items-center pt-2">
-                <button type="button" @click="currentStep = 1" class="btn-secondary text-xs font-semibold flex items-center gap-2">
+                <button type="button" @click="currentStep = 1" class="btn-secondary text-xs font-semibold flex items-center gap-2 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     <span>Kembali ke Identitas</span>
                 </button>
-                <button type="button" @click="proceedToStep(3)" class="btn-primary text-xs font-semibold flex items-center gap-2">
+                <button type="button" @click="proceedToStep(3)" class="btn-primary text-xs font-semibold flex items-center gap-2 cursor-pointer">
                     <span>Lanjut ke Review & Deploy</span>
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -640,7 +704,7 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-base font-bold text-slate-900">Ringkasan & Otomatisasi Provisioning</h2>
+                        <h2 class="text-base font-bold text-slate-900">Ringkasan & Konfirmasi Provisioning</h2>
                         <p class="text-xs text-slate-500">Periksa seluruh konfigurasi sebelum sistem mengeksekusi automasi deployment</p>
                     </div>
                 </div>
@@ -672,7 +736,7 @@
                 </div>
 
                 <!-- Automation Tasks Checklist -->
-                <div class="space-y-3 p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 mb-6">
+                <div class="space-y-3.5 p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 mb-6">
                     <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Tindakan yang Akan Dieksekusi Otomatis oleh Sistem:</h3>
                     
                     <label class="flex items-start gap-3 cursor-pointer">
@@ -681,16 +745,6 @@
                             <div class="text-xs font-bold text-slate-900">Inisialisasi Database Tenant Terisolasi</div>
                             <div class="text-2xs text-slate-600">
                                 Membuat file <code>database/tenants/site_{slug}.sqlite</code> secara mandiri dan menjalankan migrasi tabel (vouchers, members, sessions) agar data venue terpisah total.
-                            </div>
-                        </div>
-                    </label>
-
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" name="auto_seed_profiles" value="1" x-model="form.auto_seed_profiles" checked class="checkbox mt-0.5">
-                        <div>
-                            <div class="text-xs font-bold text-slate-900">Deploy 3 Default QoS Hotspot Profiles</div>
-                            <div class="text-2xs text-slate-600">
-                                Otomatis mendaftarkan profil <code>survey-user</code> (2M/5M), <code>voucher-user</code> (5M/10M), dan <code>member-user</code> (10M/20M).
                             </div>
                         </div>
                     </label>
@@ -708,6 +762,20 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="flex items-start gap-3 text-slate-700 pt-1">
+                        <div class="w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">Manajemen Profil QoS Terpisah & Fleksibel</div>
+                            <div class="text-2xs text-slate-600">
+                                Profil bandwidth kecepatan dapat Anda buat sewaktu-waktu di menu <strong>Bandwidth & QoS Profiles</strong> dan akan otomatis tersinkron ke router MikroTik saat terhubung.
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Site Active Switch -->
@@ -721,14 +789,14 @@
 
             <!-- Step 3 Footer -->
             <div class="flex justify-between items-center pt-2">
-                <button type="button" @click="currentStep = 2" class="btn-secondary text-xs font-semibold flex items-center gap-2">
+                <button type="button" @click="currentStep = 2" class="btn-secondary text-xs font-semibold flex items-center gap-2 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     <span>Kembali ke Arsitektur</span>
                 </button>
 
-                <button type="submit" :disabled="submitting" class="btn-primary text-xs font-semibold flex items-center gap-2 shadow-md">
+                <button type="submit" :disabled="submitting" class="btn-primary text-xs font-semibold flex items-center gap-2 shadow-md cursor-pointer">
                     <template x-if="submitting">
                         <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -780,7 +848,6 @@ function siteWizard() {
             radius_acct_port: {{ old('radius_acct_port', 1813) }},
             radius_coa_port: {{ old('radius_coa_port', 3799) }},
             auto_init_tenant: true,
-            auto_seed_profiles: true,
             is_active: true,
         },
 

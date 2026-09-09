@@ -109,6 +109,20 @@ class HotspotUserController extends Controller
         ];
 
         // Profiles & Batches for dropdowns
+        if ($currentSite) {
+            $centralProfiles = \App\Models\HotspotProfile::where('location_id', $currentSite->id)->get();
+            foreach ($centralProfiles as $cp) {
+                HotspotProfile::updateOrCreate(
+                    ['name' => $cp->name],
+                    [
+                        'rate_limit'   => $cp->rate_limit,
+                        'shared_users' => $cp->shared_users,
+                        'uptime_limit' => $cp->session_timeout ? ($cp->session_timeout * 60) : 7200,
+                        'description'  => $cp->display_name ?? $cp->name,
+                    ]
+                );
+            }
+        }
         $profiles = HotspotProfile::orderBy('name')->get();
         $batches  = HotspotUser::whereNotNull('batch_name')
             ->distinct()
