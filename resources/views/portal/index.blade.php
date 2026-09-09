@@ -1287,6 +1287,11 @@ body {
             <div class="nexa-progress-track">
                 <div class="nexa-progress-fill" id="nexa-progress-bar"></div>
             </div>
+            <div id="nexa-success-actions" style="display:none; margin-top: 24px; width: 100%;">
+                <a href="{{ $linkOrig ?: 'https://www.google.com' }}" id="nexa-browse-btn" class="nexa-btn nexa-btn-primary" style="display: flex; justify-content: center; align-items: center; text-decoration: none; width: 100%; padding: 14px; font-weight: 700; border-radius: 12px; gap: 8px;">
+                    Mulai Jelajahi Internet 🌐
+                </a>
+            </div>
         </div>
 
     </div>
@@ -1462,13 +1467,15 @@ function hideError(errorEl) {
 }
 
 // Success State and MikroTik Redirection
-function showSuccess(username, password, message, title) {
+function showSuccess(username, password, message, title, activated) {
     var leftCol = document.getElementById('nexa-login-column');
     var rightCol = document.getElementById('nexa-promo-column');
     var successPanel = document.getElementById('nexa-success-panel');
     var titleEl = document.getElementById('nexa-success-title');
     var msgEl = document.getElementById('nexa-success-msg');
     var bar = document.getElementById('nexa-progress-bar');
+    var actions = document.getElementById('nexa-success-actions');
+    var browseBtn = document.getElementById('nexa-browse-btn');
 
     if (leftCol) leftCol.style.display = 'none';
     if (rightCol) rightCol.style.display = 'none';
@@ -1477,17 +1484,45 @@ function showSuccess(username, password, message, title) {
     if (titleEl) titleEl.textContent = title || 'Koneksi Berhasil! 🎉';
     if (msgEl) msgEl.textContent = message || 'Internet Anda sedang diaktifkan...';
 
+    var targetUrl = (PORTAL_DATA.linkOrig && PORTAL_DATA.linkOrig !== 'http://google.com') 
+        ? PORTAL_DATA.linkOrig 
+        : 'https://www.google.com';
+    if (browseBtn) browseBtn.href = targetUrl;
+
     setTimeout(function() {
         if (bar) bar.style.width = '100%';
     }, 100);
 
+    // After progress animation (1.6s)
+    setTimeout(function() {
+        if (titleEl) titleEl.textContent = 'Internet Anda Sudah Aktif! 🚀';
+        if (msgEl) msgEl.textContent = 'Perangkat Anda telah terhubung ke jaringan internet. Selamat berselancar!';
+        if (actions) actions.style.display = 'block';
+
+        // Seamless auto-redirection if not in simulation mode
+        if (!PORTAL_DATA.isSimulation) {
+            setTimeout(function() {
+                try {
+                    window.location.href = targetUrl;
+                } catch (e) {}
+            }, 2500);
+        }
+    }, 1600);
+
+    // Complementary fallback: Submit hidden form to MikroTik router (if supported by client)
     if (!PORTAL_DATA.isSimulation && PORTAL_DATA.linkLogin && PORTAL_DATA.linkLogin !== '#simulation') {
-        document.getElementById('mt-username').value = username;
-        document.getElementById('mt-password').value = password;
+        var mtUser = document.getElementById('mt-username');
+        var mtPass = document.getElementById('mt-password');
+        if (mtUser) mtUser.value = username;
+        if (mtPass) mtPass.value = password;
 
         setTimeout(function() {
-            document.getElementById('mikrotik-form').submit();
-        }, 3200);
+            try {
+                document.getElementById('mikrotik-form').submit();
+            } catch (err) {
+                console.warn('Form submit fallback skipped or blocked by browser:', err);
+            }
+        }, 1200);
     }
 }
 
@@ -1521,7 +1556,7 @@ function submitVoucher(event) {
             showError(err, resp.message || 'Kode akses tidak valid.');
             return;
         }
-        showSuccess(resp.username, resp.password, 'Kode akses valid (' + (resp.duration || 60) + ' menit). Selamat menikmati internet!', 'Koneksi Terbuka');
+        showSuccess(resp.username, resp.password, 'Kode akses valid (' + (resp.duration || 60) + ' menit). Selamat menikmati internet!', 'Koneksi Terbuka', resp.activated);
     });
 }
 
@@ -1557,7 +1592,7 @@ function submitMember(event) {
             showError(err, resp.message || 'Username atau password salah.');
             return;
         }
-        showSuccess(resp.username, resp.password, 'Login akun berhasil. Selamat datang, ' + u, 'Login Berhasil');
+        showSuccess(resp.username, resp.password, 'Login akun berhasil. Selamat datang, ' + u, 'Login Berhasil', resp.activated);
     });
 }
 
@@ -1596,7 +1631,7 @@ function submitWhatsapp(event) {
             showError(err, resp.message || 'Gagal memproses WhatsApp login.');
             return;
         }
-        showSuccess(resp.username, resp.password, 'Nomor terverifikasi. Sesi internet Anda aktif!', 'WhatsApp Terhubung');
+        showSuccess(resp.username, resp.password, 'Nomor terverifikasi. Sesi internet Anda aktif!', 'WhatsApp Terhubung', resp.activated);
     });
 }
 
@@ -1623,7 +1658,7 @@ function submitQuick(event) {
             showError(err, resp.message || 'Gagal menyambungkan.');
             return;
         }
-        showSuccess(resp.username, resp.password, 'Koneksi 1-Click aktif. Selamat berinternet!', 'Terhubung!');
+        showSuccess(resp.username, resp.password, 'Koneksi 1-Click aktif. Selamat berinternet!', 'Terhubung!', resp.activated);
     });
 }
 
@@ -1659,7 +1694,7 @@ function submitEmail(event) {
             showError(err, resp.message || 'Gagal mendaftarkan email.');
             return;
         }
-        showSuccess(resp.username, resp.password, 'Email diverifikasi. Akses internet Anda telah aktif!', 'Selamat Datang');
+        showSuccess(resp.username, resp.password, 'Email diverifikasi. Akses internet Anda telah aktif!', 'Selamat Datang', resp.activated);
     });
 }
 
@@ -1708,7 +1743,7 @@ function submitSurvey(event) {
             showError(err, resp.message || 'Gagal mengirim survei.');
             return;
         }
-        showSuccess(resp.username, resp.password, 'Terima kasih atas jawaban Anda! Internet Anda telah aktif.', 'Survei Terkirim');
+        showSuccess(resp.username, resp.password, 'Terima kasih atas jawaban Anda! Internet Anda telah aktif.', 'Survei Terkirim', resp.activated);
     });
 }
 
@@ -1744,7 +1779,7 @@ function submitPms(event) {
             showError(err, resp.message || 'Data kamar atau nama belakang tidak cocok dengan data check-in.');
             return;
         }
-        showSuccess(resp.username, resp.password, 'Selamat datang, ' + (resp.guest_name || lastName) + '! Akses internet Kamar ' + room + ' telah aktif.', 'Kamar Terverifikasi');
+        showSuccess(resp.username, resp.password, 'Selamat datang, ' + (resp.guest_name || lastName) + '! Akses internet Kamar ' + room + ' telah aktif.', 'Kamar Terverifikasi', resp.activated);
     });
 }
 

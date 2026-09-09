@@ -66,21 +66,24 @@ class AuthenticateVoucherAction
             $isShared = ($hotspotUser->simultaneous_use > 1);
             $macToBind = $isShared ? '' : $mac;
 
+            // Enqueue user creation for RouterOS Reverse Polling
+            $limitUptime = $hotspotUser->uptime_limit
+                ? sprintf('%02d:%02d:00', floor($hotspotUser->uptime_limit / 3600), floor(($hotspotUser->uptime_limit % 3600) / 60))
+                : '';
+
+            // Direct router authorization & instant active login
             $routerSuccess = false;
+            $activated = false;
             if (!empty($location->router_ip)) {
                 try {
                     $mikrotik = new MikrotikService($location);
-                    $res = $mikrotik->authorizeUser($hotspotUser->identifier, $password, $profileName, $macToBind, $comment);
+                    $res = $mikrotik->authorizeUser($hotspotUser->identifier, $password, $profileName, $macToBind, $comment, $limitUptime, $ip);
                     $routerSuccess = $res['success'] ?? false;
+                    $activated = $res['activated'] ?? false;
                 } catch (\Throwable $e) {
                     $routerSuccess = false;
                 }
             }
-
-            // Enqueue user creation for RouterOS Reverse Polling
-            $limitUptime = $hotspotUser->uptime_limit
-                ? sprintf('%02d:%02d:00', floor($hotspotUser->uptime_limit / 3600), floor(($hotspotUser->uptime_limit % 3600) / 60))
-                : null;
 
             RouterUserQueue::enqueueUser(
                 locationId:  $location->id,
@@ -89,7 +92,7 @@ class AuthenticateVoucherAction
                 profile:     $profileName,
                 mac:         $isShared ? null : $mac,
                 comment:     $comment,
-                limitUptime: $limitUptime
+                limitUptime: $limitUptime ?: null
             );
 
             // Audit log session
@@ -101,6 +104,7 @@ class AuthenticateVoucherAction
                 'password'  => $password,
                 'duration'  => $hotspotUser->uptime_limit ? round($hotspotUser->uptime_limit / 60) : 120,
                 'offline'   => !$routerSuccess,
+                'activated' => $activated,
             ];
         }
 
@@ -173,11 +177,13 @@ class AuthenticateVoucherAction
 
         // 4. Direct Router Authorization (if router is reachable via direct IP)
         $routerSuccess = false;
+        $activated = false;
         if (!empty($location->router_ip)) {
             try {
                 $mikrotik = new MikrotikService($location);
-                $res = $mikrotik->authorizeUser($username, $password, $profile, $mac, $comment);
+                $res = $mikrotik->authorizeUser($username, $password, $profile, $mac, $comment, $uptime ?: '', $ip);
                 $routerSuccess = $res['success'] ?? false;
+                $activated = $res['activated'] ?? false;
             } catch (\Throwable $e) {
                 $routerSuccess = false;
             }
@@ -192,6 +198,7 @@ class AuthenticateVoucherAction
             'password'  => $password,
             'duration'  => $voucher->duration_minutes,
             'offline'   => !$routerSuccess,
+            'activated' => $activated,
         ];
     }
 }

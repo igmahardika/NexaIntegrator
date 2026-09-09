@@ -133,7 +133,9 @@ class MikrotikService
         string $password,
         string $profile = '',
         string $mac = '',
-        string $comment = ''
+        string $comment = '',
+        string $uptimeLimit = '',
+        string $ip = ''
     ): array {
         try {
             $client = $this->connect();
@@ -159,6 +161,10 @@ class MikrotikService
                 $data['=mac-address'] = strtoupper($mac);
             }
 
+            if (!empty($uptimeLimit)) {
+                $data['=limit-uptime'] = $uptimeLimit;
+            }
+
             if (!empty($existing)) {
                 // Update existing user
                 $id = $existing[0]['.id'];
@@ -177,9 +183,37 @@ class MikrotikService
                 $client->query($query)->read();
             }
 
-            return ['success' => true, 'error' => null];
+            // Instant Activation: Authorize active session directly via RouterOS API
+            // This prevents clients from getting stuck when browser blocks mixed-content (HTTPS -> HTTP) POST form submits.
+            $activated = false;
+            try {
+                $targetIp = $ip;
+                if (!empty($mac)) {
+                    $cleanMac = strtoupper(trim($mac));
+                    $hosts = $client->query(
+                        (new Query('/ip/hotspot/host/print'))
+                            ->where('mac-address', $cleanMac)
+                    )->read();
+                    if (!empty($hosts)) {
+                        $targetIp = $hosts[0]['to-address'] ?? ($hosts[0]['address'] ?? $ip);
+                    }
+                }
+
+                if (!empty($targetIp)) {
+                    $loginQuery = (new Query('/ip/hotspot/active/login'))
+                        ->equal('ip', $targetIp)
+                        ->equal('user', $username)
+                        ->equal('password', $password);
+                    $client->query($loginQuery)->read();
+                    $activated = true;
+                }
+            } catch (Throwable $actErr) {
+                // Non-fatal: if direct active login fails, client-side submit will serve as fallback
+            }
+
+            return ['success' => true, 'activated' => $activated, 'error' => null];
         } catch (Throwable $e) {
-            return ['success' => false, 'error' => $e->getMessage()];
+            return ['success' => false, 'activated' => false, 'error' => $e->getMessage()];
         }
     }
 

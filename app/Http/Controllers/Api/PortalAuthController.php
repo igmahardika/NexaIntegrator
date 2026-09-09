@@ -150,17 +150,20 @@ class PortalAuthController extends Controller
             $request->password,
             $profile,
             $mac,
-            $comment
+            $comment,
+            '',
+            $request->ip
         );
 
         PortalSession::logLogin($location->id, $mac, $request->ip, 'member', $member->username, $request->userAgent());
 
         return response()->json([
-            'success'  => true,
-            'username' => $member->username,
-            'password' => $request->password,
-            'role'     => $member->role,
-            'offline'  => !$routerResult['success'],
+            'success'   => true,
+            'username'  => $member->username,
+            'password'  => $request->password,
+            'role'      => $member->role,
+            'offline'   => !$routerResult['success'],
+            'activated' => $routerResult['activated'] ?? false,
         ]);
     }
 
@@ -210,15 +213,16 @@ class PortalAuthController extends Controller
         );
         $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
 
-        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
+        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment, '02:00:00', $request->ip);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'whatsapp', $cleanPhone, $request->userAgent());
 
         return response()->json([
-            'success'  => true,
-            'username' => $username,
-            'password' => $password,
-            'name'     => $request->name,
-            'offline'  => !$routerResult['success'],
+            'success'   => true,
+            'username'  => $username,
+            'password'  => $password,
+            'name'      => $request->name,
+            'offline'   => !$routerResult['success'],
+            'activated' => $routerResult['activated'] ?? false,
         ]);
     }
 
@@ -267,14 +271,15 @@ class PortalAuthController extends Controller
         );
         $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
 
-        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
+        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment, '02:00:00', $request->ip);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'quick_click', 'free-button', $request->userAgent());
 
         return response()->json([
-            'success'  => true,
-            'username' => $username,
-            'password' => $password,
-            'offline'  => !$routerResult['success'],
+            'success'   => true,
+            'username'  => $username,
+            'password'  => $password,
+            'offline'   => !$routerResult['success'],
+            'activated' => $routerResult['activated'] ?? false,
         ]);
     }
 
@@ -323,15 +328,16 @@ class PortalAuthController extends Controller
         );
         $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
 
-        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
+        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment, '02:00:00', $request->ip);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'email', $request->email, $request->userAgent());
 
         return response()->json([
-            'success'  => true,
-            'username' => $username,
-            'password' => $password,
-            'email'    => $request->email,
-            'offline'  => !$routerResult['success'],
+            'success'   => true,
+            'username'  => $username,
+            'password'  => $password,
+            'email'     => $request->email,
+            'offline'   => !$routerResult['success'],
+            'activated' => $routerResult['activated'] ?? false,
         ]);
     }
 
@@ -407,7 +413,7 @@ class PortalAuthController extends Controller
         }
 
         // Authorize session on MikroTik / RADIUS
-        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment);
+        $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment, '24:00:00', $request->ip);
 
         // Lawful Interception & Forensic Session Logging
         PortalSession::logLogin(
@@ -427,6 +433,7 @@ class PortalAuthController extends Controller
             'guest_name'  => $verifyResult['guest']['name'] ?? $lastName,
             'message'     => 'Selamat datang! Akses internet kamar berhasil diaktifkan.',
             'offline'     => !$routerResult['success'],
+            'activated'   => $routerResult['activated'] ?? false,
         ]);
     }
 
@@ -440,17 +447,19 @@ class PortalAuthController extends Controller
         string $password,
         string $profile,
         string $mac,
-        string $comment
+        string $comment,
+        string $uptimeLimit = '',
+        string $ip = ''
     ): array {
         if (empty($location->router_ip)) {
-            return ['success' => false, 'error' => 'Router IP not configured'];
+            return ['success' => false, 'activated' => false, 'error' => 'Router IP not configured'];
         }
 
         try {
             $mikrotik = new MikrotikService($location);
-            return $mikrotik->authorizeUser($username, $password, $profile, $mac, $comment);
+            return $mikrotik->authorizeUser($username, $password, $profile, $mac, $comment, $uptimeLimit, $ip);
         } catch (\Throwable $e) {
-            return ['success' => false, 'error' => $e->getMessage()];
+            return ['success' => false, 'activated' => false, 'error' => $e->getMessage()];
         }
     }
 }

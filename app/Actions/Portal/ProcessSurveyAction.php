@@ -91,13 +91,15 @@ class ProcessSurveyAction
             limitUptime: '02:00:00'
         );
 
-        // 6. Direct Router authorization
+        // 6. Direct Router authorization & instant active login
         $routerSuccess = false;
+        $activated = false;
         if (!empty($location->router_ip)) {
             try {
                 $mikrotik = new MikrotikService($location);
-                $res = $mikrotik->authorizeUser($username, $password, $profile, $mac, $comment);
+                $res = $mikrotik->authorizeUser($username, $password, $profile, $mac, $comment, '02:00:00', $ip);
                 $routerSuccess = $res['success'] ?? false;
+                $activated = $res['activated'] ?? false;
             } catch (\Throwable $e) {
                 $routerSuccess = false;
             }
@@ -107,10 +109,11 @@ class ProcessSurveyAction
         PortalSession::logLogin($locationId, $mac, $ip, 'survey', $campaignId, $userAgent);
 
         return [
-            'success'  => true,
-            'username' => $username,
-            'password' => $password,
-            'offline'  => !$routerSuccess,
+            'success'   => true,
+            'username'  => $username,
+            'password'  => $password,
+            'offline'   => !$routerSuccess,
+            'activated' => $activated,
         ];
     }
 }
