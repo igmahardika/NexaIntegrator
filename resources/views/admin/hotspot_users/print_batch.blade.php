@@ -4,8 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Voucher - {{ $batchName }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#22449E',
+                            hover: '#1b3680',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
         @media print {
             body { background: white !important; padding: 0 !important; }
             .no-print { display: none !important; }
@@ -13,7 +35,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 p-6 font-sans text-slate-800">
+<body class="bg-slate-100 p-6 text-slate-800 antialiased">
 
     <!-- Top Action Toolbar (Hidden during Print) -->
     <div class="max-w-5xl mx-auto mb-6 p-4 bg-white rounded-xl shadow-sm border border-slate-200 flex items-center justify-between no-print">
@@ -22,10 +44,10 @@
             <p class="text-xs text-slate-500">Site: {{ $currentSite->name ?? 'Hotspot' }} | Total: {{ $vouchers->count() }} voucher</p>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="window.close()" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200">
+            <button onclick="window.close()" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors">
                 Tutup
             </button>
-            <button onclick="window.print()" class="px-4 py-2 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm flex items-center gap-2">
+            <button onclick="window.print()" class="px-4 py-2 rounded-lg text-xs font-bold text-white bg-brand hover:bg-brand-hover shadow-sm flex items-center gap-2 transition-colors cursor-pointer">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
@@ -40,8 +62,8 @@
         <div class="voucher-card bg-white rounded-xl p-4 border border-slate-300 relative shadow-xs flex flex-col justify-between">
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-                <div class="flex items-center gap-1.5">
-                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-brand text-white flex items-center justify-center font-black text-xs shadow-2xs">
                         W
                     </div>
                     <div>
@@ -49,7 +71,7 @@
                         <span class="text-2xs text-slate-500">Akses Internet Tamu</span>
                     </div>
                 </div>
-                <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-brand border border-blue-200/60">
                     {{ $v->profile ? $v->profile->rate_limit : 'High Speed' }}
                 </span>
             </div>
@@ -70,7 +92,7 @@
                     <span>Kuota Data:</span>
                     <span class="font-bold text-slate-700">{{ $v->data_limit_bytes ? round($v->data_limit_bytes / 1048576) . ' MB' : 'Unlimited' }}</span>
                 </div>
-                <p class="text-center text-3xs text-slate-400 mt-2">Hubungkan ke Wi-Fi, buka browser, masukkan kode di atas.</p>
+                <p class="text-center text-[10px] text-slate-500 mt-2">Hubungkan ke Wi-Fi, buka browser, masukkan kode di atas.</p>
             </div>
         </div>
         @endforeach

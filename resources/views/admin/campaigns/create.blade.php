@@ -67,7 +67,7 @@
                     <div>
                         <label class="label">Minimum Tonton (detik)</label>
                         <input type="number" name="min_watch_duration" class="input" value="{{ old('min_watch_duration', 10) }}" x-model="minWatch" min="0" max="600">
-                        <p class="text-xs text-slate-400 mt-1">Tombol survei terkunci selama N detik pertama video</p>
+                        <p class="text-xs text-slate-500 mt-1">Tombol survei terkunci selama N detik pertama video</p>
                     </div>
 
                     <div>
@@ -75,9 +75,9 @@
                         <input type="file" name="ad_banner" accept="image/*" class="input py-2">
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox" id="is_active" name="is_active" value="1" checked class="w-4 h-4 rounded accent-indigo-500">
-                        <label for="is_active" class="text-sm text-slate-300">Kampanye aktif</label>
+                    <div class="flex items-center gap-2.5">
+                        <input type="checkbox" id="is_active" name="is_active" value="1" checked class="checkbox">
+                        <label for="is_active" class="text-xs font-semibold text-slate-700 cursor-pointer">Kampanye aktif</label>
                     </div>
                 </div>
             </div>

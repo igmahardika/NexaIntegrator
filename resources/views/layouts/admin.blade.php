@@ -16,7 +16,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -56,6 +55,8 @@
                     },
                     fontSize: {
                         '2xs': ['10px', { lineHeight: '14px' }],
+                        'xs': ['12px', { lineHeight: '16px' }],
+                        'sm': ['14px', { lineHeight: '20px' }],
                     }
                 }
             }
@@ -94,14 +95,14 @@
             display: flex;
             align-items: center;
             gap: 0.625rem;
-            padding: 0.4375rem 0.625rem;
+            padding: 0.5rem 0.75rem; /* Strict 8px 12px grid */
             border-radius: var(--radius-sm, 8px);
             color: #475569;
             font-size: 0.8125rem;
             font-weight: 600;
             transition: all 0.15s ease-in-out;
             cursor: pointer;
-            min-height: 38px;
+            min-height: 40px;
         }
         .sidebar-item:hover {
             background-color: #f1f5f9;
@@ -231,9 +232,9 @@
             background-color: #fef2f2;
             color: #ef4444;
             border: 1px solid #fecaca;
-            padding: 0.375rem 0.75rem;
+            padding: 0.5rem 0.875rem;
             border-radius: var(--radius-sm, 8px);
-            font-size: 0.6875rem;
+            font-size: 0.75rem;
             font-weight: 700;
             transition: all 0.15s ease;
             cursor: pointer;
@@ -243,18 +244,64 @@
             color: #dc2626;
         }
         
+        .btn-secondary:active,
+        .btn-accent:active,
+        .btn-danger:active {
+            transform: scale(0.98);
+        }
+
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            color: transparent !important;
+        }
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            top: 50%;
+            left: 50%;
+            margin-top: -7px;
+            margin-left: -7px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: btn-spin 0.6s linear infinite;
+        }
+        .btn-primary.btn-loading::after,
+        .btn-danger.btn-loading::after {
+            border-color: #ffffff;
+            border-top-color: transparent;
+        }
+        .btn-secondary.btn-loading::after {
+            border-color: #334155;
+            border-top-color: transparent;
+        }
+        @keyframes btn-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .checkbox {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 4px;
+            accent-color: var(--color-brand-hex, #22449E);
+            cursor: pointer;
+        }
+        
         .input { 
             width: 100%;
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: var(--radius-sm, 8px);
             padding: 0.5rem 0.75rem; /* Strict 8px 12px grid */
-            font-size: 0.8125rem;
+            font-size: 0.875rem;
             color: #0f172a;
             transition: all 0.15s ease;
         }
         .input::placeholder {
-            color: #94a3b8;
+            color: #64748b;
         }
         .input:focus {
             outline: none;
@@ -379,10 +426,10 @@
                 </div>
                 <div class="flex flex-col">
                     <span class="text-base font-extrabold tracking-tight text-slate-900 leading-none">WiFi<span class="text-brand">Pads</span></span>
-                    <span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">NAC Controller</span>
+                    <span class="text-2xs font-bold text-slate-500 tracking-wider uppercase mt-1">NAC Controller</span>
                 </div>
             </a>
-            <button type="button" @click="sidebarOpen = false" aria-label="Close navigation menu" class="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <button type="button" @click="sidebarOpen = false" aria-label="Close navigation menu" class="lg:hidden w-11 h-11 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -399,14 +446,14 @@
             <div class="mb-3 px-0.5">
                 <div class="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 transition-all hover:bg-slate-50">
                     <div class="flex items-center justify-between gap-2 mb-1.5">
-                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Site Scope</span>
+                        <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-500">Site Scope</span>
                         @if($activeSite)
-                            <span class="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                            <span class="inline-flex items-center gap-1.5 text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Online
                             </span>
                         @else
-                            <span class="inline-flex items-center gap-1.5 text-[10px] font-bold text-brand bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60">
+                            <span class="inline-flex items-center gap-1.5 text-2xs font-bold text-brand bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60">
                                 <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
                                 Global NOC
                             </span>
@@ -428,7 +475,7 @@
                             <div class="text-xs font-bold text-slate-900 truncate">
                                 {{ $activeSite ? $activeSite->name : 'All Locations (Global)' }}
                             </div>
-                            <div class="text-[10px] text-slate-500 font-mono truncate">
+                            <div class="text-2xs text-slate-500 font-mono truncate">
                                 {{ $activeSite ? ($activeSite->router_ip ?: 'Cloud Standalone Router') : 'Centralized NOC Monitor' }}
                             </div>
                         </div>
@@ -437,7 +484,7 @@
             </div>
 
             <!-- SECTION 1: SITE OPERATIONS -->
-            <div class="px-2 pt-1.5 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Site Operations</div>
+            <div class="px-2 pt-1.5 pb-1 text-2xs font-extrabold uppercase tracking-wider text-slate-500">Site Operations</div>
 
             <!-- Item 1: Overview & Status -->
             <a href="{{ route('admin.dashboard') }}" class="sidebar-item {{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}">
@@ -498,7 +545,7 @@
 
             <!-- SECTION 2: GLOBAL MANAGEMENT (NOC) -->
             @if(auth()->user()?->isSuperadmin())
-            <div class="px-2 pt-4 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Multi-Site & NOC</div>
+            <div class="px-2 pt-4 pb-1 text-2xs font-extrabold uppercase tracking-wider text-slate-500">Multi-Site & NOC</div>
 
             <a href="{{ route('admin.sites.index') }}" class="sidebar-item {{ request()->routeIs('admin.sites.index*') ? 'active' : '' }}">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">

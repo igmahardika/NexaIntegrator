@@ -329,10 +329,10 @@
                                 <div class="text-2xs text-slate-500 font-mono">{{ $user->guest_metadata['phone'] }}</div>
                                 @endif
                                 @if(isset($user->guest_metadata['created_by']))
-                                <div class="text-2xs text-slate-400">Oleh: {{ $user->guest_metadata['created_by'] }}</div>
+                                <div class="text-2xs text-slate-500">Oleh: {{ $user->guest_metadata['created_by'] }}</div>
                                 @endif
                             @else
-                            <span class="text-slate-400 italic text-2xs">-</span>
+                            <span class="text-slate-500 italic text-2xs">-</span>
                             @endif
                         </td>
 
@@ -341,7 +341,8 @@
                             <div class="flex items-center justify-end gap-1.5">
                                 <form action="{{ route('admin.hotspot-users.toggle', $user) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                    <button type="submit" class="p-1 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors"
+                                            aria-label="{{ $user->status === 'disabled' ? 'Aktifkan user ' . $user->identifier : 'Nonaktifkan user ' . $user->identifier }}"
                                             title="{{ $user->status === 'disabled' ? 'Aktifkan' : 'Nonaktifkan' }}">
                                         @if($user->status === 'disabled')
                                         <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -355,7 +356,9 @@
                                       onsubmit="return confirm('Hapus user {{ $user->identifier }}?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1 rounded-md text-rose-400 hover:text-rose-700 hover:bg-rose-50" title="Hapus User">
+                                    <button type="submit" class="p-1 rounded-md text-rose-500 hover:text-rose-700 hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none transition-colors"
+                                            aria-label="Hapus user {{ $user->identifier }}"
+                                            title="Hapus User">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
@@ -384,8 +387,8 @@
     </div>
 
     <!-- ==================== MODAL TAMBAH ACCESS CODE ==================== -->
-    <div x-show="accessCodeModal" @keydown.escape.window="accessCodeModal = false" role="dialog" aria-modal="true" aria-labelledby="access-code-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
-        <div @click.away="accessCodeModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+    <div x-show="accessCodeModal" x-cloak @keydown.escape.window="accessCodeModal = false" role="dialog" aria-modal="true" aria-labelledby="access-code-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div @click.outside="accessCodeModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
@@ -410,7 +413,7 @@
                     <input type="text" name="code" placeholder="Contoh: KANTOR2026 atau TAMU-VIP" required autofocus
                            class="input uppercase font-mono tracking-wider font-bold"
                            oninput="this.value = this.value.toUpperCase()">
-                    <p class="text-2xs text-slate-400 mt-1">Kode yang akan diinputkan pengguna pada captive portal (Template Access Code).</p>
+                    <p class="text-2xs text-slate-500 mt-1">Kode yang akan diinputkan pengguna pada captive portal (Template Access Code).</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -464,11 +467,11 @@
     </div>
 
     <!-- ==================== MODAL GENERATE VOUCHERS ==================== -->
-    <div x-show="generateModal" @keydown.escape.window="generateModal = false" role="dialog" aria-modal="true" aria-labelledby="generate-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
-        <div @click.away="generateModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+    <div x-show="generateModal" x-cloak @keydown.escape.window="generateModal = false" role="dialog" aria-modal="true" aria-labelledby="generate-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div @click.outside="generateModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h3 id="generate-modal-title" class="text-base font-extrabold text-slate-900">Generate Voucher Massal</h3>
-                <button type="button" @click="generateModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
+                <button type="button" @click="generateModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -526,11 +529,11 @@
     </div>
 
     <!-- ==================== MODAL BUAT AKUN MEMBER ==================== -->
-    <div x-show="memberModal" @keydown.escape.window="memberModal = false" role="dialog" aria-modal="true" aria-labelledby="member-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
-        <div @click.away="memberModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+    <div x-show="memberModal" x-cloak @keydown.escape.window="memberModal = false" role="dialog" aria-modal="true" aria-labelledby="member-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div @click.outside="memberModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h3 id="member-modal-title" class="text-base font-extrabold text-slate-900">Buat Akun Member / Staff</h3>
-                <button type="button" @click="memberModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
+                <button type="button" @click="memberModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -582,11 +585,11 @@
     </div>
 
     <!-- ==================== MODAL PILIH BATCH CETAK ==================== -->
-    <div x-show="printModal" @keydown.escape.window="printModal = false" role="dialog" aria-modal="true" aria-labelledby="print-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
-        <div @click.away="printModal = false" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+    <div x-show="printModal" x-cloak @keydown.escape.window="printModal = false" role="dialog" aria-modal="true" aria-labelledby="print-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div @click.outside="printModal = false" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h3 id="print-modal-title" class="text-base font-extrabold text-slate-900">Pilih Batch Voucher untuk Dicetak</h3>
-                <button type="button" @click="printModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
+                <button type="button" @click="printModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>

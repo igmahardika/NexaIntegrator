@@ -227,10 +227,14 @@
         <div @click.outside="modalOpen = false" class="card max-w-lg w-full p-6 bg-white border border-slate-200 shadow-2xl rounded-2xl">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                 <h3 id="mac-policy-modal-title" class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <span class="text-brand">🛡️</span>
+                    <svg class="w-5 h-5 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                    </svg>
                     <span>Add Layer-2 MAC Policy</span>
                 </h3>
-                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors text-lg font-bold leading-none">&times;</button>
+                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
 
             <form method="POST" action="{{ route('admin.policy.bindings.store') }}" class="space-y-4">

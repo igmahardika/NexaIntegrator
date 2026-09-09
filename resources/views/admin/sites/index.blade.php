@@ -242,7 +242,9 @@
         >
             <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
                 <h3 id="site-modal-title" class="text-base font-bold text-slate-900" x-text="isEdit ? 'Edit Site & Customer Profile' : 'Add New Site / Customer'"></h3>
-                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors text-xl font-bold leading-none">&times;</button>
+                <button type="button" @click="modalOpen = false" aria-label="Tutup dialog" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
 
             <form :action="isEdit ? `/admin/sites/${currentSite.id}` : '{{ route('admin.sites.store') }}'" method="POST" class="space-y-4">
@@ -265,7 +267,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
                         <label class="label text-slate-700 font-semibold">Business Category <span class="text-rose-500">*</span></label>
-                        <select name="business_type" x-model="form.business_type" class="input bg-white" required>
+                        <select name="business_type" x-model="form.business_type" class="input" required>
                             <option value="cafe">Cafe / Restaurant</option>
                             <option value="hotel">Hotel / Resort</option>
                             <option value="retail">Retail / Store</option>
@@ -291,33 +293,35 @@
 
                 <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
                     <div class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                        <span class="text-brand">📡</span>
+                        <svg class="w-4 h-4 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
+                        </svg>
                         <span>Edge Router & Gateway Settings</span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
                             <label class="label text-slate-700 font-semibold mb-1 block">Router IP</label>
-                            <input type="text" name="router_ip" x-model="form.router_ip" class="input input-sm bg-white border-slate-200 text-slate-900 w-full font-mono" placeholder="192.168.88.1">
+                            <input type="text" name="router_ip" x-model="form.router_ip" class="input input-sm font-mono" placeholder="192.168.88.1">
                         </div>
                         <div>
                             <label class="label text-slate-700 font-semibold mb-1 block">API Port</label>
-                            <input type="number" name="router_port" x-model="form.router_port" class="input input-sm bg-white border-slate-200 text-slate-900 w-full font-mono" placeholder="8728">
+                            <input type="number" name="router_port" x-model="form.router_port" class="input input-sm font-mono" placeholder="8728">
                         </div>
                         <div>
                             <label class="label text-slate-700 font-semibold mb-1 block">Hotspot DNS Hostname</label>
-                            <input type="text" name="dns_name" x-model="form.dns_name" class="input input-sm bg-white border-slate-200 text-slate-900 w-full font-mono" placeholder="wifi.login">
+                            <input type="text" name="dns_name" x-model="form.dns_name" class="input input-sm font-mono" placeholder="wifi.login">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                             <label class="label text-slate-700 font-semibold mb-1 block">API User</label>
-                            <input type="text" name="router_user" x-model="form.router_user" class="input input-sm bg-white border-slate-200 text-slate-900 w-full font-mono" placeholder="admin">
+                            <input type="text" name="router_user" x-model="form.router_user" class="input input-sm font-mono" placeholder="admin">
                         </div>
                         <div>
                             <label class="label text-slate-700 font-semibold mb-1 block">API Password</label>
-                            <input type="password" name="router_password" x-model="form.router_password" class="input input-sm bg-white border-slate-200 text-slate-900 w-full font-mono" :placeholder="isEdit ? '(Leave empty to keep existing)' : '••••••••'">
+                            <input type="password" name="router_password" x-model="form.router_password" class="input input-sm font-mono" :placeholder="isEdit ? '(Leave empty to keep existing)' : '••••••••'">
                         </div>
                     </div>
                 </div>
@@ -325,7 +329,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="label text-slate-700 font-semibold mb-1 block">Default Login Method</label>
-                        <select name="active_template" x-model="form.active_template" class="input input-sm bg-white border-slate-200 text-slate-900 w-full">
+                        <select name="active_template" x-model="form.active_template" class="input input-sm">
                             <option value="username-password">Username & Password</option>
                             <option value="access-code">Access Code (Voucher)</option>
                             <option value="whatsapp-login">WhatsApp Login</option>

@@ -103,7 +103,7 @@
 <body>
 
 <div class="no-print" style="margin-bottom:16px; display:flex; gap:10px; align-items:center;">
-    <button onclick="window.print()" style="background:#4f46e5; color:#fff; border:none; padding:9px 20px; border-radius:8px; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:6px; font-family:sans-serif; font-size:13px; box-shadow:0 2px 8px rgba(79,70,229,0.3);">
+    <button onclick="window.print()" style="background:#22449E; color:#fff; border:none; padding:9px 20px; border-radius:8px; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:6px; font-family:sans-serif; font-size:13px; box-shadow:0 2px 8px rgba(34,68,158,0.3);">
         <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
         </svg>
@@ -119,7 +119,7 @@
 
 <div class="print-header">
     <div style="display:inline-flex; align-items:center; gap:8px; justify-content:center;">
-        <svg style="width:24px;height:24px;color:#1e1b4b;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <svg style="width:24px;height:24px;color:#22449E;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
         </svg>
         <h1 style="display:inline; margin:0; font-size:1.4rem;">WiFiPads Hotspot Voucher</h1>

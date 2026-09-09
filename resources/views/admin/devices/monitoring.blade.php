@@ -190,11 +190,26 @@
                     <tr class="hover:bg-slate-50/80 transition-colors">
                         <td class="p-3.5 font-bold">
                             @if($idx === 0)
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-50 text-amber-700 border border-amber-200">🥇 #1</span>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                <svg class="w-3 h-3 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.003 0H9.497m5.003 0A6.75 6.75 0 0018 7.5V4.5a1.5 1.5 0 00-1.5-1.5h-9A1.5 1.5 0 006 4.5v3a6.75 6.75 0 003.497 5.875"/>
+                                </svg>
+                                <span>#1</span>
+                            </span>
                             @elseif($idx === 1)
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold bg-slate-100 text-slate-700 border border-slate-200">🥈 #2</span>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold bg-slate-100 text-slate-700 border border-slate-300">
+                                <svg class="w-3 h-3 text-slate-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.003 0H9.497m5.003 0A6.75 6.75 0 0018 7.5V4.5a1.5 1.5 0 00-1.5-1.5h-9A1.5 1.5 0 006 4.5v3a6.75 6.75 0 003.497 5.875"/>
+                                </svg>
+                                <span>#2</span>
+                            </span>
                             @elseif($idx === 2)
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 text-amber-800 border border-amber-300">🥉 #3</span>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100/70 text-amber-900 border border-amber-300">
+                                <svg class="w-3 h-3 text-amber-700 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.003 0H9.497m5.003 0A6.75 6.75 0 0018 7.5V4.5a1.5 1.5 0 00-1.5-1.5h-9A1.5 1.5 0 006 4.5v3a6.75 6.75 0 003.497 5.875"/>
+                                </svg>
+                                <span>#3</span>
+                            </span>
                             @else
                             <span class="text-slate-500 font-mono text-xs">#{{ $idx + 1 }}</span>
                             @endif
