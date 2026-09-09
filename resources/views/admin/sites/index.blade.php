@@ -82,12 +82,12 @@
             @endif
         </form>
 
-        <button @click="openModal('create')" class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center shadow-sm">
+        <a href="{{ route('admin.sites.create') }}" class="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center shadow-sm">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
             <span>Add New Site</span>
-        </button>
+        </a>
     </div>
 
     <!-- Sites Cards Grid -->
@@ -98,10 +98,13 @@
                 <!-- Header: Name & Status -->
                 <div class="flex items-start justify-between gap-3 mb-3">
                     <div>
-                        <div class="flex items-center gap-2 mb-1">
+                        <div class="flex items-center gap-1.5 flex-wrap mb-1">
                             <h3 class="font-bold text-slate-900 text-base leading-tight">{{ $site->name }}</h3>
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold {{ $site->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
                                 {{ $site->is_active ? 'Active' : 'Disabled' }}
+                            </span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold {{ $site->gateway_mode === 'zero_tunnel' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : ($site->gateway_mode === 'direct_api' ? 'bg-blue-50 text-brand border border-blue-200' : 'bg-purple-50 text-purple-800 border border-purple-200') }}">
+                                {{ $site->gateway_mode_label }}
                             </span>
                         </div>
                         <p class="text-xs text-brand font-medium flex items-center gap-1">
@@ -164,24 +167,30 @@
             <!-- Action Buttons Footer -->
             <div class="space-y-2 pt-2">
                 <!-- Management Hub Links -->
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-4 gap-1.5">
                     <a href="{{ route('admin.sites.template.gallery', $site) }}" class="btn-secondary text-2xs py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-brand/40 hover:text-brand font-semibold">
-                        <svg class="w-3.5 h-3.5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="w-3.5 h-3.5 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                         </svg>
-                        <span>Template</span>
+                        <span class="truncate">Template</span>
+                    </a>
+                    <a href="{{ route('admin.sites.provision', $site) }}" class="btn-secondary text-2xs py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-emerald-300 hover:text-emerald-700 font-semibold" title="Lihat Script WinBox & Unduh login.html">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span class="truncate">Script</span>
                     </a>
                     <a href="{{ route('admin.sites.radius.show', $site) }}" class="btn-secondary text-2xs py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-purple-300 hover:text-purple-700 font-semibold">
-                        <svg class="w-3.5 h-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="w-3.5 h-3.5 text-purple-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
-                        <span>RADIUS</span>
+                        <span class="truncate">RADIUS</span>
                     </a>
                     <a href="{{ route('admin.devices.index', ['location_id' => $site->id]) }}" class="btn-secondary text-2xs py-2 px-1 text-center justify-center flex items-center gap-1 hover:border-cyan-300 hover:text-cyan-700 font-semibold">
-                        <svg class="w-3.5 h-3.5 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="w-3.5 h-3.5 text-cyan-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                         </svg>
-                        <span>Devices</span>
+                        <span class="truncate">Devices</span>
                     </a>
                 </div>
 

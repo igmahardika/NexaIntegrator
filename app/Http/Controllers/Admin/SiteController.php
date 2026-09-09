@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SiteRequest;
+use App\Models\HotspotProfile;
 use App\Models\Location;
 use App\Services\MikrotikService;
+use App\Services\RadiusService;
 use App\Services\TemplateRegistryService;
+use App\Services\TenantManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,19 +45,143 @@ class SiteController extends Controller
         return view('admin.sites.index', compact('sites', 'templates'));
     }
 
+    /**
+     * Dedicated 3-Step Site Creation & Gateway Provisioning Wizard.
+     */
+    public function create(Request $request): View
+    {
+        $templates = TemplateRegistryService::all();
+        $serverHost = $request->getHost();
+        $scheme = $request->getScheme();
+        $port = $request->getPort();
+        $portSuffix = ($port && !in_array($port, [80, 443])) ? ":{$port}" : "";
+        $baseUrl = "{$scheme}://{$serverHost}{$portSuffix}";
+
+        return view('admin.sites.create', compact('templates', 'serverHost', 'baseUrl'));
+    }
+
     public function store(SiteRequest $request): RedirectResponse
     {
         $validated = $request->validated();
         $validated['slug'] = Str::slug($validated['name']) . '-' . Str::random(4);
+        $validated['gateway_mode'] = $validated['gateway_mode'] ?? 'zero_tunnel';
         $validated['router_port'] = $validated['router_port'] ?? 8728;
         $validated['active_template'] = $validated['active_template'] ?? 'modern-glass';
         $validated['radius_nas_id'] = $validated['slug'];
         $validated['radius_secret'] = $validated['radius_secret'] ?? Str::random(32);
+        $validated['is_active'] = $request->has('is_active') ? (bool) $request->is_active : true;
 
-        Location::create($validated);
+        if ($validated['gateway_mode'] === 'radius') {
+            $validated['radius_enabled'] = true;
+            $validated['radius_server_ip'] = $validated['radius_server_ip'] ?? $request->getHost();
+            $validated['radius_auth_port'] = $validated['radius_auth_port'] ?? 1812;
+            $validated['radius_acct_port'] = $validated['radius_acct_port'] ?? 1813;
+            $validated['radius_coa_port'] = $validated['radius_coa_port'] ?? 3799;
+        }
 
-        return redirect()->route('admin.sites.index')
-            ->with('success', "Site & Customer \"{$validated['name']}\" berhasil ditambahkan.");
+        $site = Location::create($validated);
+
+        // 1. Inisialisasi Database Tenant Terisolasi
+        if ($request->input('auto_init_tenant', true)) {
+            TenantManager::ensureDatabase($site);
+        }
+
+        // 2. Auto-seed Default QoS Hotspot Profiles
+        if ($request->input('auto_seed_profiles', true)) {
+            $defaultProfiles = [
+                [
+                    'name' => 'survey-user',
+                    'display_name' => 'Survey / Lead-Gen Access',
+                    'rate_limit' => '2M/5M',
+                    'shared_users' => 1,
+                    'session_timeout' => 7200,
+                    'idle_timeout' => 900,
+                    'keepalive_timeout' => 120,
+                    'status_autorefresh' => '1m',
+                    'transparent_proxy' => false,
+                    'synced_to_router' => false,
+                ],
+                [
+                    'name' => 'voucher-user',
+                    'display_name' => 'Standard Voucher User',
+                    'rate_limit' => '5M/10M',
+                    'shared_users' => 1,
+                    'session_timeout' => 7200,
+                    'idle_timeout' => 1200,
+                    'keepalive_timeout' => 120,
+                    'status_autorefresh' => '1m',
+                    'transparent_proxy' => false,
+                    'synced_to_router' => false,
+                ],
+                [
+                    'name' => 'member-user',
+                    'display_name' => 'VIP / Staff Member Access',
+                    'rate_limit' => '10M/20M',
+                    'shared_users' => 2,
+                    'session_timeout' => 86400,
+                    'idle_timeout' => 3600,
+                    'keepalive_timeout' => 300,
+                    'status_autorefresh' => '1m',
+                    'transparent_proxy' => false,
+                    'synced_to_router' => false,
+                ],
+            ];
+
+            foreach ($defaultProfiles as $profileData) {
+                HotspotProfile::firstOrCreate(
+                    ['location_id' => $site->id, 'name' => $profileData['name']],
+                    $profileData
+                );
+            }
+        }
+
+        return redirect()->route('admin.sites.provision', $site)
+            ->with('success', "Site & Customer \"{$site->name}\" berhasil ditambahkan dan siap di-deploy!");
+    }
+
+    /**
+     * Dedicated Provisioning Script Handover Screen.
+     */
+    public function provision(Location $site, Request $request): View
+    {
+        $serverHost = $request->getHost();
+        $scheme = $request->getScheme();
+        $port = $request->getPort();
+        $portSuffix = ($port && !in_array($port, [80, 443])) ? ":{$port}" : "";
+        $baseUrl = "{$scheme}://{$serverHost}{$portSuffix}";
+
+        $script = $site->getProvisioningScript($serverHost, $baseUrl);
+        $radiusService = new RadiusService($site);
+        $minimalLoginHtml = $radiusService->generateMinimalLoginHtml("{$baseUrl}/portal");
+        $syncUrl = "{$baseUrl}/api/router/{$site->slug}/sync-script" . ($site->radius_secret ? "?key=" . urlencode($site->radius_secret) : "");
+
+        return view('admin.sites.provision', compact('site', 'script', 'minimalLoginHtml', 'serverHost', 'baseUrl', 'syncUrl'));
+    }
+
+    /**
+     * Live test connection for draft parameters before site creation.
+     */
+    public function testDraftConnection(Request $request): JsonResponse
+    {
+        $request->validate([
+            'router_ip' => 'required|string',
+            'router_port' => 'nullable|integer|between:1,65535',
+            'router_user' => 'required|string',
+            'router_password' => 'nullable|string',
+        ]);
+
+        $dummy = new Location([
+            'name' => 'Draft Site',
+            'router_ip' => $request->input('router_ip'),
+            'router_port' => (int) $request->input('router_port', 8728),
+            'router_user' => $request->input('router_user'),
+            'router_password' => $request->input('router_password'),
+        ]);
+
+        $mikrotik = new MikrotikService($dummy);
+        $result = $mikrotik->testConnection();
+
+        return response()->json($result);
     }
 
     public function update(SiteRequest $request, Location $site): RedirectResponse

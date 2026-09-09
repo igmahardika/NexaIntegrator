@@ -79,6 +79,8 @@ Route::prefix('admin')
 
             // Sites & Customer Management
             Route::resource('sites', SiteController::class)->except(['show']);
+            Route::get('/sites/{site}/provision', [SiteController::class, 'provision'])->name('sites.provision');
+            Route::post('/sites/test-draft', [SiteController::class, 'testDraftConnection'])->name('sites.test-draft');
             Route::post('/sites/{site}/toggle', [SiteController::class, 'toggle'])->name('sites.toggle');
             Route::post('/sites/{site}/test', [SiteController::class, 'testConnection'])->name('sites.test');
 
