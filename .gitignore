@@ -28,3 +28,4 @@ database/database.sqlite-journal
 database/tenants/*.sqlite
 database/tenants/*.sqlite-journal
 !database/tenants/.gitignore
+/scratch

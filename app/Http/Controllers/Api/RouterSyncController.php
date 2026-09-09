@@ -108,7 +108,10 @@ class RouterSyncController extends Controller
         $expectedKey = $site->radius_secret;
         $providedKey = $request->header('X-Router-Key') ?? $request->bearerToken() ?? $request->query('key', '');
 
-        if (empty($expectedKey) || empty($providedKey) || !hash_equals($expectedKey, (string) $providedKey)) {
+        $isAuth = auth('web')->check() || auth()->check();
+        $hasKey = !empty($expectedKey) && !empty($providedKey) && hash_equals($expectedKey, (string) $providedKey);
+
+        if (!$isAuth && !$hasKey) {
             return response()->json(['error' => 'Unauthorized access'], 401);
         }
 

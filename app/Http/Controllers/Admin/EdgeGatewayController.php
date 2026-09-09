@@ -49,6 +49,9 @@ class EdgeGatewayController extends Controller
     {
         $radiusService = new RadiusService($site);
         $serverHost = $request->getHost();
+        if (in_array($serverHost, ['localhost', '127.0.0.1']) && !empty($site->radius_server_ip)) {
+            $serverHost = $site->radius_server_ip;
+        }
         $scheme = $request->getScheme();
         $port = $request->getPort();
         $portSuffix = ($port && !in_array($port, [80, 443])) ? ":{$port}" : "";

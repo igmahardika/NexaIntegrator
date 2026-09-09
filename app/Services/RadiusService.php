@@ -21,10 +21,11 @@ class RadiusService
     {
         $loc = $this->location;
 
-        $serverIp   = !empty($serverHost) ? $serverHost : ($loc->radius_server_ip ?: request()->getHost());
-        if ($serverIp === '127.0.0.1' || $serverIp === 'localhost') {
-            $serverIp = '192.168.88.1'; // practical default if running locally
-        }
+        $serverIp = !empty($loc->radius_server_ip)
+            ? $loc->radius_server_ip
+            : (!empty($serverHost) && !in_array($serverHost, ['127.0.0.1', 'localhost'])
+                ? $serverHost
+                : '192.168.11.228');
 
         $secret = $loc->radius_secret;
         if (empty($secret)) {
@@ -38,7 +39,11 @@ class RadiusService
         $rateLimit  = $loc->default_rate_limit ?: '5M/10M';
         $siteName   = addslashes($loc->name);
 
-        $portalHost = request()->getHost() ?: 'portal.wifipads.local';
+        $portalHost = !empty($loc->radius_server_ip)
+            ? $loc->radius_server_ip
+            : (!in_array(request()->getHost(), ['127.0.0.1', 'localhost', ''])
+                ? request()->getHost()
+                : '192.168.11.228');
         $targetRos = strtoupper($version) === 'V6' ? 'RouterOS v6 (Legacy)' : 'RouterOS v7 (Modern)';
 
         return <<<ROUTEROS

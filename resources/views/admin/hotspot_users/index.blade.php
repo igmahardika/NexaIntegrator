@@ -3,7 +3,7 @@
 @section('title', 'Hotspot Users - ' . ($currentSite->name ?? 'Site'))
 
 @section('content')
-<div class="space-y-6" x-data="{ generateModal: false, memberModal: false, printModal: false }">
+<div class="space-y-6" x-data="{ accessCodeModal: false, generateModal: false, memberModal: false, printModal: false }">
 
     <!-- Header & Breadcrumbs -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -13,18 +13,25 @@
                 <span>/</span>
                 <span class="text-brand">Hotspot Users</span>
             </div>
-            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen User Hotspot</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Satu modul terpadu untuk mengelola seluruh voucher, akun member, dan tamu WiFi di site ini.</p>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen User Hotspot & Access Code</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Kelola Access Code untuk tamu kantor, voucher massal, akun member, dan data leads login.</p>
         </div>
 
         <!-- Adaptive Actions -->
         <div class="flex items-center gap-2.5 flex-wrap">
-            @if(in_array('voucher', $enabledMethods))
-            <button @click="generateModal = true" class="btn-primary">
+            <button @click="accessCodeModal = true" class="btn-primary">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                </svg>
+                + Tambah Access Code
+            </button>
+
+            @if(in_array('voucher', $enabledMethods))
+            <button @click="generateModal = true" class="btn-secondary">
+                <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
-                Generate Voucher
+                Generate Voucher Massal
             </button>
             @endif
 
@@ -161,7 +168,7 @@
                 </a>
                 <a href="{{ route('admin.hotspot-users.index', ['tab' => 'voucher']) }}"
                    class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition {{ $tab === 'voucher' ? 'bg-white text-brand shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
-                    Vouchers ({{ $stats['vouchers'] }})
+                    Access Code / Vouchers ({{ $stats['vouchers'] }})
                 </a>
                 <a href="{{ route('admin.hotspot-users.index', ['tab' => 'member']) }}"
                    class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition {{ $tab === 'member' ? 'bg-white text-cyan-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
@@ -245,7 +252,11 @@
                         <!-- Metode Login -->
                         <td class="py-3 px-3">
                             @if($user->auth_method === 'voucher')
-                                <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200">Voucher</span>
+                                @if(($user->guest_metadata['type'] ?? '') === 'custom_access_code' || $user->batch_name === 'Access Code')
+                                    <span class="badge bg-amber-50 text-amber-800 border border-amber-200 font-bold">Access Code</span>
+                                @else
+                                    <span class="badge bg-indigo-50 text-indigo-700 border border-indigo-200">Voucher</span>
+                                @endif
                             @elseif($user->auth_method === 'member')
                                 <span class="badge bg-cyan-50 text-cyan-700 border border-cyan-200">Member</span>
                             @elseif($user->auth_method === 'whatsapp')
@@ -283,7 +294,9 @@
                                 <span class="badge bg-rose-50 text-rose-700">Disabled</span>
                             @endif
 
-                            @if($user->bound_mac)
+                            @if(($user->simultaneous_use ?? 1) > 1)
+                            <div class="text-2xs text-purple-700 font-semibold mt-0.5">👥 Shared ({{ $user->simultaneous_use }} device)</div>
+                            @elseif($user->bound_mac)
                             <div class="text-2xs text-slate-500 font-mono mt-0.5">MAC: {{ $user->bound_mac }}</div>
                             @endif
                         </td>
@@ -294,6 +307,8 @@
                                 <span class="font-semibold">{{ gmdate('H:i:s', $user->used_uptime) }}</span>
                                 @if($user->uptime_limit)
                                 <span class="text-slate-500 text-2xs">/ {{ gmdate('H:i:s', $user->uptime_limit) }}</span>
+                                @else
+                                <span class="text-slate-400 text-2xs">/ Unlimited</span>
                                 @endif
                             </div>
                             <div class="text-2xs text-slate-500">
@@ -304,11 +319,17 @@
                         <!-- Info Tamu / Metadata -->
                         <td class="py-3 px-3">
                             @if(!empty($user->guest_metadata))
+                                @if(isset($user->guest_metadata['notes']))
+                                <div class="font-semibold text-slate-800 text-xs">{{ $user->guest_metadata['notes'] }}</div>
+                                @endif
                                 @if(isset($user->guest_metadata['full_name']))
                                 <div class="font-semibold text-slate-800">{{ $user->guest_metadata['full_name'] }}</div>
                                 @endif
                                 @if(isset($user->guest_metadata['phone']))
                                 <div class="text-2xs text-slate-500 font-mono">{{ $user->guest_metadata['phone'] }}</div>
+                                @endif
+                                @if(isset($user->guest_metadata['created_by']))
+                                <div class="text-2xs text-slate-400">Oleh: {{ $user->guest_metadata['created_by'] }}</div>
                                 @endif
                             @else
                             <span class="text-slate-400 italic text-2xs">-</span>
@@ -359,6 +380,86 @@
         <!-- Pagination -->
         <div class="mt-4">
             {{ $users->links() }}
+        </div>
+    </div>
+
+    <!-- ==================== MODAL TAMBAH ACCESS CODE ==================== -->
+    <div x-show="accessCodeModal" @keydown.escape.window="accessCodeModal = false" role="dialog" aria-modal="true" aria-labelledby="access-code-modal-title" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs" style="display: none;">
+        <div @click.away="accessCodeModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 id="access-code-modal-title" class="text-base font-extrabold text-slate-900">Tambah Access Code</h3>
+                        <p class="text-2xs text-slate-500">Kode akses khusus login tamu / kantor</p>
+                    </div>
+                </div>
+                <button type="button" @click="accessCodeModal = false" aria-label="Tutup dialog" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <form action="{{ route('admin.hotspot-users.access-code') }}" method="POST" class="mt-4 space-y-4">
+                @csrf
+                <div>
+                    <label class="label">Kode Akses (Access Code)</label>
+                    <input type="text" name="code" placeholder="Contoh: KANTOR2026 atau TAMU-VIP" required autofocus
+                           class="input uppercase font-mono tracking-wider font-bold"
+                           oninput="this.value = this.value.toUpperCase()">
+                    <p class="text-2xs text-slate-400 mt-1">Kode yang akan diinputkan pengguna pada captive portal (Template Access Code).</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="label">Batas Waktu (Durasi)</label>
+                        <select name="uptime_limit_hrs" class="input">
+                            <option value="">Unlimited (Tanpa Batas)</option>
+                            <option value="1">1 Jam</option>
+                            <option value="2" selected>2 Jam</option>
+                            <option value="4">4 Jam</option>
+                            <option value="8">8 Jam (1 Hari Kerja)</option>
+                            <option value="24">24 Jam (1 Hari)</option>
+                            <option value="168">7 Hari</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="label">Maksimal Perangkat</label>
+                        <select name="simultaneous_use" class="input">
+                            <option value="1" selected>1 Perangkat (Personal)</option>
+                            <option value="2">2 Perangkat</option>
+                            <option value="5">5 Perangkat</option>
+                            <option value="10">10 Perangkat (Rapat)</option>
+                            <option value="25">25 Perangkat (Workshop)</option>
+                            <option value="50">50 Perangkat (Event/Kantor)</option>
+                            <option value="100">100 Perangkat</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="label">Profil Bandwidth (Speed Limit)</label>
+                    <select name="profile_id" class="input">
+                        <option value="">Default Site Profile</option>
+                        @foreach($profiles as $p)
+                        <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->rate_limit }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label">Catatan / Keterangan (Opsional)</label>
+                    <input type="text" name="notes" placeholder="Contoh: Tamu Ruang Rapat / Acara Seminar" class="input text-xs">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" @click="accessCodeModal = false" class="btn-secondary">Batal</button>
+                    <button type="submit" class="btn-primary">Simpan Access Code</button>
+                </div>
+            </form>
         </div>
     </div>
 

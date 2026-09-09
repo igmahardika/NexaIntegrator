@@ -229,9 +229,9 @@
 
 </div>
 
-@push('scripts')
+@section('scripts')
 <script>
-function fleetGatewayManager() {
+window.fleetGatewayManager = function fleetGatewayManager() {
     return {
         testing: {},
         testResults: {},
@@ -296,7 +296,7 @@ function fleetGatewayManager() {
             });
         }
     };
-}
+};
 </script>
-@endpush
+@endsection
 @endsection

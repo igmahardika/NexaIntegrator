@@ -133,7 +133,7 @@ class HotspotUser extends TenantModel
             }
         }
 
-        if (empty($this->bound_mac)) {
+        if (($this->simultaneous_use ?? 1) <= 1 && empty($this->bound_mac)) {
             $updateData['bound_mac'] = strtoupper($mac);
         }
 

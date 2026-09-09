@@ -22,7 +22,14 @@ class DocumentationController extends Controller
         $locations = Location::where('is_active', true)->get();
         $serverHost = $request->getHost();
         $serverPort = $request->getPort();
-        $baseUrl = $request->getSchemeAndHttpHost();
+        $scheme = $request->getScheme();
+        if (in_array($serverHost, ['localhost', '127.0.0.1']) && !empty($currentLocation?->radius_server_ip)) {
+            $serverHost = $currentLocation->radius_server_ip;
+            $portSuffix = ($serverPort && !in_array($serverPort, [80, 443])) ? ":{$serverPort}" : "";
+            $baseUrl = "{$scheme}://{$serverHost}{$portSuffix}";
+        } else {
+            $baseUrl = $request->getSchemeAndHttpHost();
+        }
 
         $activeTab = $request->query('tab', 'pms');
         if (!in_array($activeTab, ['pms', 'mikrotik', 'step-by-step'])) {
@@ -50,7 +57,15 @@ class DocumentationController extends Controller
             : Location::where('is_active', true)->first();
 
         $serverHost = $request->getHost();
-        $baseUrl = $request->getSchemeAndHttpHost();
+        $serverPort = $request->getPort();
+        $scheme = $request->getScheme();
+        if (in_array($serverHost, ['localhost', '127.0.0.1']) && !empty($currentLocation?->radius_server_ip)) {
+            $serverHost = $currentLocation->radius_server_ip;
+            $portSuffix = ($serverPort && !in_array($serverPort, [80, 443])) ? ":{$serverPort}" : "";
+            $baseUrl = "{$scheme}://{$serverHost}{$portSuffix}";
+        } else {
+            $baseUrl = $request->getSchemeAndHttpHost();
+        }
 
         if (!in_array($topic, ['pms', 'mikrotik', 'step-by-step', 'all'])) {
             $topic = 'all';

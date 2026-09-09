@@ -130,6 +130,7 @@ Route::prefix('admin')
 
             // Unified Hotspot Users (Vouchers, Members, Leads)
             Route::get('/hotspot-users', [HotspotUserController::class, 'index'])->name('hotspot-users.index');
+            Route::post('/hotspot-users/access-code', [HotspotUserController::class, 'storeAccessCode'])->name('hotspot-users.access-code');
             Route::post('/hotspot-users/generate', [HotspotUserController::class, 'generateVouchers'])->name('hotspot-users.generate');
             Route::post('/hotspot-users/member', [HotspotUserController::class, 'storeMember'])->name('hotspot-users.member');
             Route::post('/hotspot-users/{user}/toggle', [HotspotUserController::class, 'toggleStatus'])->name('hotspot-users.toggle');

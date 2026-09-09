@@ -649,7 +649,7 @@ function routerIntegrationManager() {
 
         refreshSyncStatus() {
             this.loadingStatus = true;
-            fetch('{{ route('api.router.sync-status', $site->slug) }}')
+            fetch('{{ route('api.router.sync-status', $site->slug) }}{{ $site->radius_secret ? '?key=' . urlencode($site->radius_secret) : '' }}')
                 .then(r => r.json())
                 .then(data => {
                     this.syncData = data;

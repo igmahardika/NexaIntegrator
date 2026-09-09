@@ -289,9 +289,9 @@
 
 </div>
 
-@push('scripts')
+@section('scripts')
 <script>
-function userAccessManager() {
+window.userAccessManager = function userAccessManager() {
     return {
         modalOpen: false,
         modalMode: 'create',
@@ -318,7 +318,6 @@ function userAccessManager() {
             this.modalOpen = true;
         }
     };
-}
+};
 </script>
-@endpush
 @endsection

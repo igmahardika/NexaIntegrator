@@ -59,13 +59,48 @@ class AuthenticateVoucherAction
             $session = $hotspotUser->recordLogin($mac, $ip, $userAgent);
 
             $profileName = $hotspotUser->profile?->rate_limit ?? ($location->template_config['voucher_profile'] ?? '5M/10M');
+            $password = $hotspotUser->secret ?: $hotspotUser->identifier;
+            $comment = 'voucher|' . $hotspotUser->id;
+
+            // Direct router authorization (don't lock MAC if simultaneous_use > 1)
+            $isShared = ($hotspotUser->simultaneous_use > 1);
+            $macToBind = $isShared ? '' : $mac;
+
+            $routerSuccess = false;
+            if (!empty($location->router_ip)) {
+                try {
+                    $mikrotik = new MikrotikService($location);
+                    $res = $mikrotik->authorizeUser($hotspotUser->identifier, $password, $profileName, $macToBind, $comment);
+                    $routerSuccess = $res['success'] ?? false;
+                } catch (\Throwable $e) {
+                    $routerSuccess = false;
+                }
+            }
+
+            // Enqueue user creation for RouterOS Reverse Polling
+            $limitUptime = $hotspotUser->uptime_limit
+                ? sprintf('%02d:%02d:00', floor($hotspotUser->uptime_limit / 3600), floor(($hotspotUser->uptime_limit % 3600) / 60))
+                : null;
+
+            RouterUserQueue::enqueueUser(
+                locationId:  $location->id,
+                username:    $hotspotUser->identifier,
+                password:    $password,
+                profile:     $profileName,
+                mac:         $isShared ? null : $mac,
+                comment:     $comment,
+                limitUptime: $limitUptime
+            );
+
+            // Audit log session
+            PortalSession::logLogin($location->id, $mac, $ip, 'voucher', $hotspotUser->identifier, $userAgent);
 
             return [
                 'success'   => true,
                 'username'  => $hotspotUser->identifier,
-                'password'  => $hotspotUser->secret ?: $hotspotUser->identifier,
+                'password'  => $password,
                 'duration'  => $hotspotUser->uptime_limit ? round($hotspotUser->uptime_limit / 60) : 120,
-                'offline'   => false,
+                'offline'   => !$routerSuccess,
             ];
         }
 

@@ -103,6 +103,8 @@ class HotspotUserController extends Controller
      */
     public function generateVouchers(Request $request): RedirectResponse
     {
+        $this->ensureActiveTenant();
+
         $request->validate([
             'quantity'         => 'required|integer|min:1|max:500',
             'profile_id'       => 'nullable|string',
@@ -129,7 +131,66 @@ class HotspotUserController extends Controller
         );
 
         return redirect()->route('admin.hotspot-users.index', ['tab' => 'voucher', 'batch' => $batchName])
-            ->with('success', "Berhasil men-generate {$result['count']} voucher pada batch \"{$batchName}\".");
+            ->with('success', "Berhasil men-generate {$result['count']} kode akses pada batch \"{$batchName}\".");
+    }
+
+    /**
+     * Ensure an active tenant connection is switched on.
+     */
+    protected function ensureActiveTenant(): ?\App\Models\Location
+    {
+        $currentSite = TenantManager::getActiveSite();
+        if (!$currentSite) {
+            $site = \App\Models\Location::where('is_active', true)->first();
+            if ($site) {
+                TenantManager::switchConnection($site);
+                return $site;
+            }
+        }
+        return $currentSite;
+    }
+
+    /**
+     * Create a single custom Access Code (for Access Code login template).
+     */
+    public function storeAccessCode(Request $request): RedirectResponse
+    {
+        $this->ensureActiveTenant();
+
+        $request->validate([
+            'code'             => 'required|string|min:3|max:30',
+            'profile_id'       => 'nullable|string',
+            'uptime_limit_hrs' => 'nullable|numeric|min:0.1|max:720',
+            'simultaneous_use' => 'nullable|integer|min:1|max:100',
+            'notes'            => 'nullable|string|max:100',
+        ]);
+
+        $code = strtoupper(trim($request->code));
+
+        if (HotspotUser::where('identifier', $code)->exists()) {
+            return redirect()->back()->withErrors(['code' => "Access Code \"{$code}\" sudah terdaftar di site ini."])->withInput();
+        }
+
+        $uptimeLimit = $request->filled('uptime_limit_hrs') ? (int) round($request->uptime_limit_hrs * 3600) : null;
+
+        HotspotUser::create([
+            'identifier'       => $code,
+            'secret'           => Str::random(12),
+            'auth_method'      => HotspotUser::AUTH_VOUCHER,
+            'profile_id'       => $request->profile_id ?: null,
+            'status'           => HotspotUser::STATUS_READY,
+            'simultaneous_use' => $request->simultaneous_use ?: 1,
+            'uptime_limit'     => $uptimeLimit,
+            'batch_name'       => 'Access Code',
+            'guest_metadata'   => [
+                'type'       => 'custom_access_code',
+                'notes'      => $request->notes ?: 'Dibuat manual oleh Admin',
+                'created_by' => auth()->user()?->name ?? 'Admin',
+            ],
+        ]);
+
+        return redirect()->route('admin.hotspot-users.index', ['tab' => 'voucher'])
+            ->with('success', "Access Code \"{$code}\" berhasil dibuat dan siap digunakan pada portal login!");
     }
 
     /**
@@ -137,6 +198,8 @@ class HotspotUserController extends Controller
      */
     public function storeMember(Request $request): RedirectResponse
     {
+        $this->ensureActiveTenant();
+
         $request->validate([
             'username'         => 'required|string|min:3|max:50',
             'password'         => 'required|string|min:4',

@@ -234,7 +234,7 @@
                 @if($routerLocation)
                 <div class="text-left md:text-right">
                     <div class="text-xs font-bold text-slate-800">📍 {{ $routerLocation->name }}</div>
-                    <div class="text-xs text-slate-500 font-mono">{{ $routerLocation->router_ip ?? '192.168.88.1' }}:{{ $routerLocation->router_api_port ?? 8728 }}</div>
+                    <div class="text-xs text-slate-500 font-mono">{{ $routerLocation->router_ip ?? '192.168.11.254' }}:{{ $routerLocation->router_port ?: 65000 }}</div>
                 </div>
                 @endif
             </div>
@@ -438,6 +438,73 @@ if (trendCanvas) {
 }
 
 // --- Refresh Active Users ---
+const routerLocationId = '{{ $routerLocation?->id ?? "" }}';
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function renderActiveUsers(users, locationName) {
+    const container = document.getElementById('active-users-container');
+    if (!container) return;
+
+    if (!Array.isArray(users) || users.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-xs text-center py-8">No active client sessions on edge router at this time.</p>';
+        return;
+    }
+
+    let rowsHtml = '';
+    users.forEach(function(user) {
+        const userName = user.user ? user.user : 'Active Client';
+        const mac = user.mac || '-';
+        const ip = user.ip || '-';
+        const uptime = user.uptime || '-';
+        const rxMb = ((user.bytes_in || 0) / 1048576).toFixed(1);
+        const txMb = ((user.bytes_out || 0) / 1048576).toFixed(1);
+
+        const disconnectBtn = (routerLocationId && user.mac)
+            ? `<button onclick="kickUser('${escapeHtml(user.mac)}', '${routerLocationId}')" class="btn-danger text-xs py-1 px-2.5 font-semibold">Disconnect</button>`
+            : '';
+
+        rowsHtml += `
+            <tr class="table-row">
+                <td class="py-2.5 px-3">
+                    <div class="flex items-center gap-1.5 font-bold text-slate-800">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>${escapeHtml(userName)}</span>
+                    </div>
+                </td>
+                <td class="py-2.5 px-3 font-mono text-slate-600 font-medium">${escapeHtml(mac)}</td>
+                <td class="py-2.5 px-3 font-mono text-slate-600">${escapeHtml(ip)}</td>
+                <td class="py-2.5 px-3 text-slate-500 font-medium">${escapeHtml(uptime)}</td>
+                <td class="py-2.5 px-3 text-slate-500 font-mono">${rxMb}MB / ${txMb}MB</td>
+                <td class="py-2.5 px-3 text-right">${disconnectBtn}</td>
+            </tr>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 text-2xs font-bold uppercase tracking-wider">
+                        <th class="text-left py-2 px-3 rounded-l-lg">Device / User</th>
+                        <th class="text-left py-2 px-3">MAC Address</th>
+                        <th class="text-left py-2 px-3">IP Subnet</th>
+                        <th class="text-left py-2 px-3">Up Time</th>
+                        <th class="text-left py-2 px-3">Traffic (Rx/Tx)</th>
+                        <th class="py-2 px-3 rounded-r-lg text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    ${rowsHtml}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
 function refreshActiveUsers() {
     var icon = document.getElementById('refresh-icon');
     if (icon) icon.style.animation = 'spin 1s linear infinite';
@@ -445,7 +512,17 @@ function refreshActiveUsers() {
     fetch('{{ route("admin.dashboard.active-users") }}')
         .then(r => r.json())
         .then(data => {
-            if (data.users) renderActiveUsers(data.users, data.location);
+            if (data.users) {
+                renderActiveUsers(data.users, data.location);
+            } else if (data.error) {
+                const container = document.getElementById('active-users-container');
+                if (container) {
+                    container.innerHTML = `<p class="text-rose-600 text-xs text-center py-6 font-semibold">⚠ ${escapeHtml(data.error)}</p>`;
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Failed to fetch active users:', err);
         })
         .finally(() => {
             if (icon) icon.style.animation = '';
@@ -471,6 +548,9 @@ function kickUser(mac, locationId) {
         } else {
             alert('Error: ' + (data.error || 'Failed to disconnect user'));
         }
+    })
+    .catch(err => {
+        alert('Gagal memutuskan koneksi client: ' + err.message);
     });
 }
 </script>

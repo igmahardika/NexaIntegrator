@@ -468,21 +468,27 @@ function templateCustomizer() {
         },
 
         syncToIframe(cfg) {
-            const payload = {
-                type: 'NEXA_LIVE_UPDATE',
-                config: cfg || this.config
-            };
+            try {
+                // Safely convert Alpine reactive Proxy to plain JSON object
+                const plainConfig = JSON.parse(JSON.stringify(cfg || this.config));
+                const payload = {
+                    type: 'NEXA_LIVE_UPDATE',
+                    config: plainConfig
+                };
 
-            // Post to mobile iframe
-            const mFrame = this.$refs.mobileIframe;
-            if (mFrame && mFrame.contentWindow) {
-                mFrame.contentWindow.postMessage(payload, '*');
-            }
+                // Post to mobile iframe
+                const mFrame = this.$refs.mobileIframe;
+                if (mFrame && mFrame.contentWindow) {
+                    mFrame.contentWindow.postMessage(payload, '*');
+                }
 
-            // Post to desktop iframe
-            const dFrame = this.$refs.desktopIframe;
-            if (dFrame && dFrame.contentWindow) {
-                dFrame.contentWindow.postMessage(payload, '*');
+                // Post to desktop iframe
+                const dFrame = this.$refs.desktopIframe;
+                if (dFrame && dFrame.contentWindow) {
+                    dFrame.contentWindow.postMessage(payload, '*');
+                }
+            } catch (err) {
+                console.warn('Iframe sync serialization notice:', err);
             }
         },
 
