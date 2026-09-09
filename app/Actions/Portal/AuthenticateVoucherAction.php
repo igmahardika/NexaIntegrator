@@ -41,22 +41,59 @@ class AuthenticateVoucherAction
         // 2. Switch tenant database connection to the site's isolated database
         \App\Services\TenantManager::switchConnection($location);
 
-        // 3. Check Unified HotspotUser in Tenant Database
-        $hotspotUser = \App\Models\Tenant\HotspotUser::where('identifier', $code)
-            ->where('auth_method', \App\Models\Tenant\HotspotUser::AUTH_VOUCHER)
-            ->first();
+        // 3. Check Unified HotspotUser in Tenant Database with pessimistic lock
+        $tenantUserResult = null;
+        try {
+            $tenantUserResult = DB::connection('tenant')->transaction(function () use ($code, $mac, $ip, $userAgent) {
+                $hotspotUser = \App\Models\Tenant\HotspotUser::where('identifier', $code)
+                    ->where('auth_method', \App\Models\Tenant\HotspotUser::AUTH_VOUCHER)
+                    ->lockForUpdate()
+                    ->first();
 
-        if ($hotspotUser) {
-            if (!$hotspotUser->isUsable()) {
+                if (!$hotspotUser) {
+                    return null;
+                }
+
+                if (!$hotspotUser->isUsable()) {
+                    return [
+                        'success'    => false,
+                        'statusCode' => 410,
+                        'message'    => 'Voucher sudah digunakan atau kedaluwarsa.',
+                    ];
+                }
+
+                // MAC binding enforcement for single-use vouchers
+                if (!empty($hotspotUser->bound_mac) && ($hotspotUser->simultaneous_use ?? 1) <= 1) {
+                    if (strtoupper($hotspotUser->bound_mac) !== $mac) {
+                        return [
+                            'success'    => false,
+                            'statusCode' => 403,
+                            'message'    => 'Voucher ini telah terikat dengan perangkat lain.',
+                        ];
+                    }
+                }
+
+                $session = $hotspotUser->recordLogin($mac, $ip, $userAgent);
+
                 return [
-                    'success'    => false,
-                    'statusCode' => 410,
-                    'message'    => 'Voucher sudah digunakan atau kedaluwarsa.',
+                    'user'    => $hotspotUser,
+                    'session' => $session,
                 ];
+            }, 3);
+        } catch (\Throwable $e) {
+            return [
+                'success'    => false,
+                'statusCode' => 423,
+                'message'    => 'Sistem sedang memproses autentikasi voucher ini, silakan coba sesaat lagi.',
+            ];
+        }
+
+        if ($tenantUserResult) {
+            if (isset($tenantUserResult['success']) && !$tenantUserResult['success']) {
+                return $tenantUserResult;
             }
 
-            // Record login session in tenant database
-            $session = $hotspotUser->recordLogin($mac, $ip, $userAgent);
+            $hotspotUser = $tenantUserResult['user'];
 
             $profileName = $hotspotUser->profile?->name ?? ($location->template_config['voucher_profile'] ?? 'default');
             $password = $hotspotUser->secret ?: $hotspotUser->identifier;

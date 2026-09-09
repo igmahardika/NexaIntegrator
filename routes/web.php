@@ -32,6 +32,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/portal', [PortalController::class, 'index'])->name('portal');
 Route::get('/', fn() => redirect()->route('portal'));
 
+// Captive Network Assistant (CNA) OS Probes Compatibility (Android, iOS, Windows)
+Route::get('/generate_204', fn(\Illuminate\Http\Request $request) => redirect()->route('portal', $request->query()));
+Route::get('/gen_204', fn(\Illuminate\Http\Request $request) => redirect()->route('portal', $request->query()));
+Route::get('/hotspot-detect.html', fn(\Illuminate\Http\Request $request) => redirect()->route('portal', $request->query()));
+Route::get('/ncsi.txt', fn(\Illuminate\Http\Request $request) => redirect()->route('portal', $request->query()));
+Route::get('/connecttest.txt', fn(\Illuminate\Http\Request $request) => redirect()->route('portal', $request->query()));
+
 // ============================================================
 // LEGACY COMPATIBILITY PERMANENT REDIRECTS (HTTP 301)
 // ============================================================
@@ -67,6 +74,7 @@ Route::prefix('admin')
 
         // Tenant Context Switcher
         Route::post('/context/switch', [TenantContextController::class, 'switch'])->name('context.switch');
+        Route::get('/context/sites/search', [TenantContextController::class, 'search'])->name('context.sites.search');
 
         // Legacy Internal Admin Redirects (301 Permanent)
         Route::redirect('locations', '/admin/sites', 301);

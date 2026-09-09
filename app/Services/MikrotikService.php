@@ -35,8 +35,8 @@ class MikrotikService
             'user'     => $this->location->router_user,
             'pass'     => $this->location->router_password,
             'port'     => (int) $this->location->router_port,
-            'timeout'  => (int) config('mikrotik.timeout', 5),
-            'attempts' => (int) config('mikrotik.attempts', 3),
+            'timeout'  => min((int) config('mikrotik.timeout', 3), 3),
+            'attempts' => min((int) config('mikrotik.attempts', 1), 2),
             'delay'    => (int) config('mikrotik.delay', 1),
         ]);
 

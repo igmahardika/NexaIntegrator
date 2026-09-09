@@ -27,4 +27,27 @@ class TenantContextController extends Controller
 
         return redirect()->back()->with('success', "Konteks operasional beralih ke: {$site->name}");
     }
+
+    /**
+     * Live search sites for command palette / combobox.
+     */
+    public function search(Request $request)
+    {
+        $q = trim((string) $request->input('q', ''));
+
+        $sites = Location::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('name', 'like', "%{$q}%")
+                        ->orWhere('customer_name', 'like', "%{$q}%")
+                        ->orWhere('router_ip', 'like', "%{$q}%")
+                        ->orWhere('address', 'like', "%{$q}%");
+                });
+            })
+            ->orderBy('name')
+            ->limit(50)
+            ->get(['id', 'name', 'customer_name', 'business_type', 'router_ip', 'address', 'gateway_mode', 'is_active']);
+
+        return response()->json($sites);
+    }
 }

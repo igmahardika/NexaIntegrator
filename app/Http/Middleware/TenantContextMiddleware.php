@@ -41,7 +41,9 @@ class TenantContextMiddleware
 
         // 2. Global NOC / Superadmin Multi-Site Scope
         try {
-            $availableTenantSites = Location::where('is_active', true)->orderBy('name')->get();
+            $availableTenantSites = ($user && $user->isSuperadmin())
+                ? Location::orderBy('name')->get()
+                : Location::where('is_active', true)->orderBy('name')->get();
         } catch (\Throwable $e) {
             $availableTenantSites = collect();
         }

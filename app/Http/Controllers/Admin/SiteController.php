@@ -151,6 +151,10 @@ class SiteController extends Controller
             unset($validated['router_password']);
         }
 
+        if ($request->has('is_active')) {
+            $validated['is_active'] = $request->boolean('is_active');
+        }
+
         $site->update($validated);
 
         return redirect()->route('admin.sites.index')

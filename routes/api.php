@@ -17,8 +17,8 @@ Route::prefix('portal')
     ->middleware('throttle:60,1')
     ->group(function () {
         Route::post('/survey',   [PortalAuthController::class, 'submitSurvey'])->name('survey');
-        Route::post('/voucher',  [PortalAuthController::class, 'submitVoucher'])->name('voucher');
-        Route::post('/member',   [PortalAuthController::class, 'submitMember'])->name('member');
+        Route::post('/voucher',  [PortalAuthController::class, 'submitVoucher'])->middleware('throttle:20,1')->name('voucher');
+        Route::post('/member',   [PortalAuthController::class, 'submitMember'])->middleware('throttle:15,1')->name('member');
         Route::post('/whatsapp', [PortalAuthController::class, 'submitWhatsapp'])->name('whatsapp');
         Route::post('/quick',    [PortalAuthController::class, 'submitQuick'])->name('quick');
         Route::post('/email',    [PortalAuthController::class, 'submitEmail'])->name('email');

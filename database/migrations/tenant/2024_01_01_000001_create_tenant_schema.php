@@ -48,6 +48,7 @@ return new class extends Migration
 
             $table->index('auth_method');
             $table->index('status');
+            $table->index(['auth_method', 'status']);
             $table->index('batch_name');
         });
 

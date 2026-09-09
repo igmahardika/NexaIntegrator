@@ -112,33 +112,45 @@ class HotspotUserController extends Controller
 
         $users = $query->latest()->paginate(25)->withQueryString();
 
-        // Statistics across all login methods
+        // Statistics across all login methods (Consolidated 1-query aggregation)
+        $statsRaw = HotspotUser::selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN auth_method = ? THEN 1 ELSE 0 END), 0) as vouchers,
+            COALESCE(SUM(CASE WHEN auth_method = ? THEN 1 ELSE 0 END), 0) as members,
+            COALESCE(SUM(CASE WHEN auth_method = ? THEN 1 ELSE 0 END), 0) as whatsapp,
+            COALESCE(SUM(CASE WHEN auth_method = ? THEN 1 ELSE 0 END), 0) as mac,
+            COALESCE(SUM(CASE WHEN auth_method = ? THEN 1 ELSE 0 END), 0) as hotel,
+            COALESCE(SUM(CASE WHEN auth_method IN (?, ?, ?) THEN 1 ELSE 0 END), 0) as leads,
+            COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as active,
+            COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as ready
+        ", [
+            HotspotUser::AUTH_VOUCHER,
+            HotspotUser::AUTH_MEMBER,
+            HotspotUser::AUTH_WHATSAPP,
+            HotspotUser::AUTH_MAC,
+            HotspotUser::AUTH_PMS,
+            HotspotUser::AUTH_SURVEY,
+            HotspotUser::AUTH_QUICK,
+            HotspotUser::AUTH_EMAIL,
+            HotspotUser::STATUS_ACTIVE,
+            HotspotUser::STATUS_READY,
+        ])->first();
+
         $stats = [
-            'total'    => HotspotUser::count(),
-            'vouchers' => HotspotUser::where('auth_method', HotspotUser::AUTH_VOUCHER)->count(),
-            'members'  => HotspotUser::where('auth_method', HotspotUser::AUTH_MEMBER)->count(),
-            'whatsapp' => HotspotUser::where('auth_method', HotspotUser::AUTH_WHATSAPP)->count(),
-            'mac'      => HotspotUser::where('auth_method', HotspotUser::AUTH_MAC)->count(),
-            'hotel'    => HotspotUser::where('auth_method', HotspotUser::AUTH_PMS)->count(),
-            'leads'    => HotspotUser::whereIn('auth_method', [HotspotUser::AUTH_SURVEY, HotspotUser::AUTH_QUICK, HotspotUser::AUTH_EMAIL])->count(),
-            'active'   => HotspotUser::where('status', HotspotUser::STATUS_ACTIVE)->count(),
-            'ready'    => HotspotUser::where('status', HotspotUser::STATUS_READY)->count(),
+            'total'    => (int) ($statsRaw->total ?? 0),
+            'vouchers' => (int) ($statsRaw->vouchers ?? 0),
+            'members'  => (int) ($statsRaw->members ?? 0),
+            'whatsapp' => (int) ($statsRaw->whatsapp ?? 0),
+            'mac'      => (int) ($statsRaw->mac ?? 0),
+            'hotel'    => (int) ($statsRaw->hotel ?? 0),
+            'leads'    => (int) ($statsRaw->leads ?? 0),
+            'active'   => (int) ($statsRaw->active ?? 0),
+            'ready'    => (int) ($statsRaw->ready ?? 0),
         ];
 
-        // Ensure tenant DB is populated with Profiles from Central HotspotProfiles
-        if ($currentSite) {
-            $centralProfiles = \App\Models\HotspotProfile::where('location_id', $currentSite->id)->get();
-            foreach ($centralProfiles as $cp) {
-                HotspotProfile::updateOrCreate(
-                    ['name' => $cp->name],
-                    [
-                        'rate_limit'   => $cp->rate_limit,
-                        'shared_users' => $cp->shared_users,
-                        'uptime_limit' => $cp->session_timeout ? ($cp->session_timeout * 60) : 7200,
-                        'description'  => $cp->display_name ?? $cp->name,
-                    ]
-                );
-            }
+        // Populate tenant DB with Profiles only if tenant database is uninitialized (prevents write side-effects on read-only GET)
+        if ($currentSite && HotspotProfile::count() === 0) {
+            static::syncProfilesForSite($currentSite);
         }
         $profiles = HotspotProfile::orderBy('name')->get();
         $batches  = HotspotUser::whereNotNull('batch_name')
@@ -241,6 +253,8 @@ class HotspotUserController extends Controller
             'quantity'         => 'required|integer|min:1|max:500',
             'profile_id'       => 'nullable|string',
             'code_length'      => 'required|integer|min:4|max:12',
+
+            
             'prefix'           => 'nullable|string|max:8',
             'batch_name'       => 'nullable|string|max:50',
             'uptime_limit_hrs' => 'nullable|numeric|min:0.1|max:720',
@@ -490,8 +504,11 @@ class HotspotUserController extends Controller
     /**
      * Toggle active/disabled status.
      */
-    public function toggleStatus(HotspotUser $user): RedirectResponse
+    public function toggleStatus(string $userId): RedirectResponse
     {
+        $this->ensureActiveTenant();
+        $user = HotspotUser::findOrFail($userId);
+
         $newStatus = $user->status === HotspotUser::STATUS_DISABLED ? HotspotUser::STATUS_READY : HotspotUser::STATUS_DISABLED;
         $user->update(['status' => $newStatus]);
 
@@ -502,8 +519,11 @@ class HotspotUserController extends Controller
     /**
      * Permanently delete a hotspot user.
      */
-    public function destroy(HotspotUser $user): RedirectResponse
+    public function destroy(string $userId): RedirectResponse
     {
+        $this->ensureActiveTenant();
+        $user = HotspotUser::findOrFail($userId);
+
         $identifier = $user->identifier;
         $user->delete();
 
@@ -565,5 +585,24 @@ class HotspotUserController extends Controller
         ]);
 
         return redirect()->back()->with('success', "Sesi untuk {$session->username} ({$session->mac_address}) berhasil diputuskan.");
+    }
+
+    /**
+     * Synchronize Central HotspotProfiles to the active Tenant database.
+     */
+    public static function syncProfilesForSite(Location $site): void
+    {
+        $centralProfiles = \App\Models\HotspotProfile::where('location_id', $site->id)->get();
+        foreach ($centralProfiles as $cp) {
+            HotspotProfile::updateOrCreate(
+                ['name' => $cp->name],
+                [
+                    'rate_limit'   => $cp->rate_limit,
+                    'shared_users' => $cp->shared_users,
+                    'uptime_limit' => $cp->session_timeout ? ($cp->session_timeout * 60) : 7200,
+                    'description'  => $cp->display_name ?? $cp->name,
+                ]
+            );
+        }
     }
 }

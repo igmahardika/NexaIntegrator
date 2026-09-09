@@ -56,7 +56,7 @@ class DeviceController extends Controller
 
         // Summary counts
         $totalActive = PortalSession::where('status', 'active')->count();
-        $totalToday  = PortalSession::whereDate('login_time', today())->count();
+        $totalToday  = PortalSession::where('login_time', '>=', today()->startOfDay())->count();
         $totalBlacklisted = BlacklistedDevice::count();
 
         // Brands list for filter dropdown
@@ -85,26 +85,28 @@ class DeviceController extends Controller
 
         $location = Location::findOrFail($request->location_id);
 
+        $mac = BlacklistedDevice::normalizeMac($request->mac);
+
         // Kick directly via RouterOS API
         try {
             $mikrotik = new \App\Services\MikrotikService($location);
-            $mikrotik->kickUser($request->mac);
+            $mikrotik->kickUser($mac);
         } catch (\Throwable $e) {
             // Ignore if router is offline
         }
 
         $radiusService = new RadiusService($location);
-        $result = $radiusService->sendDisconnect($request->mac);
+        $result = $radiusService->sendDisconnect($mac);
 
         // Mark session as disconnected in database
-        PortalSession::where('client_mac', strtoupper($request->mac))
+        PortalSession::where('client_mac', $mac)
             ->where('status', 'active')
             ->update([
                 'status'      => 'disconnected',
                 'logout_time' => now(),
             ]);
 
-        return redirect()->back()->with('success', "Koneksi perangkat {$request->mac} berhasil diputuskan.");
+        return redirect()->back()->with('success', "Koneksi perangkat {$mac} berhasil diputuskan.");
     }
 
     /**
@@ -118,7 +120,7 @@ class DeviceController extends Controller
             'reason'      => 'nullable|string|max:255',
         ]);
 
-        $mac = strtoupper(trim($request->mac));
+        $mac = BlacklistedDevice::normalizeMac($request->mac);
 
         BlacklistedDevice::firstOrCreate(
             ['mac_address' => $mac, 'location_id' => $request->location_id],
@@ -170,12 +172,21 @@ class DeviceController extends Controller
             $sessionQuery->where('location_id', $locationId);
         }
 
-        // ---- Summary Metrics ----
-        $totalSessions = (clone $sessionQuery)->count();
-        $totalBytesIn  = (clone $sessionQuery)->sum('bytes_in');
-        $totalBytesOut = (clone $sessionQuery)->sum('bytes_out');
+        // ---- Summary Metrics (Consolidated Single Aggregation) ----
+        $summary = (clone $sessionQuery)
+            ->selectRaw('
+                COUNT(*) as total_sessions,
+                COALESCE(SUM(bytes_in), 0) as total_bytes_in,
+                COALESCE(SUM(bytes_out), 0) as total_bytes_out,
+                COUNT(DISTINCT client_mac) as total_devices
+            ')
+            ->first();
+
+        $totalSessions = (int) ($summary->total_sessions ?? 0);
+        $totalBytesIn  = (int) ($summary->total_bytes_in ?? 0);
+        $totalBytesOut = (int) ($summary->total_bytes_out ?? 0);
         $totalBytes    = $totalBytesIn + $totalBytesOut;
-        $totalDevices  = (clone $sessionQuery)->distinct('client_mac')->count('client_mac');
+        $totalDevices  = (int) ($summary->total_devices ?? 0);
 
         // ---- 1. Device Brand Breakdown (Chart.js Doughnut) ----
         $brandStats = (clone $sessionQuery)
@@ -200,20 +211,37 @@ class DeviceController extends Controller
             ->take(6)
             ->get();
 
-        // ---- 4. 14-Day Traffic Trend (Download vs Upload in MB) ----
-        $trendDays = collect(range(13, 0))->map(function ($daysAgo) use ($locationId) {
-            $date = now()->subDays($daysAgo)->toDateString();
-            $q = PortalSession::whereDate('login_time', $date);
-            if ($locationId) $q->where('location_id', $locationId);
+        // ---- 4. 14-Day Traffic Trend (Consolidated Single Aggregated Query) ----
+        $startDate = now()->subDays(13)->startOfDay();
+        $endDate   = now()->endOfDay();
 
-            $in  = $q->sum('bytes_in');
-            $out = $q->sum('bytes_out');
+        $dailyStats = (clone $sessionQuery)
+            ->where('login_time', '>=', $startDate)
+            ->where('login_time', '<=', $endDate)
+            ->selectRaw('
+                DATE(login_time) as date_key,
+                COALESCE(SUM(bytes_in), 0) as total_in,
+                COALESCE(SUM(bytes_out), 0) as total_out,
+                COUNT(*) as session_count
+            ')
+            ->groupBy(DB::raw('DATE(login_time)'))
+            ->get()
+            ->keyBy('date_key');
+
+        $trendDays = collect(range(13, 0))->map(function ($daysAgo) use ($dailyStats) {
+            $dt      = now()->subDays($daysAgo);
+            $dateKey = $dt->toDateString();
+            $stat    = $dailyStats->get($dateKey);
+
+            $in  = $stat ? (int) $stat->total_in : 0;
+            $out = $stat ? (int) $stat->total_out : 0;
+            $cnt = $stat ? (int) $stat->session_count : 0;
 
             return [
-                'label'        => now()->subDays($daysAgo)->format('d M'),
-                'download_mb'  => round($out / (1024 * 1024), 2),
-                'upload_mb'    => round($in / (1024 * 1024), 2),
-                'sessions'     => $q->count(),
+                'label'       => $dt->format('d M'),
+                'download_mb' => round($out / (1024 * 1024), 2),
+                'upload_mb'   => round($in / (1024 * 1024), 2),
+                'sessions'    => $cnt,
             ];
         });
 

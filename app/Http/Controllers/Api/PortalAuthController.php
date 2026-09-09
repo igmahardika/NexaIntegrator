@@ -42,11 +42,20 @@ class PortalAuthController extends Controller
         if (!$result['success']) {
             return response()->json([
                 'success' => false,
+                'code'    => 'SURVEY_AUTH_FAILED',
                 'message' => $result['message'],
+                'data'    => null,
             ], $result['statusCode'] ?? 400);
         }
 
-        return response()->json($result);
+        return response()->json(array_merge($result, [
+            'code'    => 'SURVEY_AUTH_SUCCESS',
+            'message' => $result['message'] ?? 'Survei berhasil diverifikasi.',
+            'data'    => [
+                'username'  => $result['username'] ?? null,
+                'activated' => $result['activated'] ?? false,
+            ],
+        ]));
     }
 
     // ============================================================
@@ -66,11 +75,21 @@ class PortalAuthController extends Controller
         if (!$result['success']) {
             return response()->json([
                 'success' => false,
+                'code'    => 'VOUCHER_AUTH_FAILED',
                 'message' => $result['message'],
+                'data'    => null,
             ], $result['statusCode'] ?? 400);
         }
 
-        return response()->json($result);
+        return response()->json(array_merge($result, [
+            'code'    => 'VOUCHER_AUTH_SUCCESS',
+            'message' => $result['message'] ?? 'Kode akses valid, internet aktif.',
+            'data'    => [
+                'username'  => $result['username'] ?? null,
+                'duration'  => $result['duration'] ?? null,
+                'activated' => $result['activated'] ?? false,
+            ],
+        ]));
     }
 
     // ============================================================
@@ -105,21 +124,40 @@ class PortalAuthController extends Controller
         // Switch to tenant isolated database
         TenantManager::switchConnection($location);
 
-        // 1. Check Unified HotspotUser in Tenant Database
-        $hotspotUser = HotspotUser::where('identifier', $request->username)
-            ->where('auth_method', HotspotUser::AUTH_MEMBER)
-            ->first();
+        // 1. Check Unified HotspotUser in Tenant Database with pessimistic lock
+        $memberAuth = null;
+        try {
+            $memberAuth = \Illuminate\Support\Facades\DB::connection('tenant')->transaction(function () use ($request, $mac) {
+                $hotspotUser = HotspotUser::where('identifier', $request->username)
+                    ->where('auth_method', HotspotUser::AUTH_MEMBER)
+                    ->lockForUpdate()
+                    ->first();
 
-        if ($hotspotUser) {
-            if (!$hotspotUser->verifySecret($request->password)) {
-                return response()->json(['success' => false, 'message' => 'Password salah.'], 401);
-            }
+                if (!$hotspotUser) {
+                    return null;
+                }
 
-            if (!$hotspotUser->isUsable()) {
-                return response()->json(['success' => false, 'message' => 'Akun dinonaktifkan atau kedaluwarsa.'], 403);
-            }
+                if (!$hotspotUser->verifySecret($request->password)) {
+                    return ['error' => true, 'status' => 401, 'message' => 'Password salah.'];
+                }
 
-            $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
+                if (!$hotspotUser->isUsable()) {
+                    return ['error' => true, 'status' => 403, 'message' => 'Akun dinonaktifkan atau kedaluwarsa.'];
+                }
+
+                $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
+                return ['user' => $hotspotUser];
+            }, 3);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => 'Sedang memproses autentikasi, silakan coba beberapa saat lagi.'], 423);
+        }
+
+        if ($memberAuth && isset($memberAuth['error'])) {
+            return response()->json(['success' => false, 'message' => $memberAuth['message']], $memberAuth['status']);
+        }
+
+        if ($memberAuth && isset($memberAuth['user'])) {
+            $hotspotUser = $memberAuth['user'];
             PortalSession::logLogin($location->id, $mac, $request->ip, 'member', $hotspotUser->identifier, $request->userAgent());
 
             $profile = $hotspotUser->profile?->name ?? config('mikrotik.member_profile', 'member-user');
@@ -141,11 +179,18 @@ class PortalAuthController extends Controller
 
             return response()->json([
                 'success'   => true,
+                'code'      => 'MEMBER_AUTH_SUCCESS',
+                'message'   => 'Login member berhasil.',
                 'username'  => $hotspotUser->identifier,
                 'password'  => $request->password,
                 'role'      => 'member',
                 'offline'   => !$routerResult['success'],
                 'activated' => $routerResult['activated'] ?? false,
+                'data'      => [
+                    'username'  => $hotspotUser->identifier,
+                    'role'      => 'member',
+                    'activated' => $routerResult['activated'] ?? false,
+                ],
             ]);
         }
 
@@ -155,7 +200,12 @@ class PortalAuthController extends Controller
             ->first();
 
         if (!$member || !$member->verifyPassword($request->password)) {
-            return response()->json(['success' => false, 'message' => 'Username atau password salah.'], 401);
+            return response()->json([
+                'success' => false,
+                'code'    => 'INVALID_CREDENTIALS',
+                'message' => 'Username atau password salah.',
+                'data'    => null,
+            ], 401);
         }
 
         $member->touchLogin();
@@ -177,11 +227,18 @@ class PortalAuthController extends Controller
 
         return response()->json([
             'success'   => true,
+            'code'      => 'MEMBER_AUTH_SUCCESS',
+            'message'   => 'Login member berhasil.',
             'username'  => $member->username,
             'password'  => $request->password,
             'role'      => $member->role,
             'offline'   => !$routerResult['success'],
             'activated' => $routerResult['activated'] ?? false,
+            'data'      => [
+                'username'  => $member->username,
+                'role'      => $member->role,
+                'activated' => $routerResult['activated'] ?? false,
+            ],
         ]);
     }
 
@@ -220,6 +277,7 @@ class PortalAuthController extends Controller
         $hotspotUser = HotspotUser::firstOrCreate(
             ['identifier' => $cleanPhone],
             [
+                'secret'         => $password,
                 'auth_method'    => HotspotUser::AUTH_WHATSAPP,
                 'status'         => HotspotUser::STATUS_ACTIVE,
                 'uptime_limit'   => 7200,
@@ -229,18 +287,45 @@ class PortalAuthController extends Controller
                 ],
             ]
         );
+
+        if (!$hotspotUser->isUsable()) {
+            return response()->json([
+                'success' => false,
+                'code'    => 'USER_NOT_USABLE',
+                'message' => 'Akun WhatsApp Anda dinonaktifkan atau kuota sesi telah habis.',
+                'data'    => null,
+            ], 403);
+        }
+
         $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
+
+        RouterUserQueue::enqueueUser(
+            locationId:  $location->id,
+            username:    $username,
+            password:    $password,
+            profile:     $profile,
+            mac:         $mac,
+            comment:     $comment,
+            limitUptime: '02:00:00'
+        );
 
         $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment, '02:00:00', $request->ip);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'whatsapp', $cleanPhone, $request->userAgent());
 
         return response()->json([
             'success'   => true,
+            'code'      => 'WHATSAPP_AUTH_SUCCESS',
+            'message'   => 'Verifikasi WhatsApp berhasil.',
             'username'  => $username,
             'password'  => $password,
             'name'      => $request->name,
             'offline'   => !$routerResult['success'],
             'activated' => $routerResult['activated'] ?? false,
+            'data'      => [
+                'username'  => $username,
+                'phone'     => $cleanPhone,
+                'activated' => $routerResult['activated'] ?? false,
+            ],
         ]);
     }
 
@@ -277,6 +362,7 @@ class PortalAuthController extends Controller
         $hotspotUser = HotspotUser::firstOrCreate(
             ['identifier' => $username],
             [
+                'secret'         => $password,
                 'auth_method'    => HotspotUser::AUTH_QUICK,
                 'status'         => HotspotUser::STATUS_ACTIVE,
                 'uptime_limit'   => 7200,
@@ -287,17 +373,43 @@ class PortalAuthController extends Controller
                 ],
             ]
         );
+
+        if (!$hotspotUser->isUsable()) {
+            return response()->json([
+                'success' => false,
+                'code'    => 'USER_NOT_USABLE',
+                'message' => 'Akses internet gratis untuk perangkat Anda dinonaktifkan atau kuota telah habis.',
+                'data'    => null,
+            ], 403);
+        }
+
         $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
+
+        RouterUserQueue::enqueueUser(
+            locationId:  $location->id,
+            username:    $username,
+            password:    $password,
+            profile:     $profile,
+            mac:         $mac,
+            comment:     $comment,
+            limitUptime: '02:00:00'
+        );
 
         $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment, '02:00:00', $request->ip);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'quick_click', 'free-button', $request->userAgent());
 
         return response()->json([
             'success'   => true,
+            'code'      => 'QUICK_AUTH_SUCCESS',
+            'message'   => 'Akses internet gratis berhasil diaktifkan.',
             'username'  => $username,
             'password'  => $password,
             'offline'   => !$routerResult['success'],
             'activated' => $routerResult['activated'] ?? false,
+            'data'      => [
+                'username'  => $username,
+                'activated' => $routerResult['activated'] ?? false,
+            ],
         ]);
     }
 
@@ -335,6 +447,7 @@ class PortalAuthController extends Controller
         $hotspotUser = HotspotUser::firstOrCreate(
             ['identifier' => $request->email],
             [
+                'secret'         => $password,
                 'auth_method'    => HotspotUser::AUTH_EMAIL,
                 'status'         => HotspotUser::STATUS_ACTIVE,
                 'uptime_limit'   => 7200,
@@ -344,18 +457,45 @@ class PortalAuthController extends Controller
                 ],
             ]
         );
+
+        if (!$hotspotUser->isUsable()) {
+            return response()->json([
+                'success' => false,
+                'code'    => 'USER_NOT_USABLE',
+                'message' => 'Akun email Anda dinonaktifkan atau kuota telah habis.',
+                'data'    => null,
+            ], 403);
+        }
+
         $hotspotUser->recordLogin($mac, $request->ip, $request->userAgent());
+
+        RouterUserQueue::enqueueUser(
+            locationId:  $location->id,
+            username:    $username,
+            password:    $password,
+            profile:     $profile,
+            mac:         $mac,
+            comment:     $comment,
+            limitUptime: '02:00:00'
+        );
 
         $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment, '02:00:00', $request->ip);
         PortalSession::logLogin($location->id, $mac, $request->ip, 'email', $request->email, $request->userAgent());
 
         return response()->json([
             'success'   => true,
+            'code'      => 'EMAIL_AUTH_SUCCESS',
+            'message'   => 'Verifikasi email berhasil.',
             'username'  => $username,
             'password'  => $password,
             'email'     => $request->email,
             'offline'   => !$routerResult['success'],
             'activated' => $routerResult['activated'] ?? false,
+            'data'      => [
+                'username'  => $username,
+                'email'     => $request->email,
+                'activated' => $routerResult['activated'] ?? false,
+            ],
         ]);
     }
 
@@ -379,13 +519,20 @@ class PortalAuthController extends Controller
         if (BlacklistedDevice::isBlocked($mac, $request->location_id)) {
             return response()->json([
                 'success' => false,
+                'code'    => 'DEVICE_BLOCKED',
                 'message' => 'Perangkat Anda diblokir dari akses jaringan ini.',
+                'data'    => null,
             ], 403);
         }
 
         $location = Location::find($request->location_id);
         if (!$location) {
-            return response()->json(['success' => false, 'message' => 'Lokasi site tidak ditemukan.'], 404);
+            return response()->json([
+                'success' => false,
+                'code'    => 'LOCATION_NOT_FOUND',
+                'message' => 'Lokasi site tidak ditemukan.',
+                'data'    => null,
+            ], 404);
         }
 
         // Verify with Hotel PMS Integration Engine
@@ -395,7 +542,9 @@ class PortalAuthController extends Controller
         if (!$verifyResult['success']) {
             return response()->json([
                 'success' => false,
+                'code'    => 'PMS_AUTH_FAILED',
                 'message' => $verifyResult['message'] ?? 'Data kamar atau nama belakang tidak cocok dengan data reservasi hotel.',
+                'data'    => null,
             ], 401);
         }
 
@@ -413,11 +562,12 @@ class PortalAuthController extends Controller
             $hotspotUser = HotspotUser::updateOrCreate(
                 ['identifier' => $identifier],
                 [
-                    'auth_method'    => HotspotUser::AUTH_PMS,
-                    'status'         => HotspotUser::STATUS_ACTIVE,
-                    'bound_mac'      => $mac,
-                    'uptime_limit'   => 86400, // 24 hours standard hotel session
-                    'guest_metadata' => [
+                    'secret'           => $password,
+                    'auth_method'      => HotspotUser::AUTH_PMS,
+                    'status'           => HotspotUser::STATUS_ACTIVE,
+                    'simultaneous_use' => 4, // Multi-device standard for hotel guests
+                    'uptime_limit'     => 86400, // 24 hours standard hotel session
+                    'guest_metadata'   => [
                         'room'       => $room,
                         'last_name'  => $lastName,
                         'verified'   => true,
@@ -429,6 +579,16 @@ class PortalAuthController extends Controller
         } catch (\Throwable $e) {
             // Non-fatal if tenant DB is in fallback mode
         }
+
+        RouterUserQueue::enqueueUser(
+            locationId:  $location->id,
+            username:    $username,
+            password:    $password,
+            profile:     $profile,
+            mac:         null,
+            comment:     $comment,
+            limitUptime: '24:00:00'
+        );
 
         // Authorize session on MikroTik / RADIUS
         $routerResult = $this->authorize($location, $username, $password, $profile, $mac, $comment, '24:00:00', $request->ip);
@@ -445,13 +605,20 @@ class PortalAuthController extends Controller
 
         return response()->json([
             'success'     => true,
+            'code'        => 'PMS_AUTH_SUCCESS',
+            'message'     => 'Selamat datang! Akses internet kamar berhasil diaktifkan.',
             'username'    => $username,
             'password'    => $password,
             'room_number' => $room,
             'guest_name'  => $verifyResult['guest']['name'] ?? $lastName,
-            'message'     => 'Selamat datang! Akses internet kamar berhasil diaktifkan.',
             'offline'     => !$routerResult['success'],
             'activated'   => $routerResult['activated'] ?? false,
+            'data'        => [
+                'username'    => $username,
+                'room_number' => $room,
+                'guest_name'  => $verifyResult['guest']['name'] ?? $lastName,
+                'activated'   => $routerResult['activated'] ?? false,
+            ],
         ]);
     }
 

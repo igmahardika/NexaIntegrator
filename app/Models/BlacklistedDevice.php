@@ -21,9 +21,14 @@ class BlacklistedDevice extends Model
         return $this->belongsTo(Location::class);
     }
 
+    public static function normalizeMac(string $mac): string
+    {
+        return strtoupper(str_replace('-', ':', trim($mac)));
+    }
+
     public static function isBlocked(string $mac, ?string $locationId = null): bool
     {
-        $mac = strtoupper(trim($mac));
+        $mac = static::normalizeMac($mac);
         $query = static::where('mac_address', $mac);
         if ($locationId) {
             $query->where(function ($q) use ($locationId) {

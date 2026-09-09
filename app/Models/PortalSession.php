@@ -3,12 +3,22 @@
 namespace App\Models;
 
 use App\Services\DeviceDetectionService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 
 class PortalSession extends Model
 {
-    use HasFactory;
+    use HasFactory, MassPrunable;
+
+    /**
+     * Determine the prunable query for old sessions (> 90 days retention).
+     */
+    public function prunable(): Builder
+    {
+        return static::where('login_time', '<=', now()->subDays(90));
+    }
 
     public $timestamps = false;
 
@@ -63,7 +73,7 @@ class PortalSession extends Model
 
     public function scopeToday($query)
     {
-        return $query->whereDate('login_time', today());
+        return $query->where('login_time', '>=', today()->startOfDay());
     }
 
     // ---- Helpers ----
