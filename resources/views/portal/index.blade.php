@@ -679,27 +679,28 @@ body {
    2B. RIGHT PANEL: Promotional Slider Banner & Showcase
 -------------------------------------------------------------------------- */
 .nexa-card-right {
-    flex: 0.95;
+    flex: 0.9;
     min-width: 0;
-    padding: 30px;
+    padding: 0;              /* No padding — image fills edge-to-edge */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #f8fafc;
-    border-left: 1px solid rgba(241, 245, 249, 0.9);
+    background: #0f172a;     /* Dark fallback while image loads */
+    border-left: none;
+    border-radius: 0 var(--radius-card) var(--radius-card) 0; /* Match card's right corners */
     position: relative;
+    overflow: hidden;
 }
 
 .nexa-slider-wrap {
     width: 100%;
-    max-width: 320px;
-    aspect-ratio: 4/5;
-    border-radius: var(--radius-inner);
+    height: 100%;            /* Fill full height of right panel */
+    min-height: 440px;       /* Minimum to stay proportional */
+    aspect-ratio: auto;      /* Let height drive, not aspect-ratio */
+    border-radius: 0;        /* Panel itself clips corners via overflow:hidden */
     overflow: hidden;
     position: relative;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12);
     background: var(--surface-input);
+    flex: 1;
 }
 
 .nexa-slide-item {
@@ -742,13 +743,22 @@ body {
     letter-spacing: 0.02em;
 }
 
-/* Carousel Pagination Dots */
+/* Carousel Pagination Dots — positioned over the image */
 .nexa-carousel-dots {
+    position: absolute;
+    bottom: 14px;
+    left: 0;
+    right: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 7px;
-    margin-top: 14px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.nexa-carousel-dots button {
+    pointer-events: auto;
 }
 
 .nexa-dot {
@@ -973,19 +983,24 @@ body {
     }
     .nexa-card-right {
         order: 2;
-        padding: 0 20px 22px;
-        background: transparent;
-        border-left: none;
+        border-radius: 0 0 22px 22px;  /* Match mobile card radius on bottom */
+        padding: 0;
+        background: #0f172a;
         border-top: none;
+        min-height: 180px;
     }
     .nexa-slider-wrap {
-        max-width: 100%;
         width: 100%;
-        height: 160px;
+        height: 100%;
+        min-height: 0;
+        border-radius: 0;
         aspect-ratio: auto;
-        border-radius: 14px;
+        flex: 1;
+        position: relative;
     }
     .nexa-slider-wrap img {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
         object-position: center 20%;
     }
@@ -1370,12 +1385,12 @@ body {
                 <div class="nexa-slide-item" id="nexa-slide-1">
                     <img src="{{ $siteConfig['promo_image_2'] ?? '/images/nexa/promo-slide-2.jpg' }}" alt="Promo Premium Guest WiFi">
                 </div>
-            </div>
 
-            <!-- Carousel Pagination Dots -->
-            <div class="nexa-carousel-dots" role="tablist" aria-label="Slider Promo">
-                <button type="button" class="nexa-dot active" onclick="setNexaSlide(0)" title="Slide 1" aria-label="Lihat Slide 1"></button>
-                <button type="button" class="nexa-dot" onclick="setNexaSlide(1)" title="Slide 2" aria-label="Lihat Slide 2"></button>
+                <!-- Carousel Pagination Dots (inside slider, positioned absolute over image) -->
+                <div class="nexa-carousel-dots" role="tablist" aria-label="Slider Promo">
+                    <button type="button" class="nexa-dot active" onclick="setNexaSlide(0)" title="Slide 1" aria-label="Lihat Slide 1"></button>
+                    <button type="button" class="nexa-dot" onclick="setNexaSlide(1)" title="Slide 2" aria-label="Lihat Slide 2"></button>
+                </div>
             </div>
         </div>
 
