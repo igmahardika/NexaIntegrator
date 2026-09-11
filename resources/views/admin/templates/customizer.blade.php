@@ -171,7 +171,7 @@
                 </div>
 
                 <div x-show="config.promo_enabled" x-transition class="space-y-4 pt-2">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
                         <div class="space-y-1.5">
                             <label class="label text-slate-700 font-semibold block text-xs">Slide 1 Image Banner</label>
                             <input type="file" name="promo_file_1" accept="image/*" @change="handleFileUpload($event, 'promo_image')" class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brand file:text-white hover:file:bg-brand-hover cursor-pointer">
@@ -181,6 +181,11 @@
                             <label class="label text-slate-700 font-semibold block text-xs">Slide 2 Image Banner</label>
                             <input type="file" name="promo_file_2" accept="image/*" @change="handleFileUpload($event, 'promo_image_2')" class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brand file:text-white hover:file:bg-brand-hover cursor-pointer">
                             <input type="text" name="promo_image_2" x-model="config.promo_image_2" class="input text-xs bg-white border-slate-200 text-slate-900 rounded-lg w-full" placeholder="/images/nexa/promo-slide-2.jpg">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="label text-slate-700 font-semibold block text-xs">Slide 3 Image Banner</label>
+                            <input type="file" name="promo_file_3" accept="image/*" @change="handleFileUpload($event, 'promo_image_3')" class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brand file:text-white hover:file:bg-brand-hover cursor-pointer">
+                            <input type="text" name="promo_image_3" x-model="config.promo_image_3" class="input text-xs bg-white border-slate-200 text-slate-900 rounded-lg w-full" placeholder="/images/nexa/promo-slide-3.jpg">
                         </div>
                     </div>
 

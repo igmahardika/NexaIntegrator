@@ -112,8 +112,10 @@ class SiteTemplateController extends Controller
             'promo_enabled'      => 'nullable|boolean',
             'promo_image'        => 'nullable|string|max:500',
             'promo_image_2'      => 'nullable|string|max:500',
+            'promo_image_3'      => 'nullable|string|max:500',
             'promo_file_1'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
             'promo_file_2'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'promo_file_3'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
             'promo_badge'        => 'nullable|string|max:50',
             'promo_title'        => 'nullable|string|max:150',
             'promo_text'         => 'nullable|string|max:500',
@@ -160,9 +162,13 @@ class SiteTemplateController extends Controller
             $p2Path = $request->file('promo_file_2')->store('branding/promos', 'public');
             $validated['promo_image_2'] = '/storage/' . $p2Path;
         }
+        if ($request->hasFile('promo_file_3')) {
+            $p3Path = $request->file('promo_file_3')->store('branding/promos', 'public');
+            $validated['promo_image_3'] = '/storage/' . $p3Path;
+        }
 
         $validated['promo_enabled'] = (bool) ($request->input('promo_enabled', 0));
-        unset($validated['logo_file'], $validated['logo_white_file'], $validated['wallpaper_file'], $validated['promo_file_1'], $validated['promo_file_2']);
+        unset($validated['logo_file'], $validated['logo_white_file'], $validated['wallpaper_file'], $validated['promo_file_1'], $validated['promo_file_2'], $validated['promo_file_3']);
 
         $templateId = $request->input('template_id') ?: ($request->query('template') ?: ($site->active_template ?: 'access-code'));
         $currentConfigs = $site->template_config ?? [];
