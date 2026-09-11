@@ -143,18 +143,90 @@ body {
 }
 
 /* ==========================================================================
-   1. IMMERSIVE CAPTIVE PORTAL WRAPPER (ZERO-NAVBAR FULL VIEWPORT)
+   1. SPLASH SCREEN — Full Viewport Welcome (CNA First Paint)
 ========================================================================== */
-.nexa-portal-canvas {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    min-height: 100vh;
+.nexa-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 32px 16px;
+    text-align: center;
+    padding: 32px 20px;
+    /* Soft dark overlay on top of body bg */
+    background: rgba(9, 13, 22, 0.45);
+    animation: nexaFadeIn 0.5s ease forwards;
+}
+
+.nexa-splash-welcome {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 6vw, 3rem);
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.5);
+    margin-bottom: 18px;
+    line-height: 1.15;
+}
+
+.nexa-splash-logo {
+    width: min(260px, 70vw);
+    height: auto;
+    filter: drop-shadow(0 4px 20px rgba(0,0,0,0.45)) brightness(1.05);
+    margin-bottom: 40px;
+}
+
+.nexa-splash-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text-heading);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 12px 36px;
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.35);
+    transition: background var(--timing-fast), transform var(--timing-fast), box-shadow var(--timing-fast);
+    text-decoration: none;
+}
+
+.nexa-splash-cta:hover {
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
+}
+
+.nexa-splash-cta:active {
+    transform: scale(0.98) translateY(0);
+}
+
+/* ==========================================================================
+   2. MODAL OVERLAY CANVAS
+========================================================================== */
+.nexa-portal-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: none; /* Hidden until splash CTA clicked */
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: rgba(9, 13, 22, 0.60);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: nexaFadeIn 0.3s ease forwards;
+}
+
+.nexa-portal-canvas.is-open {
+    display: flex;
 }
 
 /* 2-Column Redesigned Modal Card */
@@ -986,19 +1058,50 @@ body {
 <div class="nexa-ambient-glow" aria-hidden="true"></div>
 
 <!-- ============================================================
-     IMMERSIVE CAPTIVE PORTAL CANVAS (ZERO TOPBAR)
+     SPLASH SCREEN: Full-Viewport Welcome (First Paint)
+============================================================ -->
+<section id="nexa-splash" class="nexa-splash" role="region" aria-label="Welcome Screen">
+    <p class="nexa-splash-welcome">WELCOME TO</p>
+    <img 
+        src="{{ $siteConfig['logo_url'] ?? '/images/nexa/logo-hotspot-color.png' }}" 
+        alt="{{ $siteConfig['brand_name'] ?? 'nexa Hotspot' }}" 
+        class="nexa-splash-logo"
+        id="nexa-splash-logo"
+    >
+    <button 
+        type="button" 
+        class="nexa-splash-cta" 
+        id="nexa-splash-btn"
+        onclick="openLoginModal()"
+        aria-label="Login untuk akses internet"
+    >
+        {{ $siteConfig['cta_text'] ?? 'Login For Internet Access' }}
+    </button>
+</section>
+
+<!-- ============================================================
+     MODAL OVERLAY: Login Card (Hidden until splash CTA clicked)
 ============================================================ -->
 <main id="nexa-login-modal" class="nexa-portal-canvas" role="main">
     <div class="nexa-modal-card" id="nexa-card-inner">
 
-        <!-- LEFT PANEL: Brand Header, Form Inputs, Internet By Footer -->
+        <!-- CLOSE BUTTON (top-right corner of modal) -->
+        <button 
+            type="button" 
+            id="nexa-modal-close"
+            onclick="closeLoginModal()"
+            aria-label="Tutup"
+            style="position:absolute;top:14px;right:16px;z-index:20;width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:#94a3b8;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color 0.15s,background 0.15s;"
+            onmouseenter="this.style.background='#f1f5f9';this.style.color='#334155'"
+            onmouseleave="this.style.background='transparent';this.style.color='#94a3b8'"
+        >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+
+        <!-- LEFT PANEL: Logo, Instagram, Form, Footer -->
         <div class="nexa-card-left" id="nexa-login-column">
-            
-            <!-- Online Hotspot Status Badge -->
-            <div class="nexa-status-pill">
-                <span class="nexa-pulse-dot" aria-hidden="true"></span>
-                <span>{{ $siteConfig['brand_tagline'] ?? 'High-Speed Guest WiFi' }}</span>
-            </div>
 
             <!-- Brand Logo & Instagram Handle -->
             <div class="nexa-brand-header">
@@ -1007,7 +1110,7 @@ body {
                     alt="{{ $siteConfig['brand_name'] ?? 'nexa Hotspot' }}" 
                     class="nexa-brand-logo"
                 >
-                <a href="https://instagram.com/{{ $siteConfig['instagram'] ?? 'nexanet.id' }}" target="_blank" rel="noopener" class="nexa-ig-badge" title="Kunjungi Instagram Resmi @nexanet.id">
+                <a href="https://instagram.com/{{ $siteConfig['instagram'] ?? 'nexanet.id' }}" target="_blank" rel="noopener" class="nexa-ig-badge" title="Kunjungi Instagram Resmi">
                     <svg class="nexa-ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
@@ -1017,18 +1120,8 @@ body {
                 </a>
             </div>
 
-            <!-- Intro Headline & Subtitle -->
-            <div class="nexa-intro-box">
-                <h1 class="nexa-intro-title">
-                    {{ $siteConfig['hero_title'] ?? ($allTemplates[$activeTemplate]['name'] ?? 'Input Access Code') }}
-                </h1>
-                <p class="nexa-intro-subtitle">
-                    {{ $siteConfig['hero_subtitle'] ?? 'Masukkan kode akses atau voucher Anda untuk terhubung ke internet' }}
-                </p>
-            </div>
-
             <!-- Form Wrapper based on active login method -->
-            <div class="nexa-form-wrap">
+            <div class="nexa-form-wrap" style="margin-top: 18px;">
 
                 {{-- METHOD 1: ACCESS CODE (Voucher) --}}
                 @if($activeTemplate === 'access-code')
@@ -1263,11 +1356,6 @@ body {
 
             </div>
 
-            <!-- Terms & Privacy Notice -->
-            <p class="nexa-tos-note">
-                {{ $siteConfig['tos_text'] ?? 'Dengan melanjutkan, Anda menyetujui syarat & ketentuan jaringan ini.' }}
-            </p>
-
             <!-- Footer: "Internet By [nexa]" -->
             <div class="nexa-card-footer">
                 <span class="nexa-by-label">Internet By</span>
@@ -1387,23 +1475,51 @@ var PORTAL_DATA = {
     isSimulation: {{ $isSimulation ? 'true' : 'false' }},
 };
 
-// Modal Open / Close Handlers (maintained for simulator & event bus)
+// Modal Open / Close Handlers
 function openLoginModal() {
+    var splash = document.getElementById('nexa-splash');
     var modal = document.getElementById('nexa-login-modal');
-    if (modal) modal.style.display = 'flex';
+    if (splash) splash.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('is-open');
+        // Auto-focus first visible input for CNA keyboard accessibility
+        var firstInput = modal.querySelector('input:not([type=hidden])');
+        if (firstInput) setTimeout(function() { firstInput.focus(); }, 100);
+    }
 }
 
 function closeLoginModal() {
+    var splash = document.getElementById('nexa-splash');
     var modal = document.getElementById('nexa-login-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('is-open');
+    }
+    // Restore splash only if not in simulation/preview mode
+    if (splash && !PORTAL_DATA.isSimulation && !window.location.search.includes('preview')) {
+        splash.style.display = 'flex';
+    }
 }
 
 function toggleLoginModal() {
     var modal = document.getElementById('nexa-login-modal');
-    if (modal) {
-        modal.style.display = (modal.style.display === 'none') ? 'flex' : 'none';
+    if (modal && modal.classList.contains('is-open')) {
+        closeLoginModal();
+    } else {
+        openLoginModal();
     }
 }
+
+// In simulation/preview mode: open modal directly, hide splash
+(function() {
+    if (PORTAL_DATA.isSimulation || window.location.search.includes('preview')) {
+        var splash = document.getElementById('nexa-splash');
+        if (splash) splash.style.display = 'none';
+        var modal = document.getElementById('nexa-login-modal');
+        if (modal) { modal.style.display = 'flex'; modal.classList.add('is-open'); }
+    }
+})();
 
 // Carousel Banner Slider Logic
 var currentSlide = 0;
@@ -1876,30 +1992,26 @@ window.addEventListener('message', function(event) {
             }
         }
 
-        // Logos
+        // Logos — sync both modal card logo AND splash screen logo
         if (cfg.logo_url) {
+            // Modal card logo
             var brandLogo = document.querySelector('.nexa-brand-logo');
             if (brandLogo) brandLogo.src = cfg.logo_url;
+            // Splash screen logo
+            var splashLogo = document.getElementById('nexa-splash-logo');
+            if (splashLogo) splashLogo.src = cfg.logo_url;
         }
 
-        // Brand Name
+        // Brand Name (alt text)
         if (cfg.brand_name) {
-            var bLogos = document.querySelectorAll('.nexa-brand-logo');
+            var bLogos = document.querySelectorAll('.nexa-brand-logo, #nexa-splash-logo');
             bLogos.forEach(function(el) { el.alt = cfg.brand_name; });
         }
 
-        // Intro Title & Subtitle
-        if (cfg.hero_title || cfg.topbar_title) {
-            var titleEl = document.querySelector('.nexa-intro-title');
-            if (titleEl) titleEl.textContent = cfg.hero_title || cfg.topbar_title;
-        }
-        if (cfg.hero_subtitle) {
-            var subEl = document.querySelector('.nexa-intro-subtitle');
-            if (subEl) subEl.textContent = cfg.hero_subtitle;
-        }
-        if (cfg.brand_tagline) {
-            var tagEl = document.querySelector('.nexa-status-pill span:last-child');
-            if (tagEl) tagEl.textContent = cfg.brand_tagline;
+        // Splash CTA button text
+        if (cfg.cta_text) {
+            var splashBtn = document.getElementById('nexa-splash-btn');
+            if (splashBtn) splashBtn.textContent = cfg.cta_text;
         }
 
         // Instagram Handle
