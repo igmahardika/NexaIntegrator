@@ -22,17 +22,17 @@ class PortalController extends Controller
         $linkOrig = $request->query('link-orig', 'http://google.com');
         $locationSlug = $request->query('location', $request->query('loc', $request->query('site', '')));
 
-        // Resolve location from slug or first active location
+        // Resolve location from slug or first available location
         $location = null;
         if ($locationSlug) {
             $location = Location::where(function ($q) use ($locationSlug) {
                 $q->where('slug', $locationSlug)
                   ->orWhere('id', $locationSlug);
-            })->where('is_active', true)->first();
+            })->first();
         }
 
         if (!$location) {
-            $location = Location::where('is_active', true)->first();
+            $location = Location::where('is_active', true)->first() ?: Location::first();
         }
 
         // Fallback simulation data for local testing

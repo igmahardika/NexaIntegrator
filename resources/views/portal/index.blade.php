@@ -1384,15 +1384,15 @@ body {
 
                 <!-- Slide 1 -->
                 <div class="nexa-slide-item active" id="nexa-slide-0">
-                    <img src="{{ $siteConfig['promo_image'] ?? '/images/nexa/promo-slide-1.jpg' }}" alt="Promo Next Level Experience">
+                    <img src="{{ $siteConfig['promo_image'] ?? '/images/nexa/promo-slide-1.jpg' }}?v={{ @filemtime(public_path('images/nexa/promo-slide-1.jpg')) ?: 1 }}" alt="Promo Next Level Experience">
                 </div>
                 <!-- Slide 2 -->
                 <div class="nexa-slide-item" id="nexa-slide-1">
-                    <img src="{{ $siteConfig['promo_image_2'] ?? '/images/nexa/promo-slide-2.jpg' }}" alt="Promo Our Internet Service">
+                    <img src="{{ $siteConfig['promo_image_2'] ?? '/images/nexa/promo-slide-2.jpg' }}?v={{ @filemtime(public_path('images/nexa/promo-slide-2.jpg')) ?: 1 }}" alt="Promo Our Internet Service">
                 </div>
                 <!-- Slide 3 -->
                 <div class="nexa-slide-item" id="nexa-slide-2">
-                    <img src="{{ $siteConfig['promo_image_3'] ?? '/images/nexa/promo-slide-3.jpg' }}" alt="Promo Connections More Than Anything">
+                    <img src="{{ $siteConfig['promo_image_3'] ?? '/images/nexa/promo-slide-3.jpg' }}?v={{ @filemtime(public_path('images/nexa/promo-slide-3.jpg')) ?: 1 }}" alt="Promo Connections More Than Anything">
                 </div>
             </div>
 
