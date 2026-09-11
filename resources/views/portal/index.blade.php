@@ -259,17 +259,6 @@ body {
     }
 }
 
-/* Subtle Top Card Gradient Accent Line */
-.nexa-modal-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--nexa-primary), var(--nexa-accent), var(--nexa-primary));
-    z-index: 10;
-}
 
 /* --------------------------------------------------------------------------
    2A. LEFT PANEL: Brand Header, Forms, and Footer
