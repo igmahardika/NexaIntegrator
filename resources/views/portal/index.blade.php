@@ -1384,11 +1384,15 @@ body {
 
                 <!-- Slide 1 -->
                 <div class="nexa-slide-item active" id="nexa-slide-0">
-                    <img src="{{ $siteConfig['promo_image'] ?? '/images/nexa/promo-slide-1.jpg' }}" alt="Promo Ultra High Speed WiFi">
+                    <img src="{{ $siteConfig['promo_image'] ?? '/images/nexa/promo-slide-1.jpg' }}" alt="Promo nexa Next Level Experience">
                 </div>
                 <!-- Slide 2 -->
                 <div class="nexa-slide-item" id="nexa-slide-1">
-                    <img src="{{ $siteConfig['promo_image_2'] ?? '/images/nexa/promo-slide-2.jpg' }}" alt="Promo Premium Guest WiFi">
+                    <img src="{{ $siteConfig['promo_image_2'] ?? '/images/nexa/promo-slide-2.jpg' }}" alt="Promo nexatel Our Internet Service">
+                </div>
+                <!-- Slide 3 -->
+                <div class="nexa-slide-item" id="nexa-slide-2">
+                    <img src="{{ $siteConfig['promo_image_3'] ?? '/images/nexa/promo-slide-3.jpg' }}" alt="Promo nexa Connections More Than Anything">
                 </div>
             </div>
 
@@ -1396,6 +1400,7 @@ body {
             <div class="nexa-carousel-dots" role="tablist" aria-label="Slider Promo">
                 <button type="button" class="nexa-dot active" onclick="setNexaSlide(0)" title="Slide 1" aria-label="Lihat Slide 1"></button>
                 <button type="button" class="nexa-dot" onclick="setNexaSlide(1)" title="Slide 2" aria-label="Lihat Slide 2"></button>
+                <button type="button" class="nexa-dot" onclick="setNexaSlide(2)" title="Slide 3" aria-label="Lihat Slide 3"></button>
             </div>
         </div>
 
@@ -1532,7 +1537,7 @@ function toggleLoginModal() {
 
 // Carousel Banner Slider Logic
 var currentSlide = 0;
-var totalSlides = 2;
+var totalSlides = 3;
 var slideTimer = null;
 
 function setNexaSlide(index) {
@@ -2066,6 +2071,10 @@ window.addEventListener('message', function(event) {
         if (cfg.promo_image_2) {
             var img1 = document.querySelector('#nexa-slide-1 img');
             if (img1) img1.src = cfg.promo_image_2;
+        }
+        if (cfg.promo_image_3) {
+            var img2 = document.querySelector('#nexa-slide-2 img');
+            if (img2) img2.src = cfg.promo_image_3;
         }
 
         // Custom CSS
