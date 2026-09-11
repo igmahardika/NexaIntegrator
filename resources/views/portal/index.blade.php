@@ -18,11 +18,15 @@
 :root {
     /* Brand Theme Colors */
     --nexa-primary: {{ $siteConfig['primary_color'] ?? '#0284c7' }};
+    --nexa-primary-hover: #0369a1;
     --nexa-primary-hover: color-mix(in srgb, var(--nexa-primary) 85%, black);
+    --nexa-primary-active: #075985;
     --nexa-primary-active: color-mix(in srgb, var(--nexa-primary) 70%, black);
+    --nexa-primary-ring: rgba(2, 132, 199, 0.25);
     --nexa-primary-ring: color-mix(in srgb, var(--nexa-primary) 24%, transparent);
+    --nexa-primary-glow: rgba(2, 132, 199, 0.18);
     --nexa-primary-glow: color-mix(in srgb, var(--nexa-primary) 18%, transparent);
-    --nexa-accent: {{ $siteConfig['accent_color'] ?? '#06b6d4' }};
+    --nexa-accent: {{ $siteConfig['accent_color'] ?? '#0369a1' }};
 
     /* Neutrals & Surfaces */
     --surface-card: #ffffff;
@@ -51,12 +55,14 @@
     --radius-pill: 9999px;
     --radius-sm: 10px;
     --shadow-card: 0 25px 65px -15px rgba(0, 0, 0, 0.55), 0 10px 25px -5px rgba(0, 0, 0, 0.28);
+    --shadow-btn: 0 4px 14px rgba(2, 132, 199, 0.35);
     --shadow-btn: 0 4px 14px color-mix(in srgb, var(--nexa-primary) 42%, transparent);
+    --shadow-btn-hover: 0 8px 22px rgba(2, 132, 199, 0.45);
     --shadow-btn-hover: 0 8px 22px color-mix(in srgb, var(--nexa-primary) 58%, transparent);
 
-    /* Fonts */
-    --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* Fonts: Outfit & Plus Jakarta Sans with instant native system-ui fallback for offline CNA */
+    --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     
     /* Transitions */
     --timing-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -340,9 +346,9 @@ body {
     border-radius: var(--radius-pill);
     display: flex;
     align-items: center;
-    padding: 5px 6px 5px 20px;
+    padding: 4px 5px 4px 18px;
     width: 100%;
-    height: 50px;
+    height: 52px;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
     border: 1.5px solid transparent;
     transition: border-color var(--timing-fast), background var(--timing-fast), box-shadow var(--timing-fast);
@@ -363,7 +369,7 @@ body {
     background: transparent;
     outline: none;
     font-family: inherit;
-    font-size: 0.9375rem;
+    font-size: 1rem; /* 16px: prevents iOS Safari forced auto-zoom */
     color: var(--text-heading);
     font-weight: 600;
     flex: 1;
@@ -391,9 +397,9 @@ body {
     background: var(--nexa-primary);
     border: none;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px; /* WCAG 2.5.5 / Apple HIG 44px touch target minimum */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1282,14 +1288,17 @@ body {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
-            <h2 class="nexa-success-title" id="nexa-success-title">Koneksi Berhasil! 🎉</h2>
+            <h2 class="nexa-success-title" id="nexa-success-title">Koneksi Berhasil!</h2>
             <p class="nexa-success-sub" id="nexa-success-msg">Internet Anda sedang diaktifkan...</p>
             <div class="nexa-progress-track">
                 <div class="nexa-progress-fill" id="nexa-progress-bar"></div>
             </div>
             <div id="nexa-success-actions" style="display:none; margin-top: 24px; width: 100%;">
                 <a href="{{ $linkOrig ?: 'https://www.google.com' }}" id="nexa-browse-btn" class="nexa-btn nexa-btn-primary" style="display: flex; justify-content: center; align-items: center; text-decoration: none; width: 100%; padding: 14px; font-weight: 700; border-radius: 12px; gap: 8px;">
-                    Mulai Jelajahi Internet 🌐
+                    <span>Mulai Jelajahi Internet</span>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" style="width: 18px; height: 18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                    </svg>
                 </a>
             </div>
         </div>
@@ -1331,8 +1340,12 @@ body {
         href="{{ route('admin.sites.template.customizer', $location->id ?? 1) }}?template={{ $activeTemplate }}" 
         target="_blank" 
         class="studio-btn studio-btn-edit"
+        style="display: inline-flex; align-items: center; gap: 5px;"
     >
-        ✏️ Edit Konten
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        <span>Edit Konten</span>
     </a>
 </div>
 @endif

@@ -83,7 +83,12 @@
                 </div>
 
                 <!-- Visual Mockup Card (Dedicated 2-Column Nexa Hotspot Structure) -->
-                <div class="p-3 sm:p-4 rounded-xl border border-slate-200/80 mb-4 text-center overflow-hidden relative shadow-inner flex items-center justify-center" style="background: {{ $tmpl['default_config']['bg_value'] }}; min-height: 200px;">
+                @php
+                    $bgVal = trim($tmpl['default_config']['bg_value'] ?? '');
+                    $bgIsImg = str_starts_with($bgVal, '/') || str_starts_with($bgVal, 'http') || str_starts_with($bgVal, 'data:') || (!str_contains($bgVal, 'gradient') && !str_starts_with($bgVal, '#') && !str_starts_with($bgVal, 'rgb'));
+                    $bgCardStyle = $bgIsImg ? "background: #0f172a url('{$bgVal}') center/cover no-repeat;" : "background: {$bgVal};";
+                @endphp
+                <div class="p-3 sm:p-4 rounded-xl border border-slate-200/80 mb-4 text-center overflow-hidden relative shadow-inner flex items-center justify-center" style="{{ $bgCardStyle }} min-height: 200px;">
                     <!-- 2-Column Nexa Card Architecture (Brand & Input Left + Promo Carousel Right) -->
                     <div class="w-full max-w-[340px] rounded-xl border border-white/25 shadow-2xl overflow-hidden grid grid-cols-12 text-left bg-white" style="box-shadow: 0 10px 25px -5px rgba(0,0,0,0.35);">
                         <!-- Left Column: Brand Logo + Method Form (7 cols) -->
@@ -103,11 +108,13 @@
                             @if($key === 'username-password')
                             <!-- 1. Username & Password Mini Pill Form -->
                             <div class="space-y-1 mb-2">
-                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 flex items-center justify-between">
-                                    <span class="truncate">👤 username</span>
+                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 flex items-center gap-1 truncate">
+                                    <svg class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    <span class="truncate">username</span>
                                 </div>
-                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 flex items-center justify-between">
-                                    <span class="truncate">🔒 ••••••••</span>
+                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 flex items-center gap-1 truncate">
+                                    <svg class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    <span class="truncate">••••••••</span>
                                 </div>
                             </div>
                             <div class="w-full py-1 rounded-full text-center text-2xs font-bold text-white shadow-xs" style="background: {{ $tmpl['default_config']['primary_color'] }};">
@@ -117,7 +124,7 @@
                             @elseif($key === 'access-code')
                             <!-- 2. Access Code / Voucher Mini Pill Form -->
                             <div class="space-y-1 mb-2">
-                                <div class="bg-slate-50 border border-dashed border-emerald-300 rounded-full py-1 px-2 text-center text-xs font-mono font-extrabold text-emerald-700 tracking-wider">
+                                <div class="bg-slate-50 border border-dashed border-sky-300 rounded-full py-1 px-2 text-center text-xs font-mono font-extrabold text-sky-700 tracking-wider">
                                     VC-8921
                                 </div>
                             </div>
@@ -142,9 +149,9 @@
                             <div class="space-y-1 mb-2">
                                 <div class="text-2xs text-slate-700 font-semibold truncate">Rate Service</div>
                                 <div class="flex gap-1 justify-center">
-                                    <span class="px-1 py-0.5 rounded bg-slate-100 text-2xs text-slate-600">⭐ 1</span>
-                                    <span class="px-1 py-0.5 rounded bg-slate-100 text-2xs text-slate-600">⭐ 3</span>
-                                    <span class="px-1 py-0.5 rounded text-2xs text-white font-bold" style="background: {{ $tmpl['default_config']['primary_color'] }};">⭐ 5</span>
+                                    <span class="px-1.5 py-0.5 rounded bg-slate-100 text-2xs text-slate-600 font-bold">1</span>
+                                    <span class="px-1.5 py-0.5 rounded bg-slate-100 text-2xs text-slate-600 font-bold">3</span>
+                                    <span class="px-1.5 py-0.5 rounded text-2xs text-white font-bold" style="background: {{ $tmpl['default_config']['primary_color'] }};">5</span>
                                 </div>
                             </div>
                             <div class="w-full py-1 rounded-full text-center text-2xs font-bold text-white shadow-xs" style="background: {{ $tmpl['default_config']['primary_color'] }};">
@@ -166,15 +173,33 @@
                             @elseif($key === 'email')
                             <!-- 6. Email Login Mini Form -->
                             <div class="space-y-1 mb-2">
-                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 truncate">
-                                    <span>👤 Guest</span>
+                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 truncate flex items-center gap-1">
+                                    <svg class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    <span class="truncate">Guest Name</span>
                                 </div>
-                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 truncate">
-                                    <span>✉️ Email</span>
+                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 truncate flex items-center gap-1">
+                                    <svg class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                    <span class="truncate">Email Address</span>
                                 </div>
                             </div>
-                            <div class="w-full py-1 rounded-full text-center text-2xs font-bold text-white shadow-xs" style="background: #7c3aed;">
+                            <div class="w-full py-1 rounded-full text-center text-2xs font-bold text-white shadow-xs" style="background: {{ $tmpl['default_config']['primary_color'] }};">
                                 Connect &rarr;
+                            </div>
+
+                            @elseif($key === 'hotel-pms')
+                            <!-- 7. Hotel PMS (Room & Last Name) Mini Form -->
+                            <div class="space-y-1 mb-2">
+                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 truncate flex items-center gap-1">
+                                    <svg class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                    <span class="truncate">Room 301</span>
+                                </div>
+                                <div class="bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5 text-2xs text-slate-600 truncate flex items-center gap-1">
+                                    <svg class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    <span class="truncate">Last Name</span>
+                                </div>
+                            </div>
+                            <div class="w-full py-1 rounded-full text-center text-2xs font-bold text-white shadow-xs" style="background: {{ $tmpl['default_config']['primary_color'] }};">
+                                Verify &rarr;
                             </div>
                             @endif
                         </div>
