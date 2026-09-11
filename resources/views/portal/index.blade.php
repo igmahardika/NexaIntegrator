@@ -694,18 +694,14 @@ body {
 
 .nexa-slider-wrap {
     width: 100%;
-    max-width: 300px;        /* Contained, not full-bleed */
-    aspect-ratio: 4 / 5;    /* Portrait, matching reference */
-    border-radius: 16px;     /* Rounded corners */
+    max-width: 320px;
+    aspect-ratio: 1 / 1;    /* Exact 1:1 square to match 1024x1024 images perfectly */
+    border-radius: 0;       /* No rounded corners wrapping the image */
     overflow: hidden;
     position: relative;
-    background: #e2e8f0;     /* Placeholder bg */
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+    background: transparent;
+    box-shadow: none;       /* Clean, no rounded frame shadow */
     flex-shrink: 0;
-    /* Force GPU layer so overflow:hidden clips absolute children correctly */
-    isolation: isolate;
-    transform: translateZ(0);
-    -webkit-mask-image: -webkit-radial-gradient(white, black); /* Safari fix */
 }
 
 .nexa-slide-item {
@@ -716,7 +712,7 @@ body {
     opacity: 0;
     transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
-    border-radius: inherit;  /* Inherit 16px from parent for full clip */
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -728,27 +724,9 @@ body {
 .nexa-slide-item img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;    /* 1:1 square image fits completely without cropping */
     display: block;
-    border-radius: inherit;
-}
-
-/* Overlay Badge on Flyer */
-.nexa-promo-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 5;
-    background: rgba(15, 23, 42, 0.78);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: #ffffff;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    letter-spacing: 0.02em;
+    border-radius: 0;
 }
 
 /* Carousel Pagination Dots — below image, normal flow */
@@ -995,19 +973,21 @@ body {
         min-height: auto;
     }
     .nexa-slider-wrap {
-        max-width: 100%;
+        max-width: 290px;
         width: 100%;
         height: auto;
         min-height: 0;
-        aspect-ratio: 16/9;
-        border-radius: 12px;
+        aspect-ratio: 1 / 1;
+        border-radius: 0;
+        margin: 0 auto;
+        box-shadow: none;
         flex-shrink: 0;
     }
     .nexa-slider-wrap img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
-        object-position: center 20%;
+        object-fit: contain;
+        border-radius: 0;
     }
     .nexa-carousel-dots {
         margin-top: 10px;
@@ -1379,9 +1359,6 @@ body {
         <!-- RIGHT PANEL: Promotional Slider Banner & Showcase -->
         <div class="nexa-card-right" id="nexa-promo-column" style="{{ ($siteConfig['promo_enabled'] ?? true) ? '' : 'display:none;' }}">
             <div class="nexa-slider-wrap">
-                <!-- Overlay Promo Tag -->
-                <span class="nexa-promo-badge">{{ $siteConfig['promo_badge'] ?? 'Ultra-Fast Fiber' }}</span>
-
                 <!-- Slide 1 -->
                 <div class="nexa-slide-item active" id="nexa-slide-0">
                     <img src="{{ $siteConfig['promo_image'] ?? '/images/nexa/promo-slide-1.jpg' }}?v={{ @filemtime(public_path('images/nexa/promo-slide-1.jpg')) ?: 1 }}" alt="Promo Next Level Experience">
@@ -2059,10 +2036,6 @@ window.addEventListener('message', function(event) {
         var promoCol = document.getElementById('nexa-promo-column');
         if (promoCol && cfg.promo_enabled !== undefined) {
             promoCol.style.display = cfg.promo_enabled ? 'flex' : 'none';
-        }
-        if (cfg.promo_badge) {
-            var pBadge = document.querySelector('.nexa-promo-badge');
-            if (pBadge) pBadge.textContent = cfg.promo_badge;
         }
         if (cfg.promo_image) {
             var img0 = document.querySelector('#nexa-slide-0 img');

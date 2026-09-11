@@ -206,21 +206,6 @@
                             <input type="text" name="promo_image_3" x-model="config.promo_image_3" class="input text-xs bg-white border-slate-200 text-slate-900 rounded-lg w-full" placeholder="/images/nexa/promo-slide-3.jpg">
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="label text-slate-700 font-semibold mb-1 block">Badge Label</label>
-                            <input type="text" name="promo_badge" x-model="config.promo_badge" class="input bg-white border-slate-200 text-slate-900 rounded-lg w-full" placeholder="Internet Nexa">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="label text-slate-700 font-semibold mb-1 block">Promo Headline</label>
-                            <input type="text" name="promo_title" x-model="config.promo_title" class="input bg-white border-slate-200 text-slate-900 rounded-lg w-full" placeholder="Koneksi Cepat & Handal">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="label text-slate-700 font-semibold mb-1 block">Promo Message Body</label>
-                        <textarea name="promo_text" x-model="config.promo_text" rows="2" class="input bg-white border-slate-200 text-slate-900 rounded-lg w-full" placeholder="Didukung jaringan fiber optik berkecepatan tinggi hingga 1 Gbps..."></textarea>
-                    </div>
                 </div>
             </div>
 
