@@ -696,12 +696,16 @@ body {
     width: 100%;
     max-width: 300px;        /* Contained, not full-bleed */
     aspect-ratio: 4 / 5;    /* Portrait, matching reference */
-    border-radius: 16px;     /* Rounded corners on image */
+    border-radius: 16px;     /* Rounded corners */
     overflow: hidden;
     position: relative;
     background: #e2e8f0;     /* Placeholder bg */
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
+    /* Force GPU layer so overflow:hidden clips absolute children correctly */
+    isolation: isolate;
+    transform: translateZ(0);
+    -webkit-mask-image: -webkit-radial-gradient(white, black); /* Safari fix */
 }
 
 .nexa-slide-item {
@@ -712,6 +716,8 @@ body {
     opacity: 0;
     transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
+    border-radius: inherit;  /* Inherit 16px from parent for full clip */
+    overflow: hidden;
 }
 
 .nexa-slide-item.active {
@@ -724,6 +730,7 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: inherit;
 }
 
 /* Overlay Badge on Flyer */
