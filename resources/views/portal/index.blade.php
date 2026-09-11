@@ -679,27 +679,29 @@ body {
    2B. RIGHT PANEL: Promotional Slider Banner & Showcase
 -------------------------------------------------------------------------- */
 .nexa-card-right {
-    flex: 0.9;
+    flex: 1;
     min-width: 0;
-    padding: 28px 24px 18px;
+    padding: 24px 24px 18px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #ffffff;    /* Same white as left panel */
-    border-left: 1px solid #f1f5f9;
+    background: #ffffff;     /* White — same as left panel */
+    border-left: none;       /* No divider line */
     position: relative;
+    overflow: hidden;
 }
 
 .nexa-slider-wrap {
     width: 100%;
-    max-width: 320px;
-    aspect-ratio: 1 / 1.1;  /* Slightly portrait, matching reference */
-    border-radius: 16px;
+    max-width: 300px;        /* Contained, not full-bleed */
+    aspect-ratio: 4 / 5;    /* Portrait, matching reference */
+    border-radius: 16px;     /* Rounded corners on image */
     overflow: hidden;
     position: relative;
-    background: var(--surface-input);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    background: #e2e8f0;     /* Placeholder bg */
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
 }
 
 .nexa-slide-item {
@@ -742,7 +744,7 @@ body {
     letter-spacing: 0.02em;
 }
 
-/* Carousel Pagination Dots — below the image in normal flow */
+/* Carousel Pagination Dots — below image, normal flow */
 .nexa-carousel-dots {
     display: flex;
     align-items: center;
@@ -982,13 +984,17 @@ body {
         background: #ffffff;
         border-top: 1px solid #f1f5f9;
         border-left: none;
+        border-radius: 0 0 22px 22px;
+        min-height: auto;
     }
     .nexa-slider-wrap {
         max-width: 100%;
         width: 100%;
         height: auto;
+        min-height: 0;
         aspect-ratio: 16/9;
         border-radius: 12px;
+        flex-shrink: 0;
     }
     .nexa-slider-wrap img {
         width: 100%;
